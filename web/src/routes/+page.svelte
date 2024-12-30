@@ -7,4 +7,6 @@
     <title>Darf Vermieter das? – KI-gestützte Mietrechtsanalyse</title>
 </svelte:head>
 
-<Hero />
+<Hero>
+	<Uploader/>
+</Hero>
