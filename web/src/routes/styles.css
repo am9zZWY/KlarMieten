@@ -7,3 +7,14 @@ main {
     max-width: 1200px;
     margin: 0 auto;
 }
+
+section {
+    padding: 2rem;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+:root {
+    --primary: #FFD700;
+    --primary-light: #FFE44D;
+}

@@ -173,16 +173,13 @@
     input {
         flex: 1;
         padding: 1rem;
-        border-radius: 4px;
         border: none;
     }
 
     button {
         padding: 1rem 2rem;
-        background: #FFD700;
+        background: var(--primary);
         border: none;
-        border-radius: 4px;
-        font-weight: bold;
         cursor: pointer;
         transition: background-color 0.2s;
     }
@@ -194,12 +191,12 @@
 
     button:hover {
         background: #FFE44D;
+        text-decoration: underline;
     }
 
     .upload-area {
         background: rgba(255, 255, 255, 0.1);
         border: 2px dashed rgba(255, 255, 255, 0.3);
-        border-radius: 8px;
         padding: 2rem;
         text-align: center;
         margin-bottom: 2rem;
@@ -208,7 +205,7 @@
 
     .upload-area.dragging {
         background: rgba(255, 255, 255, 0.2);
-        border-color: #FFD700;
+        border-color: var(--primary);
     }
 
     .upload-content {
@@ -219,13 +216,13 @@
     }
 
     .upload-content label {
-        color: #FFD700;
+        color: var(--primary);
         cursor: pointer;
         text-decoration: underline;
     }
 
     .upload-content label:hover {
-        color: #FFE44D;
+        color: var(--primary-light);
     }
 
     .error-message {
