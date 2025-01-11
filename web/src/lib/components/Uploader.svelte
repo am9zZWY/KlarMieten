@@ -21,20 +21,22 @@
     />
     <div class="upload-content">
         {#if files.size > 0}
-            <div class="file-preview">
+            <ul class="file-preview">
                 {#each files as file}
-                    {#if file.preview}
-                        <img src={file.preview} alt="File Preview"/>
-                    {:else}
-                        <span>{file.name}</span>
-                    {/if}
+                    <li class="file">
+                        {#if file.preview}
+                            <img src={file.preview} alt="File Preview"/>
+                        {:else}
+                            <span>{file.name}</span>
+                        {/if}
+                        <button type="button" onclick={() => removeFile(file)} class="remove">Entfernen</button>
+                    </li>
                 {/each}
-            </div>
-            <button type="button" onclick={() => files.clear()} class="remove">Datei entfernen</button>
-        {:else}
-            <span>Ziehen Sie Ihren Mietvertrag hierher oder</span>
-            <label for="fileInput">Datei auswählen</label>
+            </ul>
         {/if}
+        <span>Ziehen Sie
+            {#if files.size > 0} weitere Dateien {:else}Ihren  Mietvertrag {/if} hierher oder</span>
+        <label for="fileInput">Dateien auswählen</label>
     </div>
 </div>
 
@@ -126,6 +128,10 @@
         }
     }
 
+    function removeFile(file: File) {
+        files.delete(file)
+    }
+
     function handleDrop(event: DragEvent) {
         event.preventDefault();
         isDragging = false;
@@ -176,22 +182,9 @@
         border: none;
     }
 
-    button {
-        padding: 1rem 2rem;
-        background: var(--primary);
-        border: none;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-
     button.remove {
         background: #ff3333;
         color: white;
-    }
-
-    button:hover {
-        background: #FFE44D;
-        text-decoration: underline;
     }
 
     .upload-area {
@@ -239,7 +232,13 @@
 
     .file-preview {
         display: flex;
-        align-items: center;
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .file {
+        display: flex;
         gap: 1rem;
     }
 

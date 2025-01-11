@@ -17,4 +17,39 @@ section {
 :root {
     --primary: #FFD700;
     --primary-light: #FFE44D;
+    --primary-dark: #FFC400;
+}
+
+a {
+    color: black;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+button {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    border: none;
+    background: var(--primary);
+    color: white;
+    cursor: pointer;
+}
+
+button:hover {
+    background: black;
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+button:active {
+    background: var(--primary-dark);
+}
+
+button:disabled {
+    background: var(--primary-light);
+    color: black;
+    cursor: not-allowed;
 }

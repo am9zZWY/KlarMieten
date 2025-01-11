@@ -1,8 +1,13 @@
 <script>
-import './styles.css';
-let { children } = $props();
+	import './styles.css';
+	import Header from "$lib/components/Header.svelte";
+	import Footer from "$lib/components/Footer.svelte";
+
+	let {children} = $props();
 </script>
 
 <main>
-  {@render children()}
+    <Header/>
+    {@render children()}
+    <Footer/>
 </main>

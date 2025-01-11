@@ -2,40 +2,22 @@
     <ul class="nav-container">
         <li>
             <ul class="left-nav">
-                {#each navItems as {path, label}}
-                    <li>
-                        <a class:active={page.url.pathname === path} href={path}>
-                            {label}
-                        </a>
-                    </li>
-                {/each}
+                <li><a class:active={pathname === '/dsgvo'} href="/dsgvo">Datenschutzerklärung</a></li>
             </ul>
         </li>
 
         <li>
             <ul class="right-nav">
-                <li>
-                    <a
-                            class:active={page.url.pathname === '/login'}
-                            class="highlight"
-                            href="/login"
-                    >
-                        Anmelden
-                    </a>
-                </li>
+                <li>Mit Liebe gemacht</li>
             </ul>
         </li>
     </ul>
 </nav>
 
 <script lang="ts">
-    import { page } from '$app/state';
+    import { page } from "$app/state";
 
-    const navItems = [
-        { path: '/', label: 'Startseite' },
-        { path: '/about', label: 'Über' },
-        { path: '/price', label: 'Preise' },
-    ];
+    let { pathname } = page.url;
 </script>
 
 <style>
@@ -68,10 +50,13 @@
         font-size: 1.2rem;
     }
 
-    .highlight {
-        background: black;
-        color: var(--primary);
-        padding: 0.5rem 1rem;
+    a {
+        color: black;
+        text-decoration: none;
+    }
+
+    a:hover {
+        text-decoration: underline;
     }
 
     .active {
