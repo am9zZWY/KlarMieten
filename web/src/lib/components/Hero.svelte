@@ -6,6 +6,9 @@
         {@render children?.()}
     </div>
 </section>
+<p class="image-credit">
+    Bild von Kaboompics.com
+</p>
 
 <script>
 	let {children = null} = $props();
@@ -31,5 +34,9 @@
     h1 {
         font-size: 3rem;
         margin-bottom: 1rem;
+    }
+
+    p.image-credit {
+        font-size: 0.8rem;
     }
 </style>

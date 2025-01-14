@@ -1,7 +1,6 @@
 <script>
 	import Hero from '../lib/components/Hero.svelte';
 	import Uploader from "$lib/components/Uploader.svelte";
-	import Header from "$lib/components/Header.svelte";
 </script>
 
 <svelte:head>

@@ -32,10 +32,13 @@ a:hover {
 button {
     padding: 1rem 2rem;
     font-size: 1rem;
-    border: none;
+    border: 2px solid transparent;
     background: var(--primary);
-    color: white;
+    color: black;
     cursor: pointer;
+    transition: background-color 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
 button:hover {
@@ -46,10 +49,13 @@ button:hover {
 
 button:active {
     background: var(--primary-dark);
+    transform: translateY(1px);
 }
 
 button:disabled {
     background: var(--primary-light);
     color: black;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
