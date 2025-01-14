@@ -14,5 +14,5 @@
 </section>
 
 <svelte:head>
-    <title>Darf Vermieter das? | Analyse</title>
+    <title>Darf Vermieter das? | Über</title>
 </svelte:head>
