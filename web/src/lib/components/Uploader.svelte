@@ -47,12 +47,12 @@
 {/if}
 
 <form class="search-box" onsubmit={handleSubmit}>
-    <input
+    <!-- <input
             aria-label="Beschreiben Sie Ihr Anliegen"
             bind:value={searchQuery}
             placeholder="Beschreiben Sie Ihr Anliegen..."
             type="text"
-    />
+    /> -->
     <button type="submit">Prüfen</button>
 </form>
 

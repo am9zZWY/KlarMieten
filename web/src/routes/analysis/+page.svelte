@@ -1,5 +1,5 @@
+<h1>Vertragsanalyse</h1>
 <section>
-    <h1>Vertragsanalyse</h1>
 </section>
 
 <svelte:head>

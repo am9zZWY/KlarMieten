@@ -1,7 +1,7 @@
+<h1>Anmelden</h1>
 <section>
-    <h1>Anmelden</h1>
 
-    <form>
+    <!-- <form>
         <div class="form-group">
             <label for="email">E-Mail</label>
             <input type="email" id="email" name="email" required>
@@ -16,7 +16,7 @@
             <button type="submit">Anmelden</button>
             <a href="/register">Noch keinen Account? Hier registrieren</a>
         </div>
-    </form>
+    </form> -->
 </section>
 
 <svelte:head>
@@ -24,11 +24,6 @@
 </svelte:head>
 
 <style>
-    h1 {
-        margin-bottom: 2rem;
-        text-align: center;
-    }
-
     .form-group {
         margin-bottom: 1.5rem;
     }
