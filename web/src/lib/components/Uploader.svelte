@@ -149,14 +149,21 @@
 
     function handleSubmit(event: SubmitEvent) {
         event.preventDefault();
+
+        // Reset error message
+        errorMessage = '';
+
+        // Check if files are selected
         if (!files.size) {
             errorMessage = 'Bitte wählen Sie zuerst eine Datei aus.';
             return;
         }
-        if (!searchQuery.trim()) {
+
+        // Check if search query is empty
+        /* if (!searchQuery.trim()) {
             errorMessage = 'Bitte beschreiben Sie Ihr Anliegen.';
             return;
-        }
+        } */
     }
 
     // Cleanup function for file previews

@@ -29,6 +29,7 @@
 </nav>
 
 <script lang="ts">
+    import './nav.css';
     import { page } from '$app/state';
 
     const navItems = [
@@ -37,51 +38,3 @@
         { path: '/price', label: 'Preise' },
     ];
 </script>
-
-<style>
-    nav {
-        color: black;
-        padding-bottom: 1rem;
-        padding-top: 1rem;
-    }
-
-    .nav-container {
-        display: flex;
-        justify-content: space-between;
-        list-style: none;
-        width: 100%;
-        padding: 0;
-    }
-
-    .left-nav, .right-nav {
-        display: flex;
-        list-style: none;
-        gap: 2rem;
-        padding: 0;
-    }
-
-    .nav-container > li {
-        padding: 0;
-        margin: 0;
-    }
-
-    li {
-        font-size: 1.2rem;
-    }
-
-    .highlight {
-        background: black;
-        color: var(--primary);
-        padding: 0.5rem 1rem;
-    }
-
-    .active {
-        background: var(--primary);
-        color: black;
-        padding: 0.5rem 1rem;
-    }
-
-    .active:hover {
-        background: var(--primary-light);
-    }
-</style>

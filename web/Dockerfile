@@ -13,7 +13,7 @@ COPY --from=deps /usr/src/app/node_modules ./node_modules
 COPY . .
 
 # Run the SvelteKit build process
-RUN bun run build
+RUN ADAPTER=BUN bun run build
 
 # Create the production image
 FROM base AS runner

@@ -1,3 +1,34 @@
+:root {
+    --primary: #FFD700;
+    --primary-light: #FFE44D;
+    --primary-dark: #FFC400;
+    --background: #ffffff;
+    --text: #000000;
+    --section-bg: #ffffff;
+    --section-shadow: rgba(0, 0, 0, 0.1);
+    --link-color: #000000;
+    --button-text: #000000;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary: #FFD700;
+        --primary-light: #FFC400;
+        --primary-dark: #FFE44D;
+        --background: #121212;
+        --text: #ffffff;
+        --section-bg: #1e1e1e;
+        --section-shadow: rgba(255, 255, 255, 0.1);
+        --link-color: #ffffff;
+        --button-text: #000000;
+    }
+}
+
+html {
+    background-color: var(--background);
+    color: var(--text);
+}
+
 html * {
     font-family: 'Courier Prime', monospace;
 }
@@ -10,18 +41,13 @@ main {
 
 section {
     padding: 2rem;
-    background: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: var(--section-bg);
+    box-shadow: 0 2px 4px var(--section-shadow);
 }
 
-:root {
-    --primary: #FFD700;
-    --primary-light: #FFE44D;
-    --primary-dark: #FFC400;
-}
-
+/* Link styles */
 a {
-    color: black;
+    color: var(--link-color);
     text-decoration: none;
 }
 
@@ -29,33 +55,50 @@ a:hover {
     text-decoration: underline;
 }
 
+a.highlight {
+    background: black;
+    color: var(--primary);
+    padding: 0.5rem 1rem;
+}
+
+a.active {
+    background: var(--primary);
+    color: black;
+    padding: 0.5rem 1rem;
+}
+
+a.active:hover {
+    background: var(--primary-light);
+}
+
+/* Button styles */
 button {
     padding: 1rem 2rem;
     font-size: 1rem;
     border: 2px solid transparent;
     background: var(--primary);
-    color: black;
+    color: var(--button-text);
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
 }
 
 button:hover {
-    background: black;
+    background: var(--text);
     color: var(--primary);
     text-decoration: underline;
 }
 
 button:active {
     background: var(--primary-dark);
-    transform: translateY(1px);
 }
 
 button:disabled {
     background: var(--primary-light);
-    color: black;
+    color: var(--button-text);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
+    opacity: 0.7;
 }
