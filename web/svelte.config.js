@@ -1,5 +1,6 @@
 import {default as bunAdapter} from "svelte-adapter-bun";
 import {default as autoAdapter} from '@sveltejs/adapter-auto';
+import {default as vercelAdapter} from '@sveltejs/adapter-vercel';
 import {vitePreprocess} from '@sveltejs/vite-plugin-svelte';
 
 const adapterType = process.env.ADAPTER || "auto"
@@ -18,11 +19,27 @@ const _bunAdapter = bunAdapter({
 	xff_depth: 1,
 })
 
+const _vercelAdapter = vercelAdapter({
+	out: "build",
+	assets: true,
+	development: process.env.NODE_ENV === "development",
+	// precompress: true,
+	precompress: {
+		brotli: true,
+		gzip: true,
+		files: ["htm", "html"],
+	},
+	dynamic_origin: true,
+	xff_depth: 1,
+})
+
 const _autoAdapter = autoAdapter()
 
 let adapter = _autoAdapter
-if (adapterType === "bun") {
+if (adapterType === "BUN") {
 	adapter = _bunAdapter
+} else if (adapterType === "VERCEL") {
+	adapter = _vercelAdapter
 }
 
 /** @type {import('@sveltejs/kit').Config} */
