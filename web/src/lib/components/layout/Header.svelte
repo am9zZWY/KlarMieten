@@ -15,13 +15,15 @@
         <li>
             <ul class="right-nav">
                 <li>
-                    <a
-                            class:active={page.url.pathname === '/login'}
-                            class="highlight"
-                            href="/login"
-                    >
-                        Anmelden
-                    </a>
+                    <div class="button highlight active">
+                        <a
+                                class="no-highlight"
+                                class:active={page.url.pathname === '/login'}
+                                href="/login"
+                        >
+                            Anmelden
+                        </a>
+                    </div>
                 </li>
             </ul>
         </li>

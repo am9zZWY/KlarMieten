@@ -53,7 +53,9 @@
             placeholder="Beschreiben Sie Ihr Anliegen..."
             type="text"
     /> -->
-    <button type="submit">Prüfen</button>
+    <button type="submit" class="highlight larger" class:active={files.size}>
+        Hochladen
+    </button>
 </form>
 
 
