@@ -14,12 +14,15 @@
             <ul class="right-nav">
                 <li>
                     <div class="button highlight active">
-                        <a
-                                class="no-highlight"
-                                href="/accounts/login"
-                        >
-                            Anmelden
-                        </a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'home' %}">
+                                Dashboard
+                            </a>
+                        {% else %}
+                            <a href="{% url 'login' %}">
+                                Anmelden
+                            </a>
+                        {% endif %}
                     </div>
                 </li>
             </ul>

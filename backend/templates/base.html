@@ -1,58 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
-  {% load static %}
-  <head>
+{% load static %}
+<head>
     {% block head %}
-      <title>
-        {% block title %}
-          Darf Vermieter das? | KI-gestützte Mietrechtsanalyse
+        <title>
+            {% block title %}
+                Darf Vermieter das? | KI-gestützte Mietrechtsanalyse
+            {% endblock %}
+        </title>
+        {% block meta %}
+            <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <meta name="color-scheme" content="dark light"/>
+            <meta name="description"
+                  content="Darf Vermieter das? bietet eine KI-gestützte Analyse Ihrer Mietverträge an. So können Sie schnell und einfach überprüfen, ob Ihr Vermieter sich an die gesetzlichen Vorgaben hält."/>
+            <meta name="keywords" content="Mietrecht, Analyse, KI, Mietvertrag, Klausel, Mieterrechte"/>
+            <meta name="author" content="Josef Müller"/>
+            <meta name="robots" content="index, follow"/>
         {% endblock %}
-      </title>
-      {% block meta %}
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="color-scheme" content="dark light" />
-        <meta name="description" content="Darf Vermieter das? bietet eine KI-gestützte Analyse Ihrer Mietverträge an. So können Sie schnell und einfach überprüfen, ob Ihr Vermieter sich an die gesetzlichen Vorgaben hält." />
-        <meta name="keywords" content="Mietrecht, Analyse, KI, Mietvertrag, Klausel, Mieterrechte" />
-        <meta name="author" content="Josef Müller" />
-        <meta name="robots" content="index, follow" />
-      {% endblock %}
-      <!-- TODO: favicon -->
-      <link rel="icon" href="favicon.png" />
-      <!-- BunnyCDN font preconnect + font download -->
-      <link rel="preconnect" href="https://fonts.bunny.net" />
-      <link href="https://fonts.bunny.net/css?family=abhaya-libre:400|courier-prime:400" rel="stylesheet" />
+        <!-- TODO: favicon -->
+        <link rel="icon" href="favicon.png"/>
+        <!-- BunnyCDN font preconnect + font download -->
+        <link rel="preconnect" href="https://fonts.bunny.net"/>
+        <link href="https://fonts.bunny.net/css?family=abhaya-libre:400|courier-prime:400" rel="stylesheet"/>
 
-      <!-- Styles -->
-      <link rel="stylesheet" href="{% static '/css/global.css' %}" />
-      <link rel="stylesheet" href="{% static '/css/button.css' %}" />
-      <link rel="stylesheet" href="{% static '/css/nav.css' %}" />
+        <!-- Styles -->
+        <link rel="stylesheet" href="{% static '/css/global.css' %}"/>
+        <link rel="stylesheet" href="{% static '/css/button.css' %}"/>
+        <link rel="stylesheet" href="{% static '/css/nav.css' %}"/>
 
-      {% block link %}
+        {% block link %}
 
-      {% endblock %}
+        {% endblock %}
 
-      <style></style>
-      {% block script %}
+        <style></style>
+        {% block script %}
 
-      {% endblock %}
+        {% endblock %}
     {% endblock %}
-  </head>
-  <body>
-    <main>
-      {% include 'navbar.html' %}
-      <div style="display: contents">
+</head>
+<body>
+<main>
+    {% include 'navbar.html' %}
+    <div style="display: contents">
         {% block content %}
 
         {% endblock %}
-      </div>
-    </main>
+    </div>
+</main>
 
-    <script>
-      const theme = new URL(window.location).searchParams.get('theme')
-      
-      document.documentElement.classList.remove('light', 'dark')
-      document.documentElement.classList.add(theme || 'light')
-    </script>
-  </body>
+<script>
+	function setTheme(theme) {
+		document.documentElement.classList.remove('light', 'dark')
+		document.documentElement.classList.add(theme)
+	}
+
+    // Set color scheme based on user's preference
+	const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+    setTheme(theme);
+
+	window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+		const newColorScheme = event.matches ? "dark" : "light";
+		setTheme(newColorScheme);
+	});
+</script>
+</body>
 </html>

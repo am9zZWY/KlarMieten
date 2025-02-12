@@ -31,8 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    "contract_analysis.apps.ContractAnalysisConfig",
-    "accounts.apps.AccountsConfig",
+    "accounts",
+    "contract_analysis",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -53,11 +53,14 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "darf_vermieter_das.urls"
 
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
             BASE_DIR / "templates",
+            "contract_analysis/templates",
+            "accounts/templates",
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -103,9 +106,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# Login
+
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
+
 # User model
 
-AUTH_USER_MODEL = "contract_analysis.User"
+AUTH_USER_MODEL = "accounts.User"
 
 
 # Internationalization

@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+    <div>
+        <!-- Greeting Section -->
+        <div>
+            <div>
+                <h2>Hi, {% if user.is_authenticated %}{{ user.username }}{% else %}Gast{% endif %}</h2>
+                <p>Analyse Ihres Mietvertrags vom {{ contract_details.start_date|date:"d.m.Y" }}</p>
+            </div>
+        </div>
+
+        <!-- Contract Overview Cards -->
+        <div>
+            <div>
+                <div>
+                    <div>
+                        <h5>Vertragsübersicht</h5>
+                        <ul>
+                            <li>
+                                Vertragsart
+                                <span>{{ contract_details.contract_type }}</span>
+                            </li>
+                            <li>
+                                Laufzeit
+                                <span>
+                                    {% if contract_details.start_date %}
+                                        {{ contract_details.start_date|date:"Y" }} -
+                                        {% if contract_details.end_date %}
+                                            {{ contract_details.end_date|date:"Y" }}
+                                        {% else %}
+                                            Open-End
+                                        {% endif %}
+                                    {% else %}
+                                        Unbekannt
+                                    {% endif %}
+                                </span>
+                            </li>
+                            <li>
+                                Aktuelle Miete
+                                <span>€{{ contract_details.monthly_rent|floatformat:2 }}</span>
+                            </li>
+                            <li>
+                                Nebenkosten
+                                <span>€{{ contract_details.total_rent|floatformat:2 }}</span>
+                            </li>
+                            <li>
+                                Adresse
+                                <span>{{ contract_details.address }}</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Price Spectrum Visualization -->
+        <div>
+            <div>
+                <div>
+                    <div>
+                        <h5>Mietpreisvergleich</h5>
+                        <div style="height: 30px;">
+                            <div
+                                    role="progressbar"
+                                    style="width: {% widthratio contract_details.monthly_rent 1500 100 %}%;">
+                                €{{ contract_details.monthly_rent|floatformat:2 }}
+                            </div>
+                        </div>
+                        <div>
+                            <span>Günstig</span>
+                            <span>Durchschnitt</span>
+                            <span>Hochpreisig</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contract Document Analysis -->
+        <div>
+            <div>
+                <div>
+                    <div>
+                        <img src="{% static 'contract_preview.jpg' %}"
+                             alt="Vertragsvorschau"
+                             style="max-height: 500px;">
+
+                        <!-- Document Hotspots -->
+                        <div style="top: 15%; left: 70%;">
+                            <a href="#kündigungsfrist">Kündigungsfrist</a>
+                        </div>
+                        <div style="top: 30%; left: 70%;">
+                            <a href="#nebenkosten">Nebenkosten</a>
+                        </div>
+                        <div style="top: 45%; left: 70%;">
+                            <a href="#kaution">Kaution</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Document Annotations -->
+            <div>
+                <div>
+                    <div>
+                        <h5>Vertragsdetails</h5>
+                        <div id="kündigungsfrist">
+                            <strong>Kündigungsfrist:</strong> {{ contract_details.termination_terms }}
+                        </div>
+                        <div id="nebenkosten">
+                            <strong>Nebenkosten:</strong> {{ contract_details.additional_costs }}
+                        </div>
+                        <div id="kaution">
+                            <strong>Kaution:</strong> €{{ contract_details.deposit|floatformat:2 }}
+                        </div>
+                        <div>
+                            <strong>Zimmeranzahl:</strong> {{ contract_details.number_of_rooms }}
+                        </div>
+                        <div>
+                            <strong>Heizungsart:</strong> {{ contract_details.heating_type }}
+                        </div>
+                        <div>
+                            <strong>Zusätzliche Klauseln:</strong> {{ contract_details.additional_clauses }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+    <style>
+        .progress-bar {
+            transition: width 1s ease-in-out;
+        }
+
+        .position-relative {
+            overflow: hidden;
+        }
+
+        .card {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+    </style>
+{% endblock %}

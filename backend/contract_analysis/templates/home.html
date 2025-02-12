@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Mietverträge{% endblock %}
+
+{% block content %}
+    {% if not user.is_authenticated %}
+        <div>
+            <p>Bitte melden Sie sich an, um Ihre Mietverträge zu verwalten</p>
+            <a href="{% url 'login' %}">Anmelden</a>
+        </div>
+    {% else %}
+        <section>
+            <h2>Mietverträge</h2>
+            <!-- Add Contract -->
+            {% include "file_upload.html" %}
+
+            <!-- Contracts Table -->
+            {% if contracts %}
+                <div>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Hochgeladen</th>
+                            <th>Dateiname</th>
+                            <th>Status</th>
+                            <th>Aktion</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for contract in contracts %}
+                            <tr>
+                                <td>{{ contract.uploaded_at|date:"d.m.Y H:i" }}</td>
+                                <td>{{ contract.file_name }}</td>
+                                <td>
+                                <span>
+                                    {{ contract.status }}
+                                </span>
+                                </td>
+                                <td>
+                                    <ul>
+                                        {% if contract.status == 'analyzed' %}
+                                            <li>
+                                                <a href="{% url 'contract' %}?id={{ contract.id }}">Details anzeigen</a>
+                                            </li>
+                                        {% endif %}
+                                        <li>
+                                            <a href="" onclick="analyzeContract({{ contract.id }})">Analyse starten</a>
+                                        </li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div>
+                    <p>Keine Verträge vorhanden</p>
+                </div>
+            {% endif %}
+        </section>
+
+        {% block extra_js %}
+            <script>
+							document.getElementById('contractSearch').addEventListener('input', function (e) {
+								const searchText = e.target.value.toLowerCase();
+								const rows = document.querySelectorAll('.contracts tbody tr');
+
+								rows.forEach(row => {
+									const text = row.textContent.toLowerCase();
+									row.style.display = text.includes(searchText) ? '' : 'none';
+								});
+							});
+
+							function analyzeContract(id) {
+								fetch(`/analyze_contract?contract_id=${id}`, {
+									method: 'GET',
+									headers: {
+										'X-CSRFToken': '{{ csrf_token }}'
+									}
+								})
+									.then(response => response.json())
+									.then(data => {
+										if (data.success) {
+											alert('Analyse erfolgreich gestartet');
+										} else {
+											alert('Analyse konnte nicht gestartet werden');
+										}
+									});
+							}
+            </script>
+        {% endblock %}
+    {% endif %}
+{% endblock %}

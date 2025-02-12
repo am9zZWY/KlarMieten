@@ -21,6 +21,7 @@ a.active:hover {
 a.no-highlight, a.no-highlight:hover {
     text-decoration: none;
     background: inherit;
+
 }
 
 /* Button styles */
@@ -58,7 +59,7 @@ button:disabled {
 button.highlight, .button.highlight {
     background: #ccc;
     color: black;
-    padding:  0.5rem 1rem;
+    padding: 0.5rem 1rem;
     border: 2px solid black;
     transition: all 0.3s ease;
     box-shadow: 4px 6px 0 black;
@@ -75,6 +76,7 @@ button.highlight:hover, .button.highlight:hover {
 
 button.highlight.active, .button.highlight.active {
     background: var(--primary);
+    color: black;
     cursor: pointer;
 }
 
@@ -90,4 +92,8 @@ button.highlight.active:active, .button.highlight.active:active {
 
 button.highlight.active:hover::after, .button.highlight.active:hover::after {
     transform: translateX(0);
+}
+
+.button a {
+    color: inherit;
 }
