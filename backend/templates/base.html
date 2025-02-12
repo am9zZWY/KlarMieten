@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% load static %}
+  <head>
+    {% block head %}
+      <title>
+        {% block title %}
+          Darf Vermieter das? | KI-gestützte Mietrechtsanalyse
+        {% endblock %}
+      </title>
+      {% block meta %}
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="color-scheme" content="dark light" />
+        <meta name="description" content="Darf Vermieter das? bietet eine KI-gestützte Analyse Ihrer Mietverträge an. So können Sie schnell und einfach überprüfen, ob Ihr Vermieter sich an die gesetzlichen Vorgaben hält." />
+        <meta name="keywords" content="Mietrecht, Analyse, KI, Mietvertrag, Klausel, Mieterrechte" />
+        <meta name="author" content="Josef Müller" />
+        <meta name="robots" content="index, follow" />
+      {% endblock %}
+      <!-- TODO: favicon -->
+      <link rel="icon" href="favicon.png" />
+      <!-- BunnyCDN font preconnect + font download -->
+      <link rel="preconnect" href="https://fonts.bunny.net" />
+      <link href="https://fonts.bunny.net/css?family=abhaya-libre:400|courier-prime:400" rel="stylesheet" />
+
+      <!-- Styles -->
+      <link rel="stylesheet" href="{% static '/css/global.css' %}" />
+      <link rel="stylesheet" href="{% static '/css/button.css' %}" />
+      <link rel="stylesheet" href="{% static '/css/nav.css' %}" />
+
+      {% block link %}
+
+      {% endblock %}
+
+      <style></style>
+      {% block script %}
+
+      {% endblock %}
+    {% endblock %}
+  </head>
+  <body>
+    <main>
+      {% include 'navbar.html' %}
+      <div style="display: contents">
+        {% block content %}
+
+        {% endblock %}
+      </div>
+    </main>
+
+    <script>
+      const theme = new URL(window.location).searchParams.get('theme')
+      
+      document.documentElement.classList.remove('light', 'dark')
+      document.documentElement.classList.add(theme || 'light')
+    </script>
+  </body>
+</html>

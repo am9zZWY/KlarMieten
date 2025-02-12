@@ -1,0 +1,93 @@
+/* Link styles */
+a {
+    color: var(--link-color);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+a.active {
+    background: var(--primary);
+    color: black;
+    padding: 0.5rem 1rem;
+}
+
+a.active:hover {
+    background: var(--primary-light);
+}
+
+a.no-highlight, a.no-highlight:hover {
+    text-decoration: none;
+    background: inherit;
+}
+
+/* Button styles */
+button {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    border: 2px solid transparent;
+    background: var(--primary);
+    color: var(--button-text);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+button:hover {
+    background: var(--text);
+    color: var(--primary);
+    text-decoration: underline;
+}
+
+button:active {
+    background: var(--primary-dark);
+}
+
+button:disabled {
+    background: var(--primary-light);
+    color: var(--button-text);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
+}
+
+button.highlight, .button.highlight {
+    background: #ccc;
+    color: black;
+    padding:  0.5rem 1rem;
+    border: 2px solid black;
+    transition: all 0.3s ease;
+    box-shadow: 4px 6px 0 black;
+    cursor: not-allowed;
+}
+
+button.highlight.larger, .button.highlight.larger {
+    padding: 1rem 2rem;
+}
+
+button.highlight:hover, .button.highlight:hover {
+    text-decoration: none;
+}
+
+button.highlight.active, .button.highlight.active {
+    background: var(--primary);
+    cursor: pointer;
+}
+
+button.highlight.active:hover, button.highlight.active:focus, .button.highlight.active:hover, .button.highlight.active:focus {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 4px 0 black;
+}
+
+button.highlight.active:active, .button.highlight.active:active {
+    transform: translate(4px, 4px);
+    box-shadow: 0 2px 0 black;
+}
+
+button.highlight.active:hover::after, .button.highlight.active:hover::after {
+    transform: translateX(0);
+}

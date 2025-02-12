@@ -1,0 +1,259 @@
+<div
+  aria-dropeffect="copy"
+  aria-label="File Upload"
+  class="upload-area"
+  id="upload-area"
+  role="button"
+  tabindex="0"
+>
+  <input
+    accept="application/pdf,image/jpeg,image/png"
+    hidden
+    id="fileInput"
+    multiple
+    type="file"
+  />
+  <div class="upload-content">
+    <ul class="file-preview" id="file-preview"></ul>
+    <span id="upload-instructions">
+      Ziehen Sie
+      <span id="file-count-message">Ihren Mietvertrag</span> hierher oder
+    </span>
+    <label for="fileInput" id="file-label">Dateien auswählen</label>
+  </div>
+</div>
+
+<div
+  class="error-message"
+  id="error-message"
+  role="alert"
+  style="display: none"
+></div>
+
+<form
+  class="search-box"
+  id="upload-form"
+  method="POST"
+  enctype="multipart/form-data"
+>
+  {% csrf_token %}
+  <button type="submit" class="highlight larger" id="upload-button" disabled>
+    Hochladen
+  </button>
+</form>
+
+<script>
+  // Constants
+  const ACCEPTED_FILE_TYPES = ["application/pdf", "image/jpeg", "image/png"];
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+  // DOM Elements
+  const uploadArea = document.getElementById("upload-area");
+  const fileInput = document.getElementById("fileInput");
+  const filePreview = document.getElementById("file-preview");
+  const errorMessage = document.getElementById("error-message");
+  const uploadButton = document.getElementById("upload-button");
+  const fileCountMessage = document.getElementById("file-count-message");
+
+  let files = new Set();
+
+  // Validate file
+  function validateFile(file) {
+    if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
+      return "Nur PDF, JPEG und PNG Dateien sind erlaubt.";
+    }
+    if (file.size > MAX_FILE_SIZE) {
+      return "Die Datei darf nicht größer als 10MB sein.";
+    }
+    return null;
+  }
+
+  // Handle files
+  function handleFiles(fileList) {
+    errorMessage.style.display = "none";
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      const error = validateFile(file);
+      if (error) {
+        errorMessage.textContent = error;
+        errorMessage.style.display = "block";
+        return;
+      }
+      files.add(file);
+      const listItem = document.createElement("li");
+      listItem.className = "file";
+      listItem.innerHTML = `
+                ${
+                  file.type.startsWith("image/")
+                    ? `<img src="${URL.createObjectURL(
+                        file
+                      )}" alt="File Preview"/>`
+                    : `<span>${file.name}</span>`
+                }
+                <button type="button" class="remove" onclick="removeFile('${
+                  file.name
+                }')">Entfernen</button>
+            `;
+      filePreview.appendChild(listItem);
+    }
+    updateUI();
+  }
+
+  // Remove file
+  function removeFile(fileName) {
+    files = new Set([...files].filter((file) => file.name !== fileName));
+    const items = filePreview.querySelectorAll(".file");
+    items.forEach((item) => {
+      if (item.textContent.includes(fileName)) {
+        item.remove();
+      }
+    });
+    updateUI();
+  }
+
+  // Update UI
+  function updateUI() {
+    fileCountMessage.textContent =
+      files.size > 0 ? "weitere Dateien" : "Ihren Mietvertrag";
+    uploadButton.disabled = files.size === 0;
+  }
+
+  // Drag and drop events
+  uploadArea.addEventListener("dragover", (event) => {
+    event.preventDefault();
+    uploadArea.classList.add("dragging");
+  });
+
+  uploadArea.addEventListener("dragleave", (event) => {
+    if (event.currentTarget === event.target) {
+      uploadArea.classList.remove("dragging");
+    }
+  });
+
+  uploadArea.addEventListener("drop", (event) => {
+    event.preventDefault();
+    uploadArea.classList.remove("dragging");
+    handleFiles(event.dataTransfer.files);
+  });
+
+  // File input change event
+  fileInput.addEventListener("change", (event) => {
+    handleFiles(event.target.files);
+  });
+
+  // Form submission
+  document.getElementById("upload-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (files.size === 0) {
+      errorMessage.textContent = "Bitte wählen Sie zuerst eine Datei aus.";
+      errorMessage.style.display = "block";
+      return;
+    }
+    const formData = new FormData();
+    files.forEach((file) => formData.append("files", file));
+    fetch('{% url "upload_files" %}', {
+      method: "POST",
+      body: formData,
+      headers: {
+        "X-CSRFToken": "{{ csrf_token }}",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          alert("Dateien erfolgreich hochgeladen!");
+          files.clear();
+          filePreview.innerHTML = "";
+          updateUI();
+        } else {
+          errorMessage.textContent = data.error || "Fehler beim Hochladen.";
+          errorMessage.style.display = "block";
+        }
+      })
+      .catch((error) => {
+        console.error("Upload error:", error);
+        errorMessage.textContent = "Fehler beim Hochladen.";
+        errorMessage.style.display = "block";
+      });
+  });
+</script>
+
+<style>
+  .search-box {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+  }
+
+  input {
+      flex: 1;
+      padding: 1rem;
+      border: none;
+  }
+
+  button.remove {
+      background: #ff3333;
+      color: white;
+  }
+
+  .upload-area {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px dashed rgba(255, 255, 255, 0.3);
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+  }
+
+  .upload-area.dragging {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: var(--primary);
+  }
+
+  .upload-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+  }
+
+  .upload-content label {
+      color: var(--primary);
+      cursor: pointer;
+      text-decoration: underline;
+  }
+
+  .upload-content label:hover {
+      color: var(--primary-light);
+  }
+
+  .error-message {
+      background: rgba(255, 0, 0, 0.1);
+      color: #ff3333;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      margin-top: 1rem;
+  }
+
+  .upload-area.has-error {
+      border-color: #ff3333;
+  }
+
+  .file-preview {
+      display: flex;
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 1rem;
+  }
+
+  .file {
+      display: flex;
+      gap: 1rem;
+  }
+
+  .file-preview img {
+      max-width: 100px;
+      max-height: 100px;
+      object-fit: contain;
+  }
+</style>
