@@ -7,5 +7,5 @@ urlpatterns = [
     path("home", views.home, name="home"),
     path("contract", views.contract, name="contract"),
     path("analyze_contract", views.analyze_contract, name="analyze_contract"),
-    path("upload", views.upload_files, name="upload_files"),
+    path("upload", views.FileUploadView.as_view(), name="upload_files"),
 ]

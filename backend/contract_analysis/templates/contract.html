@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}Mietvertrag{% endblock %}
+{% block link %}
+    <link rel="stylesheet" href="{% static '/css/contract.css' %}"/>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+{% endblock %}
+
 {% block content %}
     <div>
         <!-- Greeting Section -->
@@ -53,6 +61,12 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Map -->
+        <div>
+            <h5>Karte</h5>
+            <div id="map" style="height: 300px;"></div>
         </div>
 
         <!-- Price Spectrum Visualization -->
@@ -145,4 +159,56 @@
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
         }
     </style>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+
+    <script>
+			// Function to geocode the address and update the map
+			function geocodeAddress(address) {
+				const fullAddress = `${address}, Germany`;
+				const nominatimURL = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(fullAddress)}&format=json`;
+
+				fetch(nominatimURL)
+					.then(response => response.json())
+					.then(data => {
+						if (data && data.length > 0) {
+							const latitude = parseFloat(data[0].lat);
+							const longitude = parseFloat(data[0].lon);
+
+							// Update the map view and add a marker
+							map.setView([latitude, longitude], 15);
+							L.marker([latitude, longitude]).addTo(map)
+								.bindPopup(`Adresse: ${fullAddress}`)
+								.openPopup();
+						} else {
+							console.error("Adresse nicht gefunden.");
+							// Handle the case where the address is not found
+						}
+					})
+					.catch(error => {
+						console.error("Fehler bei der Geocodierung:", error);
+						// Handle any errors during the geocoding process
+					});
+			}
+
+			// Initialize the map
+			var map = L.map('map', {
+                center: [51.505, -0.09],
+                zoom: 13,
+            })
+
+			L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+				attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+			}).addTo(map);
+
+			// Get the address details from the Django template
+			const address = "{{ contract_details.address }}";
+
+			// Geocode the address and update the map
+			geocodeAddress(address);
+    </script>
 {% endblock %}

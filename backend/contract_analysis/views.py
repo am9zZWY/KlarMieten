@@ -1,14 +1,17 @@
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.http import HttpResponse
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
+from django.views.generic.base import View
 
 from .analysis import extract_details_with_gemini
 from .models import Contract, ContractDetails
-from .utils import get_nested
+from .utils import get_nested, convert_date
 
 
 # Create your views here.
@@ -41,9 +44,6 @@ def contract(request):
     return HttpResponse(template.render(context, request))
 
 
-
-
-
 @csrf_exempt
 @login_required
 def analyze_contract(request):
@@ -56,8 +56,10 @@ def analyze_contract(request):
     contract.save()
 
     # Extract details using the Gemini extraction function
-    extracted_details = extract_details_with_gemini(contract.contract_file.path)
-    print(extracted_details)
+    extracted_details, total_token_count = extract_details_with_gemini(contract.contract_file.path)
+
+    # TODO: Update the token count in the user's profile
+    print(f"Total token count: {total_token_count}")
 
     # Update contract status to "analyzed"
     contract.status = "analyzed"
@@ -91,8 +93,8 @@ def analyze_contract(request):
     keys_provided = get_nested(extracted_details, ["property_details", "keys_provided"], [])
     details.keys_provided = ", ".join(keys_provided)
 
-    details.start_date = get_nested(extracted_details, ["rental_terms", "start_date"])
-    details.end_date = get_nested(extracted_details, ["rental_terms", "end_date"])
+    details.start_date = convert_date(get_nested(extracted_details, ["rental_terms", "start_date"]))
+    details.end_date = convert_date(get_nested(extracted_details, ["rental_terms", "end_date"]))
     details.duration = get_nested(extracted_details, ["rental_terms", "duration"])
     details.termination_terms = get_nested(extracted_details, ["rental_terms", "termination_terms"])
     details.monthly_rent = get_nested(extracted_details, ["pricing", "monthly_rent"])
@@ -115,29 +117,63 @@ def analyze_contract(request):
     return JsonResponse({"success": True, "details": extracted_details})
 
 
-@csrf_exempt
-@login_required
-def upload_files(request):
-    if request.method == "POST":
-        files = request.FILES.getlist("files")
-        for file in files:
-            if file.content_type not in ["application/pdf", "image/jpeg", "image/png"]:
-                return JsonResponse({"success": False, "error": "Ungültiger Dateityp."})
-            if file.size > 10 * 1024 * 1024:
-                return JsonResponse(
-                    {
-                        "success": False,
-                        "error": "Die Datei darf nicht größer als 10MB sein.",
-                    }
+class FileUploadView(View):
+    max_file_size = 10 * 1024 * 1024  # 10MB
+    allowed_types = ['application/pdf', 'image/jpeg', 'image/png']
+    template_name = 'file_upload.html'
+
+    def get(self, request):
+        context = {
+            'max_file_size': self.max_file_size,
+            'accepted_file_types': self.allowed_types,
+        }
+        return render(request, 'file_upload.html', context)
+
+    def post(self, request):
+        try:
+            files = request.FILES.getlist('files')
+
+            if not files:
+                raise ValidationError('Keine Dateien ausgewählt.')
+
+            uploaded_files = []
+            for file in files:
+                # Validate file type
+                if file.content_type not in self.allowed_types:
+                    raise ValidationError('Ungültiger Dateityp.')
+
+                # Validate file size
+                if file.size > self.max_file_size:
+                    raise ValidationError('Datei ist zu groß.')
+
+                # Generate unique filename
+                filename = default_storage.get_available_name(file.name)
+
+                # Save file
+                path = default_storage.save(f'uploads/{filename}', file)
+                uploaded_files.append(path)
+
+                # Create a new contract object
+                Contract.objects.create(
+                    user=request.user,
+                    contract_file=path,
+                    ai_model_version="v1",
+                    file_name=file.name,
                 )
-            path = default_storage.save(
-                f"uploads/{file.name}", ContentFile(file.read())
-            )
-            Contract.objects.create(
-                user=request.user,
-                contract_file=path,
-                ai_model_version="v1",
-                file_name=file.name,
-            )
-        return JsonResponse({"success": True})
-    return JsonResponse({"success": False, "error": "Ungültige Anfrage."})
+
+            return JsonResponse({
+                'success': True,
+                'files': uploaded_files
+            })
+
+        except ValidationError as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            }, status=400)
+
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': 'Ein Fehler ist aufgetreten beim Hochladen.'
+            }, status=500)

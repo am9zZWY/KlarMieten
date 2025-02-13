@@ -7,7 +7,7 @@ import google.generativeai as genai
 from PIL import Image
 
 # Configure the Gemini API
-genai.configure(api_key="")
+genai.configure(api_key="AIzaSyBy4-ZgzfrvOOtfKybkyqL5WmG8i0qK6tw")
 
 
 def image_to_base64(image: Image.Image) -> str:
@@ -166,12 +166,10 @@ def clean_gemini_json(json_string: str) -> Any | None:
             data = json.loads(cleaned_string)
             return data
         except json.JSONDecodeError as e2:
-            print(f"Cleaning failed. Second JSONDecodeError: {e2}")
-            print(f"Problematic JSON String: {cleaned_string}")  # Print the string for debugging
             return None
 
 
-def extract_details_with_gemini(image_path: str) -> dict:
+def extract_details_with_gemini(image_path: str) -> tuple[dict[Any, Any], Any]:
     def upload_to_gemini(path, mime_type=None):
         """Uploads the given file to Gemini.
 
@@ -211,8 +209,7 @@ def extract_details_with_gemini(image_path: str) -> dict:
         ]
     )
 
-    response = chat_session.send_message(
-        """
+    prompt = """
 You are a contract analysis expert. Your task is to extract key information from a contract provided as plain text and output it as a JSON object. The JSON object must conform to the following JSON Schema:
 """ + str(json_scheme_contract_detail_extraction) + """
 Here are the requirements:
@@ -235,15 +232,17 @@ Here are the requirements:
 
 Output the extracted information as a JSON object
         """
-    )
-    print("Response:", response.text)
+
+    response = chat_session.send_message(prompt)
+    usage_metadata = response.usage_metadata
+    total_token_count = usage_metadata.total_token_count
 
     response_text = response.text
     response_json = clean_gemini_json(response_text)
     if response_json is None:
-        return {}
+        return {}, total_token_count
 
-    return response_json
+    return response_json, total_token_count
 
 
 prompt = (
