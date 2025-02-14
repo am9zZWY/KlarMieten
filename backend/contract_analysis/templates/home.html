@@ -1,52 +1,85 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Mietverträge{% endblock %}
+{% block title %}
+    Mietverträge
+{% endblock %}
 
 {% block content %}
     {% if not user.is_authenticated %}
-        <div>
+        <div class="login-container">
             <p>Bitte melden Sie sich an, um Ihre Mietverträge zu verwalten</p>
             <a href="{% url 'login' %}">Anmelden</a>
         </div>
     {% else %}
-        <section>
+        <section class="contracts-section">
             <h2>Mietverträge</h2>
+
             <!-- Add Contract -->
-            {% include "file_upload.html" %}
+            {% include 'file_upload.html' %}
+
+            <!-- Search and Filter -->
+            <div class="table-controls">
+                <input
+                        type="text"
+                        id="contractSearch"
+                        placeholder="Verträge durchsuchen..."
+                        class="search-input"
+                >
+            </div>
 
             <!-- Contracts Table -->
             {% if contracts %}
-                <div>
-                    <table>
+                <div class="table-responsive">
+                    <table class="contracts-table">
                         <thead>
                         <tr>
-                            <th>Hochgeladen</th>
-                            <th>Dateiname</th>
+                            <th>Nummer</th>
+                            <th>Dokumente</th>
                             <th>Status</th>
-                            <th>Aktion</th>
+                            <th>Aktionen</th>
                         </tr>
                         </thead>
                         <tbody>
                         {% for contract in contracts %}
-                            <tr>
-                                <td>{{ contract.uploaded_at|date:"d.m.Y H:i" }}</td>
-                                <td>{{ contract.file_name }}</td>
+                            <tr data-contract-id="{{ contract.id }}">
                                 <td>
-                                <span>
-                                    {{ contract.status }}
-                                </span>
+                                    <strong>Mietvertrag {{ forloop.counter }}</strong>
                                 </td>
                                 <td>
-                                    <ul>
-                                        {% if contract.status == 'analyzed' %}
-                                            <li>
-                                                <a href="{% url 'contract' %}?id={{ contract.id }}">Details anzeigen</a>
-                                            </li>
-                                        {% endif %}
-                                        <li>
-                                            <a href="" onclick="analyzeContract({{ contract.id }})">Analyse starten</a>
-                                        </li>
-                                    </ul>
+                                    {% for file in contract.files.all %}
+                                        <a
+                                                href="{{ file.contract_file }}"
+                                                target="_blank"
+                                                class="file-link"
+                                        >
+                                            {{ file.file.name }}
+                                        </a>
+                                    {% endfor %}
+                                </td>
+                                <td>
+                    <span class="status-badge
+                      {% if contract.status == 'analyzed' %}status-success
+                      {% elif contract.status == 'pending' %}status-warning
+                      {% else %}status-default{% endif %}">
+                      {{ contract.status }}
+                    </span>
+                                </td>
+                                <td class="action-column">
+                                    {% if contract.status == 'analyzed' %}
+                                        <a
+                                                href="{% url 'contract' %}?id={{ contract.id }}"
+                                                class="action-link"
+                                        >
+                                            Details anzeigen
+                                        </a>
+                                    {% endif %}
+                                    <button
+                                            data-contract-id="{{ contract.id }}"
+                                            onclick="analyzeContract({{ contract.id }})"
+                                            class="action-button"
+                                    >
+                                        Analyse starten
+                                    </button>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -54,7 +87,7 @@
                     </table>
                 </div>
             {% else %}
-                <div>
+                <div class="no-contracts">
                     <p>Keine Verträge vorhanden</p>
                 </div>
             {% endif %}
@@ -62,33 +95,117 @@
 
         {% block extra_js %}
             <script>
+							// Enhanced search functionality
 							document.getElementById('contractSearch').addEventListener('input', function (e) {
-								const searchText = e.target.value.toLowerCase();
-								const rows = document.querySelectorAll('.contracts tbody tr');
+								const searchText = e.target.value.toLowerCase()
+								const rows = document.querySelectorAll('.contracts-table tbody tr')
 
-								rows.forEach(row => {
-									const text = row.textContent.toLowerCase();
-									row.style.display = text.includes(searchText) ? '' : 'none';
-								});
-							});
+								rows.forEach((row) => {
+									const text = row.textContent.toLowerCase()
+									row.style.display = text.includes(searchText) ? '' : 'none'
+								})
+							})
 
 							function analyzeContract(id) {
+								// Send a request to start the analysis
+								// Disable the button to prevent multiple clicks
+								const button = document.querySelector(`button[data-contract-id="${id}"]`)
+								if (button) {
+									button.disabled = true
+								}
+
 								fetch(`/analyze_contract?contract_id=${id}`, {
 									method: 'GET',
 									headers: {
 										'X-CSRFToken': '{{ csrf_token }}'
 									}
 								})
-									.then(response => response.json())
-									.then(data => {
+									.then((response) => response.json())
+									.then((data) => {
 										if (data.success) {
-											alert('Analyse erfolgreich gestartet');
+											alert('Analyse erfolgreich gestartet')
+											// Optionally update the status or row
+											const row = document.querySelector(`tr[data-contract-id="${id}"]`)
+											if (row) {
+												const statusCell = row.querySelector('.status-badge')
+												if (statusCell) {
+													statusCell.textContent = 'analyzing'
+													statusCell.className = 'status-badge status-warning'
+												}
+											}
 										} else {
-											alert('Analyse konnte nicht gestartet werden');
+											alert('Analyse konnte nicht gestartet werden')
 										}
-									});
+									}).finally(() => {
+									if (button) {
+										button.disabled = false
+									}
+								})
 							}
             </script>
         {% endblock %}
     {% endif %}
+{% endblock %}
+
+{% block extra_css %}
+    <style>
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .contracts-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .contracts-table th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid;
+        }
+
+        .contracts-table td {
+            padding: 12px;
+            border-bottom: 1px solid;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+        }
+
+        .status-success {
+            background-color: #e7f5e7;
+            color: #2c7f2e;
+        }
+
+        .status-warning {
+            background-color: #fff4e6;
+            color: #d46b08;
+        }
+
+        .status-default {
+            background-color: #f5f5f5;
+            color: #666;
+        }
+
+        .action-column {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .table-controls {
+            margin-bottom: 15px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
 {% endblock %}

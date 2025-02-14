@@ -33,7 +33,7 @@
 <form method="POST"
       enctype="multipart/form-data"
       class="upload-form"
-      data-upload-url="{% url 'upload_files' %}"
+      data-upload-url="{% url 'upload_contract' %}"
 >
     {% csrf_token %}
     <button type="submit" class="btn btn-primary btn-large" disabled>
@@ -45,9 +45,6 @@
 	const config = {
 		maxFileSize: {{ max_file_size|default:"10485760" }},  // 10MB default
 		acceptedTypes: {{ accepted_file_types|safe|default:"['application/pdf', 'image/jpeg', 'image/png']" }},
-		urls: {
-			upload: "{% url 'upload_files' %}"
-		},
 		csrf: "{{ csrf_token }}"
 	};
 
@@ -100,7 +97,7 @@
 		// Validate file
 		validateFile(file) {
 			if (!config.acceptedTypes.includes(file.type)) {
-				return "Nur PDF, JPEG und PNG Dateien sind erlaubt.";
+				return `Ungültiger Dateityp (${file.type || 'unbekannt'}). Erlaubt: ${config.acceptedTypes.join(', ')}`;
 			}
 			if (file.size > config.maxFileSize) {
 				return "Die Datei darf nicht größer als 10MB sein.";
@@ -115,28 +112,39 @@
 
 		// Handle files
 		handleFiles(fileList) {
-			for (let i = 0; i < fileList.length; i++) {
-				const file = fileList[i];
+			for (const file of fileList) {
 				const error = this.validateFile(file);
 				if (error) {
 					return this.showError(error);
 				}
 				this.files.add(file);
 				const listItem = document.createElement("li");
-				listItem.className = "file";
-				listItem.innerHTML = `
-                ${
-					file.type.startsWith("image/")
-						? `<img src="${URL.createObjectURL(
-							file
-						)}" alt="File Preview"/>`
-						: `<span>${file.name}</span>`
+				listItem.dataset.filename = CSS.escape(file.name);
+
+				// Display image / PDF preview
+				if (file.type.startsWith("image/")) {
+					const imgLink = document.createElement('a');
+					imgLink.href = URL.createObjectURL(file);
+					imgLink.target = '_blank';
+					const imgPreview = document.createElement('img');
+					imgPreview.src = URL.createObjectURL(file);
+					imgLink.appendChild(imgPreview);
+					listItem.appendChild(imgLink);
+				} else if (file.type === 'application/pdf') {
+					const pdfPreview = document.createElement('div');
+					const pdfLink = document.createElement('a');
+					pdfLink.href = URL.createObjectURL(file);
+					pdfLink.textContent = '📄 ' + file.name;
+					pdfLink.target = '_blank';
+					pdfPreview.appendChild(pdfLink);
+					pdfPreview.className = 'pdf-preview';
+					listItem.prepend(pdfPreview);
 				}
-                <button type="button" class="remove" onclick="uploader.removeFile('${
-					file.name
-				}')">Entfernen</button>
-            `;
+
+				listItem.className = "file";
+				listItem.innerHTML += `<button type="button" class="remove" onclick="uploader.removeFile('${file.name}')">Entfernen</button>`;
 				this.elements.preview.appendChild(listItem);
+
 			}
 			this.updateUI();
 		}
@@ -144,12 +152,8 @@
 		// Remove a file
 		removeFile(fileName) {
 			this.files = new Set([...this.files].filter((file) => file.name !== fileName));
-			const items = document.querySelectorAll(".file");
-			items.forEach((item) => {
-				if (item.textContent.includes(fileName)) {
-					item.remove();
-				}
-			});
+			const safeFileName = CSS.escape(fileName);
+			document.querySelector(`[data-filename="${safeFileName}"]`).remove();
 			this.updateUI();
 		}
 
@@ -162,13 +166,14 @@
 		// Drag and drop events
 
 		// Form submission
-		handleSubmit() {
+		handleSubmit(event) {
+			event.preventDefault();
 			if (this.files.size === 0) {
 				return this.showError("Bitte wählen Sie mindestens eine Datei aus.");
 			}
 			const formData = new FormData();
 			this.files.forEach((file) => formData.append("files", file));
-			fetch('{% url "upload_files" %}', {
+			fetch('{% url "upload_contract" %}', {
 				method: "POST",
 				body: formData,
 				headers: {

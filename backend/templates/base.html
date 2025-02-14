@@ -47,6 +47,7 @@
 
         {% endblock %}
     </div>
+    {% include 'footer.html' %}
 </main>
 
 <script>
@@ -65,4 +66,8 @@
 	});
 </script>
 </body>
+{% block extra_js %}
+{% endblock %}
+{% block extra_css %}
+{% endblock %}
 </html>

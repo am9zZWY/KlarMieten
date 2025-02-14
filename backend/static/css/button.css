@@ -37,6 +37,11 @@ button {
     overflow: hidden;
 }
 
+button.small {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
 button:hover {
     background: var(--text);
     color: var(--primary);

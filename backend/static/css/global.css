@@ -9,6 +9,7 @@
     --section-shadow: rgba(0, 0, 0, 0.1);
     --link-color: #000000;
     --button-text: #000000;
+    --error: #ff0033;
 
     /* Spacing */
     --container-padding: clamp(1rem, 5vw, 2rem);

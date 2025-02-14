@@ -1,0 +1,47 @@
+{% include "base.html" %}
+
+{% block title %}
+    Preise
+{% endblock %}
+
+{% block content %}
+    <div class="pricing">
+        <div class="pricing__header">
+            <h1>Preise</h1>
+            <p>Wählen Sie das für Sie passende Paket</p>
+        </div>
+        <div class="pricing__cards">
+            <div class="pricing__card">
+                <h2>Basic</h2>
+                <p>€ 5</p>
+                <ul>
+                    <li>1 Analyse</li>
+                    <li>Keine Speicherung</li>
+                    <li>Keine Exportfunktion</li>
+                </ul>
+                <button class="button">Basic wählen</button>
+            </div>
+            <div class="pricing__card">
+                <h2>Pro</h2>
+                <p>€ 10</p>
+                <ul>
+                    <li>5 Analysen</li>
+                    <li>Speicherung für 30 Tage</li>
+                    <li>Exportfunktion</li>
+                </ul>
+                <button class="button">Pro wählen</button>
+            </div>
+            <div class="pricing__card">
+                <h2>Business</h2>
+                <p>€ 20</p>
+                <ul>
+                    <li>Unbegrenzte Analysen</li>
+                    <li>Speicherung für 90 Tage</li>
+                    <li>Exportfunktion</li>
+                </ul>
+                <button class="button">Business wählen</button>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
