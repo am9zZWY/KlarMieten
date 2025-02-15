@@ -14,7 +14,7 @@ from pdf2image import convert_from_bytes
 
 from darf_vermieter_das.settings import FILE_UPLOAD_MAX_MEMORY_SIZE
 from .analysis import extract_details_with_gemini
-from .models import Contract, ContractDetails, ContractFile
+from .models import Contract, ContractDetails, ContractFile, Paragraph
 from .utils import get_nested, convert_date, validate_file_size, validate_file_type
 
 logger = logging.getLogger(__name__)
@@ -61,6 +61,13 @@ def analyze_contract(request):
     # Get the contract ID from the request
     contract_id = request.GET.get("contract_id")
     contract = Contract.objects.get(id=contract_id)
+
+    # Check if the status is already processing
+    if contract.status == "processing":
+        return JsonResponse(
+            {"success": False, "error": "Vertrag wird bereits verarbeitet"},
+            status=400,
+        )
 
     # Update contract status to "processing"
     contract.status = "processing"
@@ -160,7 +167,14 @@ def analyze_contract(request):
     details.additional_clauses = ", ".join(additional_clauses)
 
     paragraphs = get_nested(extracted_details, ["paragraphs"], [])
-    details.paragraphs = "\n".join(paragraphs)
+    # Create paragraphs in the database
+    for paragraph in paragraphs:
+        logger.info(f"Creating paragraph: {paragraph}")
+        Paragraph.objects.create(
+            contract_details=details,
+            title=paragraph["title"],
+            content=paragraph["content"],
+        )
 
     details.save()
     logger.info(f"Contract {contract_id} analyzed and details saved")

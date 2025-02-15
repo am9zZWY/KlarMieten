@@ -77,6 +77,7 @@
                                             data-contract-id="{{ contract.id }}"
                                             onclick="analyzeContract({{ contract.id }})"
                                             class="action-button"
+                                            {% if contract.status == 'processing' %}disabled{% endif %}
                                     >
                                         Analyse starten
                                     </button>
@@ -106,6 +107,20 @@
 								})
 							})
 
+							function updateStatus(id, status) {
+								const row = document.querySelector(`tr[data-contract-id="${id}"]`)
+								if (row) {
+									const statusCell = row.querySelector('.status-badge')
+									if (statusCell) {
+										statusCell.textContent = status
+										statusCell.className = `status-badge
+                                          ${status === 'analyzed' ? 'status-success'
+											: status === 'pending' ? 'status-warning'
+												: 'status-default'}`
+									}
+								}
+							}
+
 							function analyzeContract(id) {
 								// Send a request to start the analysis
 								// Disable the button to prevent multiple clicks
@@ -113,6 +128,7 @@
 								if (button) {
 									button.disabled = true
 								}
+								updateStatus(id, 'processing')
 
 								fetch(`/analyze_contract?contract_id=${id}`, {
 									method: 'GET',
@@ -125,14 +141,7 @@
 										if (data.success) {
 											alert('Analyse erfolgreich gestartet')
 											// Optionally update the status or row
-											const row = document.querySelector(`tr[data-contract-id="${id}"]`)
-											if (row) {
-												const statusCell = row.querySelector('.status-badge')
-												if (statusCell) {
-													statusCell.textContent = 'analyzing'
-													statusCell.className = 'status-badge status-warning'
-												}
-											}
+											updateStatus(id, 'processing')
 										} else {
 											alert('Analyse konnte nicht gestartet werden')
 										}
@@ -140,6 +149,7 @@
 									if (button) {
 										button.disabled = false
 									}
+									updateStatus(id, 'pending')
 								})
 							}
             </script>

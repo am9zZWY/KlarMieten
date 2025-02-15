@@ -119,7 +119,7 @@
 				}
 				this.files.add(file);
 				const listItem = document.createElement("li");
-				listItem.dataset.filename = CSS.escape(file.name);
+				listItem.dataset.filename = file.name;
 
 				// Display image / PDF preview
 				if (file.type.startsWith("image/")) {
@@ -152,8 +152,7 @@
 		// Remove a file
 		removeFile(fileName) {
 			this.files = new Set([...this.files].filter((file) => file.name !== fileName));
-			const safeFileName = CSS.escape(fileName);
-			document.querySelector(`[data-filename="${safeFileName}"]`).remove();
+			document.querySelector(`li[data-filename="${fileName}"]`).remove()
 			this.updateUI();
 		}
 

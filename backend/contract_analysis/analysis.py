@@ -28,118 +28,31 @@ def image_to_base64(image: Image.Image) -> str:
 
 
 json_scheme_contract_detail_extraction = {
-    "$schema": "http://json-schema.org/draft-07/schema#",
-    "title": "Housing Contract",
-    "type": "object",
-    "properties": {
-        "contract_type": {
-            "type": "string",
-            "description": "The type of contract (e.g., Wohnraummietvertrag, lease agreement).",
+    "contract_type": "string",
+    "property_details": {
+        "address": "string",
+        "rooms": {
+            "number_of_rooms": "integer",
+            "kitchen": "boolean",
+            "bathroom": "boolean",
+            "separate_wc": "boolean",
+            "balcony_or_terrace": "boolean",
+            "garden": "boolean",
+            "garage_or_parking_space": "boolean",
         },
-        "property_details": {
-            "type": "object",
-            "description": "Details about the rented property.",
-            "properties": {
-                "address": {
-                    "type": "string",
-                    "description": "The address of the rented property.",
-                },
-                "rooms": {
-                    "type": "object",
-                    "description": "Details about the rooms included in the rental.",
-                    "properties": {
-                        "number_of_rooms": {"type": "integer"},
-                        "kitchen": {"type": "boolean"},
-                        "bathroom": {"type": "boolean"},
-                        "separate_wc": {"type": "boolean"},
-                        "balcony_or_terrace": {"type": "boolean"},
-                        "garden": {"type": "boolean"},
-                        "garage_or_parking_space": {"type": "boolean"},
-                    },
-                },
-                "shared_facilities": {
-                    "type": "array",
-                    "description": "List of shared facilities available to the tenant.",
-                    "items": {"type": "string"},
-                },
-                "keys_provided": {
-                    "type": "array",
-                    "description": "List of keys provided to the tenant.",
-                    "items": {"type": "string"},
-                },
-            },
-        },
-        "rental_terms": {
-            "type": "object",
-            "description": "Details about the rental terms.",
-            "properties": {
-                "start_date": {
-                    "type": "string",
-                    "format": "date",
-                    "description": "The start date of the rental agreement.",
-                },
-                "end_date": {
-                    "type": ["string", "null"],
-                    "format": "date",
-                    "description": "The end date of the rental agreement, or null if indefinite.",
-                },
-                "duration": {
-                    "type": "string",
-                    "description": "The duration of the rental agreement (e.g., 'indefinite').",
-                },
-                "termination_terms": {
-                    "type": "string",
-                    "description": "Conditions and procedures for terminating the rental agreement.",
-                },
-            },
-        },
-        "pricing": {
-            "type": "object",
-            "description": "Details about the pricing and costs.",
-            "properties": {
-                "monthly_rent": {
-                    "type": "number",
-                    "description": "The monthly rent amount.",
-                },
-                "additional_costs": {
-                    "type": "array",
-                    "description": "List of additional costs (e.g., utilities, maintenance).",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "description": {"type": "string"},
-                            "amount": {"type": "number"},
-                        },
-                    },
-                },
-                "total_rent": {
-                    "type": "number",
-                    "description": "The total rent amount including additional costs.",
-                },
-            },
-        },
-        "heating_type": {
-            "type": "string",
-            "description": "The type of heating in the property (e.g., Einzelofen, Etagenheizung, Zentralheizung).",
-        },
-        "additional_clauses": {
-            "type": "array",
-            "description": "Any additional clauses or notes in the contract.",
-            "items": {"type": "string"},
-        },
-        "paragraphs": {
-            "type": "array",
-            "description": "All paragraphs from the contract text.",
-            "items": {"type": "string"},
-        },
+        "shared_facilities": "array of strings",
+        "keys_provided": "array",
     },
-    "required": [
-        "contract_type",
-        "property_details",
-        "rental_terms",
-        "pricing",
-        "paragraphs",
-    ],
+    "rental_terms": {
+        "start_date": "date",
+        "end_date": "date",
+        "duration": "string",
+        "termination_terms": "string",
+    },
+    "pricing": {
+        "monthly_rent": "number",
+    },
+    "heating_type": "string",
 }
 
 
@@ -196,19 +109,6 @@ def extract_details_with_gemini(image_paths: list[str]) -> tuple[dict[Any, Any],
         + """
     The JSON object should have the following keys:
     
-    - **contract_type**: (String) The type of contract (e.g., lease agreement, service agreement).
-    - **effective_date**: (String, ISO 8601 format) The date the contract becomes effective.
-    - **term**: (String) The duration of the contract (start and end dates).
-    - **renewal_terms**: (String) Information about renewal options.
-    - **termination_terms**: (String) Conditions for termination.
-        - **payment_terms**: (String) Payment schedules and penalties.
-    - **obligations**: (String) Key obligations of each party.
-    - **liabilities**: (String) Liabilities of each party.
-    - **governing_law**: (String) The governing jurisdiction.
-    - **dispute_resolution**: (String) How disputes will be resolved.
-    - **price**: (Array of Objects) All pricing information (fees, rates, etc.) with descriptions. Each object in the array should have a "description" (String) and an "amount" (Number).
-    - **paragraphs**: (Array of Strings) A list of all contract paragraphs.
-    
     **Requirements:**
     
     1.  Do not include personal contact information (names, phone numbers, emails, signatures). Include the property address (city, postal code).
@@ -261,7 +161,6 @@ def extract_details_with_gemini(image_paths: list[str]) -> tuple[dict[Any, Any],
       }},
       "heating_type": null,
       "additional_clauses": [],
-      "paragraphs": []
     }}
     ```
     """
@@ -297,6 +196,7 @@ def extract_details_with_gemini(image_paths: list[str]) -> tuple[dict[Any, Any],
 
     if response_json is None:
         logger.warning("Failed to extract details with Gemini")
+        logger.warning(f"Gemini response: {response}")
         return {}, total_token_count
 
     logger.info("Successfully extracted details with Gemini")
