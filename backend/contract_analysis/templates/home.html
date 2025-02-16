@@ -109,6 +109,7 @@
 
 							function updateStatus(id, status) {
 								const row = document.querySelector(`tr[data-contract-id="${id}"]`)
+								const button = row.querySelector(`button[data-contract-id="${id}"]`)
 								if (row) {
 									const statusCell = row.querySelector('.status-badge')
 									if (statusCell) {
@@ -118,6 +119,10 @@
 											: status === 'pending' ? 'status-warning'
 												: 'status-default'}`
 									}
+								}
+
+								if (button) {
+									button.disabled = status === 'processing'
 								}
 							}
 
@@ -136,22 +141,23 @@
 										'X-CSRFToken': '{{ csrf_token }}'
 									}
 								})
-									.then((response) => response.json())
-									.then((data) => {
-										if (data.success) {
-											alert('Analyse erfolgreich gestartet')
-											// Optionally update the status or row
-											updateStatus(id, 'processing')
-										} else {
-											alert('Analyse konnte nicht gestartet werden')
-										}
-									}).finally(() => {
-									if (button) {
-										button.disabled = false
-									}
-									updateStatus(id, 'pending')
-								})
 							}
+
+							// Handle SSE
+							const contractIds = [{% for contract in contracts %}{{ contract.id }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+							for (const id of contractIds) {
+								const source = new EventSource('/analyze_contract_update?contract_id=' + id);
+
+								source.onmessage = function (event) {
+									updateStatus(id, event.data);
+								};
+
+								source.onerror = function (error) {
+									console.error("SSE connection error:", error);
+									source.close(); // Close the connection on error
+								};
+							}
+
             </script>
         {% endblock %}
     {% endif %}

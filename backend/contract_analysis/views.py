@@ -1,14 +1,15 @@
 import io
 import logging
+import time
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.http import HttpResponse
+from django.core.handlers.wsgi import WSGIRequest
 from django.http import JsonResponse
-from django.shortcuts import render
-from django.template import loader
+from django.http.response import StreamingHttpResponse
+from django.shortcuts import render, get_object_or_404
 from django.views import View
 from pdf2image import convert_from_bytes
 
@@ -23,35 +24,29 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 def landing(request):
     logger.info("Rendering landing page")
-    template = loader.get_template("landing.html")
-    return HttpResponse(template.render(None, request))
+    return render(request, "landing.html")
 
 
 @login_required
 def home(request):
     logger.info(f"Rendering home page for user {request.user}")
-    template = loader.get_template("home.html")
-    user = request.user
-    contracts = Contract.objects.filter(user=user)
-    context = {"contracts": contracts}
-    return HttpResponse(template.render(context, request))
+    contracts = Contract.objects.filter(user=request.user)
+    return render(request, "home.html", {"contracts": contracts})
 
 
 @login_required
 def contract(request):
     contract_id = request.GET.get("id")
     logger.info(f"Fetching contract {contract_id} for user {request.user}")
-    template = loader.get_template("contract.html")
 
-    # Get the contract id from the URL
-    contract_id = request.GET.get("id")
-    contract = Contract.objects.get(id=contract_id)
-
-    # Get the contract details
+    contract = get_object_or_404(Contract, id=contract_id)
     contract_details = ContractDetails.objects.filter(contract=contract).first()
-    context = {"contract": contract, "contract_details": contract_details}
 
-    return HttpResponse(template.render(context, request))
+    return render(
+        request,
+        "contract.html",
+        {"contract": contract, "contract_details": contract_details},
+    )
 
 
 @login_required
@@ -156,9 +151,10 @@ def analyze_contract(request):
     additional_costs = get_nested(
         extracted_details, ["pricing", "additional_costs"], []
     )
-    details.additional_costs = ", ".join(
-        [f"{cost['description']}: {cost['amount']}" for cost in additional_costs]
-    )
+    # TODO: Save additional costs in the database
+    # details.additional_costs = ", ".join(
+    #    [f"{cost['description']}: {cost['amount']}" for cost in additional_costs]
+    # )
 
     details.total_rent = get_nested(extracted_details, ["pricing", "total_rent"])
     details.heating_type = get_nested(extracted_details, ["heating_type"])
@@ -181,6 +177,25 @@ def analyze_contract(request):
 
     # Return a success response with the extracted details
     return JsonResponse({"success": True, "details": extracted_details})
+
+
+def analyze_contract_update(request: WSGIRequest) -> StreamingHttpResponse:
+    contract_id = request.GET.get("contract_id")
+    contract = Contract.objects.get(id=contract_id)
+    last_status = contract.status  # Store initial status
+
+    def event_stream():
+        nonlocal last_status  # Access last_status from outer scope
+        while True:
+            contract.refresh_from_db()
+
+            if contract.status != last_status:  # Check if status changed
+                yield f"data: {contract.status}\n\n"
+                last_status = contract.status
+
+            time.sleep(0.5)
+
+    return StreamingHttpResponse(event_stream(), content_type="text/event-stream")
 
 
 class FileUploadView(View):
