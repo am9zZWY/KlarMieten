@@ -16,7 +16,7 @@ from pdf2image import convert_from_bytes
 from darf_vermieter_das.settings import FILE_UPLOAD_MAX_MEMORY_SIZE
 from .analysis import extract_details_with_gemini
 from .models import Contract, ContractDetails, ContractFile, Paragraph
-from .utils import get_nested, convert_date, validate_file_size, validate_file_type
+from .utils import get_nested, convert_date, validate_file_size, validate_image_type
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ def home(request):
 
 @login_required
 def contract(request):
-    contract_id = request.GET.get("id")
+    contract_id = request.GET.get("contract_id")
     logger.info(f"Fetching contract {contract_id} for user {request.user}")
 
     contract = get_object_or_404(Contract, id=contract_id)
@@ -47,6 +47,18 @@ def contract(request):
         "contract.html",
         {"contract": contract, "contract_details": contract_details},
     )
+
+
+@login_required
+def archive_contract(request):
+    contract_id = request.GET.get("contract_id")
+    logger.info(f"Deleting contract {contract_id} for user {request.user}")
+
+    contract = get_object_or_404(Contract, id=contract_id)
+    # TODO: Archive the contract instead of deleting it
+    contract.delete()
+
+    return JsonResponse({"success": True})
 
 
 @login_required
@@ -258,8 +270,12 @@ class FileUploadView(View):
                         logger.error(f"PDF conversion error: {e}")
                         raise ValidationError("Fehler bei der PDF-Konvertierung")
 
+                validate_image_type(file)
+
+                # Compress the image if it is too large
+                compress_image(file)
+
                 validate_file_size(file)
-                validate_file_type(file)
 
                 if file.content_type not in self.allowed_types:
                     raise ValidationError("Unzulässiger Dateityp")

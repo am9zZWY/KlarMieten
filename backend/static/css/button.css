@@ -25,7 +25,7 @@ a.no-highlight, a.no-highlight:hover {
 }
 
 /* Button styles */
-button {
+button, .button {
     padding: 1rem 2rem;
     font-size: 1rem;
     border: 2px solid transparent;
@@ -35,24 +35,25 @@ button {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    text-align: center;
 }
 
-button.small {
+button.small, .button.small {
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
 }
 
-button:hover {
+button:hover, .button:hover {
     background: var(--text);
     color: var(--primary);
     text-decoration: underline;
 }
 
-button:active {
+button:active, .button:active {
     background: var(--primary-dark);
 }
 
-button:disabled {
+button:disabled, .button:disabled {
     background: var(--primary-light);
     color: var(--button-text);
     cursor: not-allowed;

@@ -59,6 +59,26 @@ section {
     margin-bottom: 1.5rem;
 }
 
+.hide {
+    display: none;
+}
+
+.error {
+    color: var(--error);
+}
+
+.bg-error {
+    background-color: var(--error);
+}
+
+.warning {
+    color: #ffcc00;
+}
+
+.bg-warning {
+    background-color: #ffcc00;
+}
+
 /* Safe area insets for modern mobile devices */
 @supports (padding: max(0px)) {
     main {

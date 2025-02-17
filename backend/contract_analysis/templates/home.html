@@ -11,8 +11,14 @@
             <a href="{% url 'login' %}">Anmelden</a>
         </div>
     {% else %}
+        <!-- Greeting Section -->
+        <div>
+            <div>
+                <h2>Hi, {{ user.username }}</h2>
+                <p>Verwalten Sie Ihre Mietverträge</p>
+            </div>
+        </div>
         <section class="contracts-section">
-            <h2>Mietverträge</h2>
 
             <!-- Add Contract -->
             {% include 'file_upload.html' %}
@@ -65,21 +71,26 @@
                     </span>
                                 </td>
                                 <td class="action-column">
-                                    {% if contract.status == 'analyzed' %}
-                                        <a
-                                                href="{% url 'contract' %}?id={{ contract.id }}"
-                                                class="action-link"
-                                        >
-                                            Details anzeigen
-                                        </a>
-                                    {% endif %}
+                                    <a
+                                            data-contract-id="{{ contract.id }}"
+                                            href="{% url 'contract' %}?id={{ contract.id }}"
+                                            class="button small {% if contract.status != 'analyzed' %}hide{% endif %}"
+                                    >
+                                        Details anzeigen
+                                    </a>
                                     <button
                                             data-contract-id="{{ contract.id }}"
-                                            onclick="analyzeContract({{ contract.id }})"
-                                            class="action-button"
+                                            onclick="analyzeContract('{{ contract.id }}')"
+                                            class="small"
                                             {% if contract.status == 'processing' %}disabled{% endif %}
                                     >
                                         Analyse starten
+                                    </button>
+                                    <button
+                                            onclick="archiveContract('{{ contract.id }}')"
+                                            class="small bg-error"
+                                    >
+                                        Archivieren
                                     </button>
                                 </td>
                             </tr>
@@ -110,6 +121,8 @@
 							function updateStatus(id, status) {
 								const row = document.querySelector(`tr[data-contract-id="${id}"]`)
 								const button = row.querySelector(`button[data-contract-id="${id}"]`)
+								const link = row.querySelector(`a[data-contract-id="${id}"]`)
+
 								if (row) {
 									const statusCell = row.querySelector('.status-badge')
 									if (statusCell) {
@@ -123,6 +136,10 @@
 
 								if (button) {
 									button.disabled = status === 'processing'
+								}
+
+								if (link) {
+									link.classList.toggle('hide', status !== 'analyzed')
 								}
 							}
 
@@ -143,8 +160,22 @@
 								})
 							}
 
+							function archiveContract(id) {
+								fetch(`/archive_contract?contract_id=${id}`, {
+									method: 'GET',
+									headers: {
+										'X-CSRFToken': '{{ csrf_token }}'
+									}
+								}).then(() => {
+									const row = document.querySelector(`tr[data-contract-id="${id}"]`)
+									if (row) {
+										row.remove()
+									}
+								})
+							}
+
 							// Handle SSE
-							const contractIds = [{% for contract in contracts %}{{ contract.id }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+							const contractIds = [{% for contract in contracts %}"{{ contract.id }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
 							for (const id of contractIds) {
 								const source = new EventSource('/analyze_contract_update?contract_id=' + id);
 
@@ -188,7 +219,6 @@
 
         .status-badge {
             padding: 5px 10px;
-            border-radius: 4px;
             font-size: 0.8em;
         }
 
@@ -220,8 +250,9 @@
         .search-input {
             width: 100%;
             padding: 8px;
+            margin-top: 10px;
+            margin-bottom: 10px;
             border: 1px solid #ddd;
-            border-radius: 4px;
         }
     </style>
 {% endblock %}

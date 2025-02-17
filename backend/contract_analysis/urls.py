@@ -7,6 +7,8 @@ from .views import analyze_contract_update
 urlpatterns = [
     path("", views.landing, name="landing"),
     path("home", views.home, name="home"),
+    path("upload_contract", views.FileUploadView.as_view(), name="upload_contract"),
+    path("archive_contract", views.archive_contract, name="archive_contract"),
     path("contract", views.contract, name="contract"),
     path("analyze_contract", views.analyze_contract, name="analyze_contract"),
     path(
@@ -14,6 +16,5 @@ urlpatterns = [
         views.analyze_contract_update,
         name="analyze_contract_update",
     ),
-    path("upload_contract", views.FileUploadView.as_view(), name="upload_contract"),
     path("price", TemplateView.as_view(template_name="pricing.html"), name="price"),
 ]

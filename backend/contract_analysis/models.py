@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from .utils import validate_file_size, validate_file_type
+from .utils import validate_file_size, validate_image_type
 
 User = get_user_model()
 
@@ -21,6 +21,7 @@ class Contract(models.Model):
         ("analyzed", "Analyzed"),
     ]
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="uploaded")
@@ -45,7 +46,7 @@ class ContractFile(models.Model):
     )
     file_name = models.CharField(max_length=255, blank=True, default="")
     contract_file = models.FileField(
-        upload_to=get_file_path, validators=[validate_file_size, validate_file_type]
+        upload_to=get_file_path, validators=[validate_file_size, validate_image_type]
     )
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
