@@ -1,18 +1,22 @@
+import base64
 import io
 import logging
+import os
 import time
+import uuid
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.handlers.wsgi import WSGIRequest
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.http.response import StreamingHttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.views import View
 from pdf2image import convert_from_bytes
 
+from darf_vermieter_das import settings
 from darf_vermieter_das.settings import FILE_UPLOAD_MAX_MEMORY_SIZE
 from .analysis import extract_details_with_gemini
 from .models import Contract, ContractDetails, ContractFile, Paragraph
@@ -48,10 +52,103 @@ def contract(request):
         {"contract": contract, "contract_details": contract_details},
     )
 
+@login_required
+def contract_file(request, contract_id, file_name):
+    logger.info(f"Fetching contract file {file_name} for contract {contract_id}")
+
+    contract = get_object_or_404(Contract, id=contract_id)
+    contract_file = get_object_or_404(ContractFile, contract=contract, file_name=file_name)
+
+    with open(contract_file.contract_file.path, "rb") as f:
+        return HttpResponse(f.read(), content_type="application/image")
+
+    
+
+def edit_contract(request, contract_id):
+    """
+    View for editing a contract
+    """
+    # Get the contract and verify ownership
+    logger.info(f"Editing contract {contract_id} for user {request.user}")
+    contract = get_object_or_404(Contract, id=contract_id, user=request.user)
+    logger.info(f"Editing contract {contract_id} for user {request.user}")
+    
+    context = {
+        'contract': contract,
+    }
+    
+    return render(request, 'edit_contract.html', context)
 
 @login_required
-def archive_contract(request):
-    contract_id = request.GET.get("contract_id")
+def save_edited_contract(request):
+    """
+    AJAX endpoint to save a censored contract image
+    """
+    # Check if the request is a POST request
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+    
+    file_id = request.POST.get('file_id')
+    censored_image = request.POST.get('censored_image')
+    
+    if not file_id or not censored_image:
+        return JsonResponse({'success': False, 'error': 'Missing required data'}, status=400)
+    
+    try:
+        # Get the contract file and verify ownership
+        contract_file = get_object_or_404(ContractFile, id=file_id)
+        if contract_file.contract.user != request.user:
+            return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+        
+        # Process the data URL
+        if ',' in censored_image:
+            header, encoded = censored_image.split(',', 1)
+            binary_data = base64.b64decode(encoded)
+            
+            # Create directory for censored images if it doesn't exist
+            censored_dir = os.path.join(settings.MEDIA_ROOT, 'censored')
+            os.makedirs(censored_dir, exist_ok=True)
+            
+            # Generate a unique filename
+            filename = f"censored_{uuid.uuid4()}.png"
+            file_path = os.path.join(censored_dir, filename)
+            
+            # Save the censored image
+            with open(file_path, 'wb') as f:
+                f.write(binary_data)
+            
+            # Update the contract file with the censored image path
+            relative_path = os.path.join('censored', filename)
+            
+            # If you want to keep track of the original and censored versions,
+            # you could add a field to ContractFile model like 'censored_file'
+            # For now, we'll update the existing file
+            old_file_path = contract_file.contract_file.path
+            contract_file.contract_file = relative_path
+            contract_file.save()
+            
+            # Delete the old file if it exists and is different from the new one
+            if os.path.exists(old_file_path) and old_file_path != file_path:
+                try:
+                    os.remove(old_file_path)
+                except OSError:
+                    # Log this error but don't fail the request
+                    pass
+            
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid image data'}, status=400)
+            
+    except Exception as e:
+        # Log the error
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error saving censored image: {str(e)}")
+        
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required
+def archive_contract(request, contract_id):
     logger.info(f"Deleting contract {contract_id} for user {request.user}")
 
     contract = get_object_or_404(Contract, id=contract_id)
@@ -62,18 +159,16 @@ def archive_contract(request):
 
 
 @login_required
-def analyze_contract(request):
-    contract_id = request.GET.get("contract_id")
+def analyze_contract(request, contract_id):
     logger.info(f"Analyzing contract {contract_id} for user {request.user}")
     # Get the contract ID from the request
-    contract_id = request.GET.get("contract_id")
     contract = Contract.objects.get(id=contract_id)
 
     # Check if the status is already processing
     if contract.status == "processing":
         return JsonResponse(
-            {"success": False, "error": "Vertrag wird bereits verarbeitet"},
-            status=400,
+            {"success": False, "error": "Fehler bei der Verarbeitung des Vertrags"},
+            status=500,
         )
 
     # Update contract status to "processing"
@@ -192,7 +287,7 @@ def analyze_contract(request):
 
 
 def analyze_contract_update(request: WSGIRequest) -> StreamingHttpResponse:
-    contract_id = request.GET.get("contract_id")
+    contract_id = request.GET.get("id")
     contract = Contract.objects.get(id=contract_id)
     last_status = contract.status  # Store initial status
 
@@ -273,7 +368,7 @@ class FileUploadView(View):
                 validate_image_type(file)
 
                 # Compress the image if it is too large
-                compress_image(file)
+                # compress_image(file)
 
                 validate_file_size(file)
 
@@ -286,7 +381,7 @@ class FileUploadView(View):
 
                 ContractFile.objects.create(
                     contract=uploaded_contract,
-                    file_name=file.name,
+                    file_name=filename,
                     contract_file=tmp_file_path,
                 )
                 logger.info(

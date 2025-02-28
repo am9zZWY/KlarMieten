@@ -24,6 +24,13 @@ class Contract(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
+    name = models.CharField(max_length=255, blank=True, default="Mietervertrag")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f"Contract {self.id} for {self.user.username}"
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="uploaded")
     ai_model_version = models.CharField(max_length=20)
 
