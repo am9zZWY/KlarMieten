@@ -1,13 +1,16 @@
 # models.py
 import logging
-import os
 import uuid
+from django.db import models
+import uuid
+import base64
+from io import BytesIO
+from PIL import Image
 
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-from .utils import validate_file_size, validate_image_type
+from .utils.encryption import decrypt_file, encrypt_file
 
 User = get_user_model()
 
@@ -22,47 +25,96 @@ class Contract(models.Model):
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
     name = models.CharField(max_length=255, blank=True, default="Mietervertrag")
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-
-
-    def __str__(self):
-        return f"Contract {self.id} for {self.user.username}"
-
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="uploaded")
-    ai_model_version = models.CharField(max_length=20)
+    uploaded_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="uploaded")
+    
+    retention_days = models.IntegerField(default=365)
+    scheduled_deletion_date = models.DateField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.pk:
             logger.info(f"Updating Contract {self.pk} for user {self.user}")
         else:
             logger.info(f"Creating new Contract for user {self.user}")
+        
+        if not self.scheduled_deletion_date and self.retention_days:
+            # Set deletion date based on retention period
+            from datetime import datetime, timedelta
+            self.scheduled_deletion_date = datetime.now().date() + timedelta(days=self.retention_days)
+        
         super().save(*args, **kwargs)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'status']),
+        ]
+
+    def __str__(self):
+        return f"Contract {self.id} for {self.user.username}"
 
 
 class ContractFile(models.Model):
-    def get_file_path(instance, filename):
-        ext = filename.split(".")[-1]
-        filename = f"{uuid.uuid4()}.{ext}"
-        return os.path.join("contracts", filename)
-
     contract = models.ForeignKey(
         "Contract", on_delete=models.CASCADE, related_name="files"
     )
     file_name = models.CharField(max_length=255, blank=True, default="")
-    contract_file = models.FileField(
-        upload_to=get_file_path, validators=[validate_file_size, validate_image_type]
-    )
+    file_content = models.BinaryField(null=True)
+    file_type = models.CharField(max_length=20, default="image/png")
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    file_size = models.IntegerField(default=0)
 
+    def save_image(self, uploaded_file):
+        """Process and save uploaded image file to binary field"""
+        # Resize image if too large (optional)
+        img = Image.open(uploaded_file)
+
+        # Convert to appropriate format
+        if img.mode != "RGB":
+            img = img.convert("RGB")
+
+        # Save to binary field
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG", quality=85, optimize=True)
+        self.file_type = "image/jpeg"
+        self.set_file_content(buffer.getvalue())
+        self.save()
+
+    def set_file_content(self, content):
+        """Encrypt and store file content"""
+        if content:
+            self.file_size = len(content)
+            self.encrypted_content = encrypt_file(content)
+    
+    def get_file_content(self):
+        """Decrypt and return file content"""
+        return decrypt_file(self.encrypted_content)
+    
     def save(self, *args, **kwargs):
         if self.pk:
             logger.info(f"Updating ContractFile {self.pk} for contract {self.contract}")
         else:
             logger.info(f"Creating new ContractFile for contract {self.contract}")
         super().save(*args, **kwargs)
+
+    def get_image_data(self):
+        """Return decrypted image data"""
+        if not self.encrypted_content:
+            return None
+        
+        # Decrypt data
+        decrypted_data = decrypt_data(self.encrypted_content)
+        return base64.b64encode(decrypted_data).decode('utf-8')
+
+    def get_data_url(self):
+        """Return complete data URL for embedding in HTML"""
+        if not self.file_content:
+            return None
+        return f"data:{self.file_type};base64,{self.get_image_data()}"
+    
+    encrypted_content = models.BinaryField(null=True)
 
 
 class ContractDetails(models.Model):
@@ -139,7 +191,8 @@ class ContractDetails(models.Model):
                 f"Updating ContractDetails {self.pk} for contract {self.contract}"
             )
         else:
-            logger.info(f"Creating new ContractDetails for contract {self.contract}")
+            logger.info(
+                f"Creating new ContractDetails for contract {self.contract}")
         try:
             super().save(*args, **kwargs)
         except Exception as e:
@@ -160,7 +213,8 @@ class Paragraph(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk:
-            logger.info(f"Updating Paragraph {self.pk} for contract {self.contract}")
+            logger.info(
+                f"Updating Paragraph {self.pk} for contract {self.contract}")
         else:
             logger.info(f"Creating new Paragraph for contract {self.contract}")
         super().save(*args, **kwargs)
@@ -196,7 +250,8 @@ class Mietspiegel(models.Model):
         default=False, verbose_name="Zusätzlicher Sanitärraum"
     )
     maisonette = models.BooleanField(default=False, verbose_name="Maisonette")
-    einfamilienhaus = models.BooleanField(default=False, verbose_name="Einfamilienhaus")
+    einfamilienhaus = models.BooleanField(
+        default=False, verbose_name="Einfamilienhaus")
 
     sanitaerausstattung_erneuert = models.BooleanField(
         default=False, verbose_name="Sanitärausstattung erneuert"
@@ -213,7 +268,8 @@ class Mietspiegel(models.Model):
     fussbodenheizung = models.BooleanField(
         default=False, verbose_name="Fußbodenheizung"
     )
-    offene_kueche = models.BooleanField(default=False, verbose_name="Offene Küche")
+    offene_kueche = models.BooleanField(
+        default=False, verbose_name="Offene Küche")
 
     # Calculation-Related Fields
     gesamtpunktzahl = models.IntegerField(
@@ -252,7 +308,8 @@ class Mietspiegel(models.Model):
         )
 
         # Calculate Gesamtmiete (Spannenmitte)
-        self.gesamtmiete_spannenmitte = int(self.spannenmitte_qm * self.wohnflaeche_qm)
+        self.gesamtmiete_spannenmitte = int(
+            self.spannenmitte_qm * self.wohnflaeche_qm)
 
         # Calculate Gesamtmiete (Spanne)
         self.gesamtmiete_spanne_min = int(
@@ -285,7 +342,8 @@ class Subscription(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk:
-            logger.info(f"Updating Subscription {self.pk} for user {self.user}")
+            logger.info(
+                f"Updating Subscription {self.pk} for user {self.user}")
         else:
             logger.info(f"Creating new Subscription for user {self.user}")
         super().save(*args, **kwargs)
@@ -298,7 +356,8 @@ class PaymentHistory(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk:
-            logger.info(f"Updating PaymentHistory {self.pk} for user {self.user}")
+            logger.info(
+                f"Updating PaymentHistory {self.pk} for user {self.user}")
         else:
             logger.info(f"Creating new PaymentHistory for user {self.user}")
         super().save(*args, **kwargs)

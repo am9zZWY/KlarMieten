@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "black>=25.1.0",
+    "cryptography>=44.0.1",
     "django>=5.1.6",
     "google-genai>=1.2.0",
     "openai>=1.61.0",

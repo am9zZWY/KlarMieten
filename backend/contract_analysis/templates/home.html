@@ -68,7 +68,7 @@
                                     <div class="documents-container">
                                         {% for file in contract.files.all %}
                                         <div class="thumbnail-item" data-file-id="{{ file.id }}">
-                                            <img src="{% url 'contract_file' contract.id file.file_name %}" alt="Vertragsseite {{ forloop.counter }}">
+                                            <img src="{% url 'contract_file' contract.id file.id %}" alt="Vertragsseite {{ forloop.counter }}">
                                             <div class="thumbnail-status">
                                                 <span class="status-indicator"></span>
                                                 <span class="status-text">Original</span>
@@ -194,7 +194,7 @@
                     }
                     updateStatus(id, 'processing')
 
-                    fetch(`/analyze_contract?contract_id=${id}`, {
+                    fetch(`/contracts/${id}/analyze`, {
                         method: 'GET',
                         headers: {
                             'X-CSRFToken': '{{ csrf_token }}'
@@ -204,7 +204,7 @@
 
                 function archiveContract(id) {
                     if (confirm('Sind Sie sicher, dass Sie diesen Vertrag archivieren möchten?')) {
-                        fetch(`/archive_contract?contract_id=${id}`, {
+                        fetch(`/contracts/${id}/archive`, {
                             method: 'GET',
                             headers: {
                                 'X-CSRFToken': '{{ csrf_token }}'

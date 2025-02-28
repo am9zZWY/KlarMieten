@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 import os
 from pathlib import Path
+import secrets
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -168,6 +169,42 @@ STATIC_URL = "static/"
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# or for local development
+# DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
+
+# For private files
+PRIVATE_STORAGE_CLASS = 'storages.backends.s3boto3.S3Boto3Storage'
+PRIVATE_STORAGE_S3_PARAMETERS = {
+    'ACL': 'private',
+    'ServerSideEncryption': 'AES256',
+}
+
+# Encryption
+if 'FILE_ENCRYPTION_KEY' not in os.environ:
+    # Generate key
+    key_path = os.path.join(BASE_DIR, '.encryption_key')
+    if os.path.exists(key_path):
+        with open(key_path, 'rb') as f:
+            FILE_ENCRYPTION_KEY = f.read()
+    else:
+        # Only for development - in production, set from environment
+        FILE_ENCRYPTION_KEY = secrets.token_bytes(32)
+        # Save key for development
+        with open(key_path, 'wb') as f:
+            f.write(FILE_ENCRYPTION_KEY)
+else:
+    # Get from environment (hex encoded for easy storage)
+    FILE_ENCRYPTION_KEY = bytes.fromhex(os.environ['FILE_ENCRYPTION_KEY'])
+
+# Cache
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-contracts',
+    }
+}
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
