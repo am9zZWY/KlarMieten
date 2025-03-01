@@ -27,7 +27,7 @@
 
         <!-- Upload Contract Section (Initially Hidden) -->
         <section id="uploadContractSection" class="upload-section hide">
-            {% include 'upload_contract.html' %}
+            {% include 'contract/upload.html' %}
         </section>
 
         <!-- Contracts Management Section -->
@@ -89,16 +89,16 @@
                                 </td>
                                 <td class="action-column">
                                     <div class="action-buttons">
-                                        <a
+                                        <button
                                                 data-contract-id="{{ contract.id }}"
-                                                href="{% url 'contract' contract.id %}"
+                                                onclick="window.location = '{% url 'contract' contract.id %}'"
                                                 class="button small {% if contract.status != 'analyzed' %}hide{% endif %}"
                                         >
                                             Details anzeigen
-                                        </a>
-                                        <a href="{% url 'edit_contract' contract.id %}" class="button small">
+                                        </button>
+                                        <button onclick="window.location = '{% url 'edit_contract' contract.id %}'" class="small">
                                             Bearbeiten
-                                        </a>
+                                        </button>
                                         <button
                                                 data-contract-id="{{ contract.id }}"
                                                 onclick="analyzeContract('{{ contract.id }}')"
