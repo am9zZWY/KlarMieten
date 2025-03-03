@@ -18,17 +18,15 @@
         <li>
             <ul class="right-nav">
                 <li>
-                    <div class="button highlight active">
-                        {% if user.is_authenticated %}
-                            <a href="{% url 'home' %}">
-                                Dashboard
-                            </a>
-                        {% else %}
-                            <a href="{% url 'login' %}">
-                                Anmelden
-                            </a>
-                        {% endif %}
-                    </div>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'home' %}" class="button highlight active">
+                            Dashboard
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="button highlight active">
+                            Anmelden
+                        </a>
+                    {% endif %}
                 </li>
             </ul>
         </li>

@@ -1,7 +1,7 @@
 # mixins.py
 import logging
+
 from django.http import Http404
-from django.shortcuts import get_object_or_404
 
 logger = logging.getLogger(__name__)
 

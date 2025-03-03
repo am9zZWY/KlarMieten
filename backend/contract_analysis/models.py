@@ -107,6 +107,7 @@ class ContractDetails(models.Model):
         "Contract", on_delete=models.CASCADE, related_name="details"
     )
     contract_type = models.CharField(max_length=50, blank=True, null=True)
+    contract_text = models.TextField(blank=True, null=True)
 
     # Property Details
     address = models.TextField(blank=True, null=True)
@@ -120,6 +121,17 @@ class ContractDetails(models.Model):
     balcony_or_terrace = models.BooleanField(default=False)
     garden = models.BooleanField(default=False)
     garage_or_parking_space = models.BooleanField(default=False)
+
+    # Property Type
+    property_type = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        help_text="E.g., Eigentumswohnung, Mietwohnung, etc.",
+    )
+    floor_location = models.CharField(
+        max_length=50, blank=True, null=True, help_text="E.g., links, mitte, rechts"
+    )
 
     # Information needed for Mietspiegel
     living_space = models.DecimalField(
@@ -135,13 +147,21 @@ class ContractDetails(models.Model):
     )
     energy_class = models.CharField(max_length=50, blank=True, null=True)
 
-    # Shared Facilities
+    # Shared Facilities and Keys
     shared_facilities = models.TextField(blank=True, null=True)
-
-    # Keys Provided
     keys_provided = models.TextField(blank=True, null=True)
 
-    # Rental Terms
+    # Shared Facilities Details
+    has_shared_garden = models.BooleanField(default=False)
+    has_shared_laundry = models.BooleanField(default=False)
+    has_shared_drying_room = models.BooleanField(default=False)
+
+    # Key Details
+    num_apartment_keys = models.IntegerField(null=True, blank=True)
+    num_mailbox_keys = models.IntegerField(null=True, blank=True)
+    num_building_keys = models.IntegerField(null=True, blank=True)
+
+    # Contract Duration
     start_date = models.DateField(null=True, blank=True, default=None)
     end_date = models.DateField(
         null=True,
@@ -150,9 +170,16 @@ class ContractDetails(models.Model):
         help_text="Leave blank for unlimited contracts",
     )
     duration = models.CharField(max_length=50, blank=True, null=True)
+    is_unlimited_contract = models.BooleanField(default=True)
     termination_terms = models.TextField(blank=True, null=True)
+    termination_notice_period_tenant = models.IntegerField(
+        null=True, blank=True, help_text="Notice period in months for tenant"
+    )
+    termination_notice_period_landlord = models.IntegerField(
+        null=True, blank=True, help_text="Notice period in months for landlord"
+    )
 
-    # Pricing
+    # Financial Details
     monthly_rent = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
@@ -161,11 +188,86 @@ class ContractDetails(models.Model):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
 
-    # Heating Type
-    heating_type = models.CharField(max_length=50, blank=True, null=True)
+    # Detailed Financial Information
+    base_rent = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    utility_prepayment = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    heating_prepayment = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    has_inclusive_utilities = models.BooleanField(default=False)
 
-    # Additional Clauses
-    additional_clauses = models.TextField(blank=True, null=True)
+    # Deposit Information
+    deposit_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    deposit_payment_method = models.CharField(max_length=100, blank=True, null=True)
+
+    # Rent Adjustment
+    has_stepped_rent = models.BooleanField(default=False)
+    has_indexed_rent = models.BooleanField(default=False)
+    rent_adjustment_terms = models.TextField(blank=True, null=True)
+
+    # Heating and Utilities
+    heating_type = models.CharField(max_length=50, blank=True, null=True)
+    utility_billing_method = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="E.g., consumption-based, by living space",
+    )
+
+    # Maintenance and Repairs
+    cosmetic_repairs_responsibility = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Who is responsible for Schönheitsreparaturen",
+    )
+    small_repairs_responsibility = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Who is responsible for Kleinreparaturen",
+    )
+    small_repairs_cost_limit = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Cost limit for small repairs in EUR",
+    )
+
+    # Additional Permissions
+    pets_allowed = models.BooleanField(default=False)
+    subletting_allowed = models.BooleanField(default=False)
+    subletting_requires_permission = models.BooleanField(default=True)
+
+    # Additional Occupants
+    additional_occupants = models.TextField(
+        blank=True, null=True, help_text="Names of additional authorized occupants"
+    )
+
+    # Payment Information
+    rent_due_date = models.IntegerField(
+        null=True, blank=True, help_text="Day of month when rent is due"
+    )
+    landlord_bank_details = models.TextField(blank=True, null=True)
+
+    # House Rules
+    quiet_hours = models.CharField(max_length=100, blank=True, null=True)
+
+    # Contract Metadata
+    contract_version = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        help_text="Version of the contract template used",
+    )
+    contract_date = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return f"Contract Details for {self.contract}"

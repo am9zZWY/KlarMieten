@@ -3,11 +3,16 @@
 
 {% block content %}
     <section class="contract-censor">
-        <h2>Censor Sensitive Information</h2>
-        <p>Select a contract page below, then use the drawing tools to black out any sensitive information.</p>
+        <h2>Vertragsdokument zensieren</h2>
+        <p>
+            Bitte zensieren Sie sensible Informationen in Ihrem Vertragsdokument. Wählen Sie eine Vertragsseite aus
+            und verwenden Sie den Stift oder Radiergummi, um die Informationen zu zensieren. Klicken Sie auf
+            "Speichern",
+            um Ihre Änderungen zu speichern, oder auf "Speichern und fortfahren", um fortzufahren.
+        </p>
 
         <div class="contract-thumbnails">
-            <h3>Contract Pages</h3>
+            <h3>Vertragsseiten</h3>
             <div class="thumbnail-grid">
                 {% for file in contract.files.all %}
                     <div class="thumbnail-item {% if forloop.first %}active{% endif %}" data-file-id="{{ file.id }}">
@@ -19,7 +24,7 @@
                         </div>
                     </div>
                 {% empty %}
-                    <p>No contract files found. Please upload files first.</p>
+                    <p>Kein Vertragsdokument gefunden.</p>
                 {% endfor %}
             </div>
         </div>
@@ -27,17 +32,17 @@
         <div class="drawing-tools">
             <div class="drawing-controls">
                 <button id="pen-tool" class="button highlight active">
-                    <i class="fas fa-pen"></i> Pen
+                    <i class="fas fa-pen"></i> Stift
                 </button>
-                <button id="eraser-tool" class="button highlight">
-                    <i class="fas fa-eraser"></i> Eraser
-                </button>
+                <!-- <button id="eraser-tool" class="button highlight">
+                    <i class="fas fa-eraser"></i> Radiergummi
+                </button> -->
                 <button id="reset-tool" class="button highlight">
-                    <i class="fas fa-undo"></i> Reset
+                    <i class="fas fa-undo"></i> Zurücksetzen
                 </button>
 
                 <div class="size-control">
-                    <label for="brush-size">Brush Size:</label>
+                    <label for="brush-size">Größe:</label>
                     <input type="range" id="brush-size" min="5" max="50" value="20">
                     <span id="size-value">20px</span>
                 </div>
@@ -45,12 +50,12 @@
 
             <div class="canvas-container">
                 <canvas id="drawing-canvas"></canvas>
-                <div class="canvas-placeholder">Select a contract page to edit</div>
+                <div class="canvas-placeholder">Wählen Sie eine Vertragsseite aus, um zu beginnen.</div>
             </div>
 
             <div class="action-buttons">
-                <button id="save-current" class="button">Save Current Page</button>
-                <button id="save-all" class="button">Save All & Continue</button>
+                <button id="save-current" class="button">Speichern</button>
+                <button id="save-all" class="button">Speichern und fortfahren</button>
             </div>
         </div>
     </section>
@@ -275,10 +280,10 @@
 					updateToolButtons(penTool);
 				});
 
-				eraserTool.addEventListener('click', function () {
+				/* eraserTool.addEventListener('click', function () {
 					currentTool = 'eraser';
 					updateToolButtons(eraserTool);
-				});
+				}); */
 
 				resetTool.addEventListener('click', function () {
 					if (confirm('Are you sure you want to reset all censoring on this page?')) {
@@ -297,7 +302,9 @@
 				// Update active tool button
 				function updateToolButtons(activeButton) {
 					[penTool, eraserTool].forEach(btn => {
-						btn.classList.remove('active');
+						if (btn !== null) {
+							btn.classList.remove('active');
+						}
 					});
 					activeButton.classList.add('active');
 				}
@@ -356,7 +363,7 @@
 						ctx.globalCompositeOperation = 'source-over';
 					} else {
 						// Eraser
-						ctx.strokeStyle = 'rgba(0, 0, 0, 0)';
+						ctx.strokeStyle = '#ffffff';
 						ctx.globalCompositeOperation = 'destination-out';
 					}
 

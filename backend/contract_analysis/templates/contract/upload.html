@@ -1,6 +1,6 @@
 {% load static %}
 
-<div class="upload-area {% if form.errors %}has-error{% endif %}"
+<div class="upload-area"
      aria-label="Datei-Upload-Bereich"
      data-max-size="{{ max_file_size }}"
      data-accepted-types="{{ accepted_file_types|join:',' }}"
@@ -24,11 +24,9 @@
     </div>
 </div>
 
-{% if form.errors %}
-    <div class="error-message" role="alert">
-        {{ form.errors }}
-    </div>
-{% endif %}
+<div class="error-message hide" role="alert">
+    {{ form.errors }}
+</div>
 
 <form method="POST"
       enctype="multipart/form-data"
@@ -97,25 +95,33 @@
 		// Validate file
 		validateFile(file) {
 			if (!config.acceptedTypes.includes(file.type)) {
-				return `Ungültiger Dateityp (${file.type || 'unbekannt'}). Erlaubt: ${config.acceptedTypes.join(', ')}`;
+				this.showError(`Ungültiger Dateityp (${file.type || 'unbekannt'}). Erlaubt: ${config.acceptedTypes.join(', ')}`);
+				return false;
 			}
 			if (file.size > config.maxFileSize) {
-				return "Die Datei darf nicht größer als 10MB sein.";
+				this.showError("Die Datei darf nicht größer als 10MB sein.");
+				return false;
 			}
-			return null;
+			return true
 		}
 
 		showError(message) {
 			this.elements.errorMessage.textContent = message;
-			this.elements.errorMessage.style.display = "block";
+			this.elements.errorMessage.classList.remove('hide');
+			this.elements.uploadArea.classList.add('has-error');
+		}
+
+		resetError() {
+			this.elements.errorMessage.textContent = '';
+			this.elements.errorMessage.classList.add('hide');
+			this.elements.uploadArea.classList.remove('has-error');
 		}
 
 		// Handle files
 		handleFiles(fileList) {
 			for (const file of fileList) {
-				const error = this.validateFile(file);
-				if (error) {
-					return this.showError(error);
+				if (!this.validateFile(file)) {
+					return;
 				}
 				this.files.add(file);
 				const listItem = document.createElement("li");
@@ -159,7 +165,7 @@
 		// Update UI
 		updateUI() {
 			this.elements.uploadButton.disabled = this.files.size === 0;
-			this.elements.errorMessage.style.display = "none";
+			this.resetError()
 		}
 
 		// Drag and drop events

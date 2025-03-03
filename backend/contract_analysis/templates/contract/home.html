@@ -34,7 +34,7 @@
         <section class="contracts-section">
             <div class="section-header">
                 <h3>Meine Mietverträge</h3>
-                
+
                 <!-- Search and Filter -->
                 <div class="table-controls">
                     <input
@@ -67,13 +67,10 @@
                                 <td class="documents-cell">
                                     <div class="documents-container">
                                         {% for file in contract.files.all %}
-                                        <div class="thumbnail-item" data-file-id="{{ file.id }}">
-                                            <img src="{% url 'contract_file' contract.id file.id %}" alt="Vertragsseite {{ forloop.counter }}">
-                                            <div class="thumbnail-status">
-                                                <span class="status-indicator"></span>
-                                                <span class="status-text">Original</span>
+                                            <div class="thumbnail-item" data-file-id="{{ file.id }}">
+                                                <img src="{% url 'contract_file' contract.id file.id %}"
+                                                     alt="Vertragsseite {{ forloop.counter }}">
                                             </div>
-                                        </div>
                                         {% empty %}
                                             <p>Keine Vertragsdateien gefunden. Bitte laden Sie zuerst Dateien hoch.</p>
                                         {% endfor %}
@@ -96,7 +93,8 @@
                                         >
                                             Details anzeigen
                                         </button>
-                                        <button onclick="window.location = '{% url 'edit_contract' contract.id %}'" class="small">
+                                        <button onclick="window.location = '{% url 'edit_contract' contract.id %}'"
+                                                class="small">
                                             Bearbeiten
                                         </button>
                                         <button
@@ -130,108 +128,108 @@
 
         {% block extra_js %}
             <script>
-                // Toggle upload form visibility
-                document.getElementById('showUploadForm').addEventListener('click', function() {
-                    const uploadSection = document.getElementById('uploadContractSection');
-                    uploadSection.classList.toggle('hide');
-                    this.textContent = uploadSection.classList.contains('hide') 
-                        ? 'Neuen Vertrag hochladen' 
-                        : 'Upload ausblenden';
-                });
+							// Toggle upload form visibility
+							document.getElementById('showUploadForm').addEventListener('click', function () {
+								const uploadSection = document.getElementById('uploadContractSection');
+								uploadSection.classList.toggle('hide');
+								this.textContent = uploadSection.classList.contains('hide')
+									? 'Neuen Vertrag hochladen'
+									: 'Upload ausblenden';
+							});
 
-                // Handle "Upload first contract" button if no contracts exist
-                const noContractsUpload = document.getElementById('noContractsUpload');
-                if (noContractsUpload) {
-                    noContractsUpload.addEventListener('click', function() {
-                        const uploadSection = document.getElementById('uploadContractSection');
-                        uploadSection.classList.remove('hide');
-                        document.getElementById('showUploadForm').textContent = 'Upload ausblenden';
-                    });
-                }
+							// Handle "Upload first contract" button if no contracts exist
+							const noContractsUpload = document.getElementById('noContractsUpload');
+							if (noContractsUpload) {
+								noContractsUpload.addEventListener('click', function () {
+									const uploadSection = document.getElementById('uploadContractSection');
+									uploadSection.classList.remove('hide');
+									document.getElementById('showUploadForm').textContent = 'Upload ausblenden';
+								});
+							}
 
-                // Enhanced search functionality
-                document.getElementById('contractSearch').addEventListener('input', function (e) {
-                    const searchText = e.target.value.toLowerCase()
-                    const rows = document.querySelectorAll('.contracts-table tbody tr')
+							// Enhanced search functionality
+							document.getElementById('contractSearch').addEventListener('input', function (e) {
+								const searchText = e.target.value.toLowerCase()
+								const rows = document.querySelectorAll('.contracts-table tbody tr')
 
-                    rows.forEach((row) => {
-                        const text = row.textContent.toLowerCase()
-                        row.style.display = text.includes(searchText) ? '' : 'none'
-                    })
-                })
+								rows.forEach((row) => {
+									const text = row.textContent.toLowerCase()
+									row.style.display = text.includes(searchText) ? '' : 'none'
+								})
+							})
 
-                function updateStatus(id, status) {
-                    const row = document.querySelector(`tr[data-contract-id="${id}"]`)
-                    const button = row.querySelector(`button[data-contract-id="${id}"]`)
-                    const link = row.querySelector(`a[data-contract-id="${id}"]`)
+							function updateStatus(id, status) {
+								const row = document.querySelector(`tr[data-contract-id="${id}"]`)
+								const button = row.querySelector(`button[data-contract-id="${id}"]`)
+								const link = row.querySelector(`a[data-contract-id="${id}"]`)
 
-                    if (row) {
-                        const statusCell = row.querySelector('.status-badge')
-                        if (statusCell) {
-                            statusCell.textContent = status
-                            statusCell.className = `status-badge
+								if (row) {
+									const statusCell = row.querySelector('.status-badge')
+									if (statusCell) {
+										statusCell.textContent = status
+										statusCell.className = `status-badge
                                       ${status === 'analyzed' ? 'status-success'
-                                    : status === 'pending' ? 'status-warning'
-                                        : 'status-default'}`
-                        }
-                    }
+											: status === 'pending' ? 'status-warning'
+												: 'status-default'}`
+									}
+								}
 
-                    if (button) {
-                        button.disabled = status === 'processing'
-                    }
+								if (button) {
+									button.disabled = status === 'processing'
+								}
 
-                    if (link) {
-                        link.classList.toggle('hide', status !== 'analyzed')
-                    }
-                }
+								if (link) {
+									link.classList.toggle('hide', status !== 'analyzed')
+								}
+							}
 
-                function analyzeContract(id) {
-                    // Send a request to start the analysis
-                    // Disable the button to prevent multiple clicks
-                    const button = document.querySelector(`button[data-contract-id="${id}"]`)
-                    if (button) {
-                        button.disabled = true
-                    }
-                    updateStatus(id, 'processing')
+							function analyzeContract(id) {
+								// Send a request to start the analysis
+								// Disable the button to prevent multiple clicks
+								const button = document.querySelector(`button[data-contract-id="${id}"]`)
+								if (button) {
+									button.disabled = true
+								}
+								updateStatus(id, 'processing')
 
-                    fetch(`/contracts/${id}/analyze`, {
-                        method: 'GET',
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        }
-                    })
-                }
+								fetch(`/contracts/${id}/analyze`, {
+									method: 'POST',
+									headers: {
+										'X-CSRFToken': '{{ csrf_token }}'
+									}
+								})
+							}
 
-                function archiveContract(id) {
-                    if (confirm('Sind Sie sicher, dass Sie diesen Vertrag archivieren möchten?')) {
-                        fetch(`/contracts/${id}/archive`, {
-                            method: 'GET',
-                            headers: {
-                                'X-CSRFToken': '{{ csrf_token }}'
-                            }
-                        }).then(() => {
-                            const row = document.querySelector(`tr[data-contract-id="${id}"]`)
-                            if (row) {
-                                row.remove()
-                            }
-                        })
-                    }
-                }
+							function archiveContract(id) {
+								if (confirm('Sind Sie sicher, dass Sie diesen Vertrag archivieren möchten?')) {
+									fetch(`/contracts/${id}/archive`, {
+										method: 'POST',
+										headers: {
+											'X-CSRFToken': '{{ csrf_token }}'
+										}
+									}).then(() => {
+										const row = document.querySelector(`tr[data-contract-id="${id}"]`)
+										if (row) {
+											row.remove()
+										}
+									})
+								}
+							}
 
-                // Handle SSE
-                const contractIds = [{% for contract in contracts %}"{{ contract.id }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
-                for (const id of contractIds) {
-                    const source = new EventSource(`/contracts/${id}/analyze/update`);
+							// Handle SSE
+							const contractIds = [{% for contract in contracts %}"{{ contract.id }}"{% if not forloop.last %}, {% endif %}{% endfor %}];
+							for (const id of contractIds) {
+								const source = new EventSource(`/contracts/${id}/analyze/update`);
 
-                    source.onmessage = function (event) {
-                        updateStatus(id, event.data);
-                    };
+								source.onmessage = function (event) {
+									updateStatus(id, event.data);
+								};
 
-                    source.onerror = function (error) {
-                        console.error("SSE connection error:", error);
-                        source.close(); // Close the connection on error
-                    };
-                }
+								source.onerror = function (error) {
+									console.error("SSE connection error:", error);
+									source.close(); // Close the connection on error
+								};
+							}
             </script>
         {% endblock %}
     {% endif %}
@@ -369,7 +367,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.7);
             color: white;
             font-size: 0.7rem;
             padding: 2px 4px;
@@ -449,17 +447,17 @@
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-            .dashboard-header, 
+            .dashboard-header,
             .section-header {
                 flex-direction: column;
                 align-items: flex-start;
             }
-            
+
             .table-controls {
                 max-width: 100%;
                 width: 100%;
             }
-            
+
             .action-buttons {
                 flex-direction: row;
                 flex-wrap: wrap;

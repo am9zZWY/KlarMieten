@@ -2,21 +2,21 @@
 
 {% load static %}
 {% block link %}
-  <link rel="stylesheet" href="{% static '/css/hero.css' %}" />
+    <link rel="stylesheet" href="{% static '/css/hero.css' %}"/>
 {% endblock %}
 
 {% block title %}
-  Darf Vermieter das? | KI-gestützte Mietrechtsanalyse
+    Darf Vermieter das? | KI-gestützte Mietrechtsanalyse
 {% endblock %}
 
 {% block content %}
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Mieterrechte einfach verstehen.</h1>
-      <p>KI-gestützte Analyse Ihrer Mietverträge.</p>
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="text-white">Mieterrechte einfach verstehen.</h1>
+            <p>KI-gestützte Analyse Ihrer Mietverträge.</p>
 
-      {% include 'contract/upload.html' %}
-    </div>
-  </section>
-  <p class="image-credit">Bild von Kaboompics.com</p>
+            {% include 'contract/upload.html' %}
+        </div>
+    </section>
+    <p class="image-credit">Bild von Kaboompics.com</p>
 {% endblock %}
