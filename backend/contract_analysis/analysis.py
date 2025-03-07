@@ -5,11 +5,11 @@ from typing import Any
 
 from PIL import Image
 from google import genai
-from contract_analysis.utils.map import get_neighborhood_map
 from google.genai import types
 
-from contract_analysis.models import ContractDetails
-from contract_analysis.utils.json import model_to_json_schema, clean_json
+from contract_analysis.models.contract import ContractDetails
+from contract_analysis.utils.json import clean_json, model_to_schema
+from contract_analysis.utils.map import get_neighborhood_map
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +56,8 @@ def extract_text_with_gemini(image_paths: list[str]) -> tuple[str, Any]:
 
     usage_metadata = response.usage_metadata
     total_token_count = usage_metadata.total_token_count
+    if total_token_count is None:
+        total_token_count = 0
 
     response_text = response.text
     if response_text is None:
@@ -67,7 +69,7 @@ def extract_text_with_gemini(image_paths: list[str]) -> tuple[str, Any]:
     return response_text, total_token_count
 
 
-json_scheme = model_to_json_schema(ContractDetails)
+contract_details_json_scheme = model_to_schema(ContractDetails)
 
 
 def extract_details_with_gemini(
@@ -78,60 +80,145 @@ def extract_details_with_gemini(
     You are a contract analysis expert.
     Your task is to analyze the contract and extract key information, organizing it into a JSON object that *strictly* conforms to the following schema description:
     """
-        + json.dumps(json_scheme, indent=2)
+        + json.dumps(contract_details_json_scheme, indent=2)
         + """
     The JSON object should have the following keys:
     
     **Requirements:**
     
     1. Do not include personal contact information (names, phone numbers, emails, signatures). Include the property address (city, postal code).
-    2. Extract all pricing details with descriptions and format them correctly in the "price" array.
-    3. Extract all paragraphs and include them in the "paragraphs" array.
-    4. Identify and extract information for the key sections listed above.
-    5. Do not recite any training data or model information.
-    6. If a section is not present or not extractable, leave it as null or an empty string.
-    7. Do not include any legal advice or interpretation.
-    8. Do not include any links or references to external resources.
-    9. Try to be as accurate as possible in your extraction.
+    2. Extract all pricing details with descriptions and amounts.
+    3. If a section is not present or not extractable, leave it as null or an empty string.
+    4. Do not include any legal advice or interpretation.
+    5. Do not include any links or references to external resources.
+    6. Try to be as accurate as possible in your extraction.
     
+    **Additional Information:**
+    * The contract may contain information about the property, rental terms, costs, and other details.
+    * The contract may be in German.
+    * The contract may be in a scanned image format.
+    * The contract may contain tables, lists, or other structured data.
+    * The contract may have multiple pages.
+    * The contract may have handwritten annotations or text that should NOT be ignored since they are part of the contract!
+    * The contract may contain parts that are difficult to read or understand, that contain grammar errors, that are messed up. Do your best to extract the information accurately.
     
     Here are a few examples:
     
-    **Contract Snippet:**
+    **Contract Snippet for a rental agreement with noisy data:**
 
-    "Wohnraummietvertrag
-    zwischen Vermieter AG und Mieter Herr Mustermann
-    Mietbeginn: 01.01.2025
-    Addresse: Derendingerstr. 62 Whg.Nr. 13, 72072 Tübingen
-    3 Zimmer, Küche, Bad
-    Gartenanteil
-    Miete: 1000 EUR pro Monat
-    Betriebskosten: Werden direkt mit dem Lieferanten abgerechnet
-    Keine Haustiere erlaubt"
+    "Wohnraummietvertrag Zwischen Sibylle Reisecista, Serbergst. 15, 78074 Tübingen als Verm Vor- und Zuname) Adam Reisecsita Serbergst. 15, 78074 Tabingen(Straße Nr., PLZ, Ort) 07011-00000 adameinecib@gmail com als Vermieter/in
+und Josef Maier X 28.01.1995
+(Geburtsdatum)
+(Straße Nr., PLZ, Ort) Schützenstraße Straße. 31, 39123 Sorgenhausen
+(Vor- und Zuname) (Geburtsdatum)
+(Straße Nr., PLZ, Ort)
+0176 0000000 x max.mustermann@protonmail.com als Mieter/in
+DE 39 0000 0000 0000 0000 00
+(Bankverbindung: IBAN)
+wird folgender Mietvertrag geschlossen:
+§ 1 Mietsache
+1. Vermietet werden im EG Geschoss links-mitte rechts des Hauses Hotzenplotzige Straße. 538 Whg.Nr.10, rechts, 3. Stock, 78921 Festburg zu Wohnzwecken und alleiniger Nutzung:
+4 Zimmer 2 Keller/Nr.
+Sonstiges/Wohnungszubehör (z.B. Einbauküche) 1
+Küche 1
+Bad/Dusche 1
+Abstellraum/Nr.
+Gartenanteil 1
+separates WC
+Balkon/Terrasse 1
+Stellplatz/Nr. 13
+Garage/Nr. Es handelt sich um eine Eigentumswohnung
+2. Beheizung Einzelofen X Etagenheizung Zentralheizung Sonstiges:
+3. Gemeinschaftlich X Waschküche • Trockenraum < Garten Sonstiges:
+4. Ausgehändigte Schlüssel Schließanlage 1 Wohnung 1 Haustür Zimmer Briefkasten
+Keller Garage Handsender Zugangskarte
+Sonstiges:
+Das Mietverhältnis beginnt am 01.07.2023 und wird auf unbestimmte Zeit geschlossen.
+Die Miete beträgt monatlich für
+a) Wohnung
+b) Garage/Stellplatz
+c) Einbauküche/Möblierung
+dem Eregiewusarge errechner
+d) Betriebskosten-Vorauszahlung (siehe folg. Ziffer 2), 1400,00 € Betriebskosten werden direkt mit dem Energieversorger abgerechnet.
+Untervermietung an folgende Personen genehmigt: Jürgen Maier, Petra Schmitt, Max Mustermann
     
     **JSON Output:**
     
     ```json
     {{
-        "contract_type": "Wohnraummietvertrag",
-        "address": "Derendingerstr. 62",
-        "city": "Tübingen",
-        "postal_code": "72072",
-        "country": "Germany",
-        "number_of_rooms": "3",
-        "kitchen": "true",
-        "bathroom": "true",
-        "separate_wc": "false",
-        "balcony_or_terrace": "false",
-        "garden": "true",
+        "contract_type": "Unbefristeter Mietvertrag",
+        "start_date": "2023-07-01",
+        "address": "Hotzenplotzige Straße 538",
+        "city": "Festburg",
+        "postal_code": "78921",
         "property_type": "Wohnung",
-        "floor": "",
-        "start_date": "01.01.2025",
-        "monthly_rent": "1000",
-        "additional_costs": "Betriebskosten werden direkt mit dem Lieferanten abgerechnet",
-        "pets_allowed": "false",
+        "number_of_rooms": 3,
+        "kitchen": true,
+        "bathroom": true,
+        "separate_wc": true,
+        "balcony_or_terrace": true,
+        "garden": true,
+        "garage_or_parking": true,
+        "elevator": false,
+        "basic_rent": 1400,
+        "operation_costs": 0,
+        "heating_costs": 0,
+        "garage_costs": 0,
+        "deposit_amount": 2800,
+        "pets_allowed": false,
+        "subletting_allowed": true,
     }}
-    ```
+    
+    Another example:
+    
+    **Contract Snippet:**
+    *Untermietvertrag*
+    *zwischen*
+    *Herrn Max Mustermann*
+    *und*
+    *Frau Maria Musterfrau*
+    Der Untermietvertrag beginnt am 18.04.2024
+    Die Mietdauer bestimmt sich nach der Dauer des Hauptmietvertrages. Endet der Hauptmietvertrag,
+gleich auch welchen Gründen, endet damit ohne Ausnahme auch der Untermietvertrag.
+    *Addresse: Musterstr. 12, 12345 Musterstadt*
+    Die Wohnung befindet sich in der EG Etage auf der linken Seite rechten Seite. Folgende Räume werden vermietet: .1. Zimmer, 1 Küche/Kochnische,1 Bad/Dusche/WC, 1 Bodenräume / Speicher
+    Nr........., 2 Kellerräume Nr. 1. Garage / Stellplatz,.1. Garten,/ gewerblich genutzte Räume
+    Die Wohnfläche beträgt ..11. qm.
+    Dem Untermieter werden vom Hauptmieter für die Dauer der Untermietzeit folgende Schlüssel ausgehändigt: 1 Haustürschlüssel, 1 Wohnungsschlüssel, 1. Briefkasten -, 1 Kellerabteilt und 1 Dachgeschossschlüssel werden gemeinsam genutzt
+    Die Nettomiete beträgt monatlich EUR. 270..., in Worten . Zweihundertsiebzig
+    Die Vorauszahlung auf die Nebenkosten beträgt monatlich EUR. 95 in Worten Fünfundneunzig.
+    Der Untermieter zahlt an den Hauptmieter eine Kaution gem. § 551 BGB in Höhe von EUR 700 in Worten: Siebenhundert.
+zur Sicherung aller Ansprüche aus dem Untermietverhältnis.
+    § 8 Überlassung der Mietsache an Dritte - Unteruntervermietung
+Eine weitere Untervermietung der Mietsache durch den Untermieter ist nicht gestattet.
+
+    **JSON Output:**
+
+    ```json
+    {{
+        "contract_type": "Untermietvertrag",
+        "start_date": "2024-04-18",
+        "address": "Musterstr. 12",
+        "city": "Musterstadt",
+        "postal_code": "12345",
+        "property_type": "Wohnung",
+        "number_of_rooms": 1,
+        "kitchen": true,
+        "bathroom": true,
+        "separate_wc": true,
+        "balcony_or_terrace": false,
+        "garden": true,
+        "garage_or_parking": true,
+        "elevator": false,
+        "floor": "",
+        "basic_rent": 270,
+        "operation_costs": 95,
+        "heating_costs": 0,
+        "garage_costs": 0,
+        "deposit_amount": 700
+        "pets_allowed": false,
+        "subletting_allowed": false,
+    }}
     """
     )
 
@@ -151,7 +238,7 @@ def extract_details_with_gemini(
         model="gemini-2.0-flash",
         contents=contents,
         config=types.GenerateContentConfig(
-            temperature=1.5, top_p=0.9, top_k=64, max_output_tokens=8192, 
+            temperature=0.4, top_p=0.9, top_k=64, max_output_tokens=8192
         ),
     )
 
@@ -175,39 +262,52 @@ def extract_details_with_gemini(
     return response_json, total_token_count
 
 
-neighborhood_analysis_prompt = """
-    You are a real estate expert analyzing the neighborhood of a property.
-    Your task is to provide a short analysis of the neighborhood based on the map image provided.
-
-    If you see any specific features or landmarks in the neighborhood, please describe them in detail.
-    For example, if there is a large street, you could mention that it might be a busy area and thus could be noisy.
-    If there is a park nearby, you could mention that it provides a green space for residents to relax.
-    If there is a police station or hospital nearby, you could mention that it provides safety and convenience for residents but might also lead to more noise due to sirens.
-
-    **Requirements:**
-
-    1. Describe the neighborhood based on the map image provided.
-    2. Mention any specific features or landmarks that you see.
-    3. Provide a brief analysis of how these features might impact the property or its residents.
-    4. Do not provide any personal opinions or biases.
-    5. Do not provide any legal advice or analysis.
-    6. Do not provide any information about the property itself, only the neighborhood.
-    7. Do not provide any information about the property owner or residents.
-    8. Answer in complete sentences and use proper grammar and punctuation.
-    9. Answer only in German.
-"""
-
 def analyze_neighborhood_with_gemini(address: str) -> tuple[str, int]:
     """Analyze the neighborhood of a given address"""
-    image =  get_neighborhood_map(address)
+    image = get_neighborhood_map(address)
 
     if image is None:
         logger.error("Failed to fetch neighborhood map")
         return None, 0
-    
+
     # Create the model
     logger.info("Creating Gemini client")
     client = genai.Client(api_key=os.getenv("GENAI_API_KEY"))
+
+    neighborhood_analysis_prompt = (
+        """
+            Sie sind ein Immobilienexperte und analysieren die Umgebung einer Immobilie.
+            Ihre Aufgabe ist es, eine kurze Analyse der Umgebung basierend auf dem bereitgestellten Kartenbild zu liefern.
+        
+            Wenn Sie spezifische Merkmale oder Wahrzeichen in der Umgebung sehen, beschreiben Sie diese bitte im Detail.
+            Zum Beispiel, wenn es eine große Straße gibt, könnten Sie erwähnen, dass es sich um eine belebte Gegend handeln könnte und daher laut sein könnte.
+            Wenn es einen nahegelegenen Park gibt, könnten Sie erwähnen, dass dieser eine grüne Oase für die Bewohner bietet, um sich zu entspannen.
+            Wenn es eine nahegelegene Polizeistation oder ein Krankenhaus gibt, könnten Sie erwähnen, dass dies Sicherheit und Bequemlichkeit für die Bewohner bietet, aber auch zu mehr Lärm durch Sirenen führen könnte.
+        
+            **Anforderungen:**
+        
+            1. Beschreiben Sie die Umgebung basierend auf dem bereitgestellten Kartenbild.
+            2. Erwähnen Sie spezifische Merkmale oder Wahrzeichen, die Sie sehen.
+            3. Bieten Sie eine kurze Analyse darüber, wie diese Merkmale die Immobilie oder ihre Bewohner beeinflussen könnten.
+            4. Geben Sie keine persönlichen Meinungen oder Vorurteile ab.
+            5. Geben Sie keine rechtlichen Ratschläge oder Analysen.
+            6. Geben Sie keine Informationen über die Immobilie selbst, nur über die Umgebung.
+            7. Geben Sie keine Informationen über den Eigentümer der Immobilie oder die Bewohner.
+            8. Antworten Sie in vollständigen Sätzen und verwenden Sie korrekte Grammatik und Interpunktion.
+            9. Antworten Sie nur auf Deutsch.
+        
+            **Zusätzliche Informationen:**
+        
+            - Das Kartenbild zeigt die Umgebung der Immobilie, die sich befindet an:
+            """
+        + address
+        + """
+    - Das Bild ist eine Draufsicht auf das Gebiet und zeigt Straßen, Gebäude, Parks und andere Merkmale.
+
+    **Beispielantwort:**
+    Die Nachbarschaft um Max-Musterstraße 123 ist ruhig und bietet einen Park, eine Bäckerei und einen Supermarkt. Zu beachten ist, dass die Max-Musterstraße eine Durchfahrtsstraße ist, was mit Verkehrslärm verbunden sein kann. Der nahe Bahnhof sichert eine ausgezeichnete Anbindung. Musterstadt begeistert mit der Musterbrücke und dem Mustertheater, die das kulturelle Leben bereichern. Zudem bietet die Stadt zahlreiche Restaurants und Cafés sowie ein vielfältiges Angebot an Bildungseinrichtungen und Grünflächen.
+    """
+    )
 
     contents = [neighborhood_analysis_prompt, image]
 
@@ -216,12 +316,17 @@ def analyze_neighborhood_with_gemini(address: str) -> tuple[str, int]:
         model="gemini-2.0-flash",
         contents=contents,
         config=types.GenerateContentConfig(
-            temperature=0.5, top_p=0.9, top_k=64, max_output_tokens=8192, 
+            temperature=0.5,
+            top_p=0.9,
+            top_k=64,
+            max_output_tokens=8192,
         ),
     )
 
     usage_metadata = response.usage_metadata
     total_token_count = usage_metadata.total_token_count
+    if total_token_count is None:
+        total_token_count = 0
 
     response_text = response.text
 

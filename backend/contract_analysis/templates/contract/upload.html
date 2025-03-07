@@ -36,6 +36,7 @@
     {% csrf_token %}
     <button type="submit" class="btn btn-primary btn-large" disabled>
         Hochladen
+        <span class="spinner hide"></span>
     </button>
 </form>
 
@@ -91,6 +92,23 @@
 			this.handleFiles(event.target.files);
 		}
 
+		UPLOAD_STATES = ['idle', 'disabled', 'uploading'];
+
+		setUploadStatus(uploadState) {
+			this.elements.uploadButton.querySelector('.spinner').classList.add('hide');
+			this.elements.uploadButton.disabled = false;
+			switch (uploadState) {
+				case 'idle':
+					break;
+				case 'disabled':
+					this.elements.uploadButton.disabled = true;
+					break;
+				case 'uploading':
+					this.elements.uploadButton.disabled = true;
+					this.elements.uploadButton.querySelector('.spinner').classList.remove('hide');
+					break;
+			}
+		}
 
 		// Validate file
 		validateFile(file) {
@@ -164,7 +182,11 @@
 
 		// Update UI
 		updateUI() {
-			this.elements.uploadButton.disabled = this.files.size === 0;
+			if (this.files.size === 0) {
+				this.setUploadStatus('disabled');
+			} else {
+				this.setUploadStatus('idle');
+			}
 			this.resetError()
 		}
 
@@ -178,6 +200,7 @@
 			}
 			const formData = new FormData();
 			this.files.forEach((file) => formData.append("files", file));
+			this.setUploadStatus('uploading');
 			fetch('{% url "upload_contract" %}', {
 				method: "POST",
 				body: formData,
@@ -199,6 +222,12 @@
 				.catch((error) => {
 					console.error("Upload error:", error);
 					this.showError("Fehler beim Hochladen.");
+				})
+				.finally(() => {
+					this.setUploadStatus('idle')
+
+					// Reload the page after successful upload
+					window.location.reload();
 				});
 		}
 	}

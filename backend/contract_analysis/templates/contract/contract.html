@@ -2,85 +2,88 @@
 {% load static %}
 
 {% block title %}
-  Mietvertrag
+    Mietvertrag
 {% endblock %}
 {% block link %}
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 {% endblock %}
 
 {% block content %}
-  {% if not user.is_authenticated %}
-    <div class="login-section">
-      <div class="login-container">
-        <h2>Anmeldung erforderlich</h2>
-        <p>Bitte melden Sie sich an, um Ihre Mietverträge zu verwalten</p>
-        <a href="{% url 'login' %}" class="button">Anmelden</a>
-      </div>
-    </div>
-  {% else %}
-    <div class="fade-in">
-      <!-- Greeting Section -->
-      <section class="dashboard-header">
-        <div class="user-greeting">
-          <h2>Vertragsanalyse</h2>
-          <p>Sehen Sie sich die Details Ihres Mietvertrags an und erhalten Sie nützliche Informationen</p>
+    {% if not user.is_authenticated %}
+        <div class="login-section">
+            <div class="login-container">
+                <h2>Anmeldung erforderlich</h2>
+                <p>Bitte melden Sie sich an, um Ihre Mietverträge zu verwalten</p>
+                <a href="{% url 'login' %}" class="button">Anmelden</a>
+            </div>
         </div>
-        <div class="quick-actions">
-          <a href="{% url 'home' %}">Zurück zur Übersicht</a>
-        </div>
-      </div>
+    {% else %}
+        <div class="fade-in">
+            <!-- Greeting Section -->
+            <section class="dashboard-header">
+                <div class="user-greeting">
+                    <h2>Vertragsanalyse</h2>
+                    <p>Sehen Sie sich die Details Ihres Mietvertrags an und erhalten Sie nützliche Informationen</p>
+                </div>
+                <div>
+                    <a href="{% url 'home' %}">Zurück zur Übersicht</a>
+                </div>
+            </section>
 
-      <!-- Contract Overview Cards -->
-      <div class="grid grid-2 gap-lg mt-lg">
-        <section class="slide-in">
-          <div class="section-header">
-            <h3>Vertragsübersicht</h3>
-          </div>
-          <div>
-            <ul class="w-full" style="list-style: none; padding: 0;">
-              <li class="flex justify-between items-center mb-sm">
-                <span class="text-light">Vertragsart</span>
-                <span class="text-bold">{{ contract_details.contract_type }}</span>
-              </li>
-              <li class="flex justify-between items-center mb-sm">
-                <span class="text-light">Laufzeit</span>
-                <span class="text-bold">
+            <!-- Contract Overview Cards -->
+            <div class="grid grid-2 gap-lg mt-lg">
+                <section class="slide-in">
+                    <div class="section-header">
+                        <h3>Vertragsübersicht</h3>
+                    </div>
+                    <div>
+                        <ul class="w-full" style="list-style: none; padding: 0;">
+                            <li class="flex justify-between items-center mb-sm">
+                                <span class="text-light">Vertragsart</span>
+                                <span class="text-bold">{{ contract_details.contract_type }}</span>
+                            </li>
+                            <li class="flex justify-between items-center mb-sm">
+                                <span class="text-light">Laufzeit</span>
+                                <span class="text-bold">
                   {% if contract_details.start_date %}
-                    {{ contract_details.start_date|date:'Y' }} -{% if contract_details.end_date %}
+                      {{ contract_details.start_date|date:'Y' }} -{% if contract_details.end_date %}
                       {{ contract_details.end_date|date:'Y' }}
-                    {% else %}
-                      Unbefristet
-                    {% endif %}
                   {% else %}
-                    Unbekannt
+                      Unbefristet
+                  {% endif %}
+                  {% else %}
+                      Unbekannt
                   {% endif %}
                 </span>
-              </li>
-              <li class="flex justify-between items-center mb-sm">
-                <span class="text-light">Aktuelle Miete</span>
-                <span class="text-bold">{{ contract_details.monthly_rent|floatformat:2 }}€</span>
-              </li>
-              <li class="flex justify-between items-center mb-sm">
-                <span class="text-light">Nebenkosten</span>
-                <span class="text-bold">{{ contract_details.total_rent|floatformat:2 }}€</span>
-              </li>
-              <li class="flex justify-between items-center">
-                <span class="text-light">Wohnfläche</span>
-                <span class="text-bold flex items-center">{{ contract_details.living_space|floatformat:2 }} m<sup>2</sup></span>
-              </li>
-            </ul>
+                            </li>
+                            <li class="flex justify-between items-center mb-sm">
+                                <span class="text-light">Kaltmiete</span>
+                                <span class="text-bold">{{ contract_details.basic_rent|floatformat:2 }}€</span>
+                            </li>
+                            <li class="flex justify-between items-center mb-sm">
+                                <span class="text-light">Nebenkosten</span>
+                                <span class="text-bold">{{ contract_details.operating_costs|floatformat:2 }}€</span>
+                            </li>
+                            <li class="flex justify-between items-center">
+                                <span class="text-light">Wohnfläche</span>
+                                <span class="text-bold flex items-center">{{ contract_details.living_space|floatformat:2 }} m<sup>2</sup></span>
+                            </li>
+                        </ul>
 
-            <!-- Price comparison -->
-            <div class="progress-bar mt-md mb-md">
-              <div class="progress-bar-fill" role="progressbar" style="width: {% widthratio contract_details.monthly_rent 1500 100 %}%;"></div>
-            </div>
-            <div class="flex justify-between text-sm">
-              <span class="text-success">Günstig</span>
-              <span>Durchschnitt</span>
-              <span class="text-warning">Hochpreisig</span>
-            </div>
-            <div class="text-center mt-md">
+                        <!-- Price comparison -->
+                        <div class="progress-bar mt-md mb-md">
+                            <div class="progress-bar-fill" role="progressbar"
+                                 style="width: {% widthratio contract_details.monthly_rent 1500 100 %}%;"></div>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-success">Günstig</span>
+                            <span>Durchschnitt</span>
+                            <span class="text-warning">Hochpreisig</span>
+                        </div>
+                        <div class="text-center mt-md">
               <span class="status-badge {% if contract_details.monthly_rent < 800 %}
                     status-success
                 {% elif contract_details.monthly_rent > 1200 %}
@@ -88,160 +91,164 @@
                 {% else %}
                     status-default
                 {% endif %}">
-                €{{ contract_details.monthly_rent|floatformat:2 }}
               </span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Map -->
+                <section class="slide-in">
+                    <div class="section-header">
+                        <h3>Standort</h3>
+                        <div class="text-small text-light">
+                            {{ contract_details.street }}<br/>{{ contract_details.postal_code|default:'' }} {{ contract_details.city }}
+                        </div>
+                    </div>
+                    <div id="map" style="height: 300px; border-radius: var(--border-radius);"></div>
+
+                    <span class="text-small text-light text-italic mt-sm">"{{ contract_details.neighborhood_description }}"</span>
+                </section>
             </div>
-          </div>
-        </section>
 
-        <!-- Map -->
-        <section class="slide-in">
-          <div class="section-header">
-            <h3>Standort</h3>
-            <div class="text-small text-light">{{ contract_details.street }}<br>{{ contract_details.postal_code|default:"" }} {{ contract_details.city }}<br>{{ contract_details.country|default:"" }}</div>
-          </div>
-          <div id="map" style="height: 300px; border-radius: var(--border-radius);"></div>
+            <!-- TODO: Add a neighborhood description section -->
 
-          <span class="text-small text-light text-italic mt-sm">"{{ contract_details.neighborhood }}"</span>
-        </section>
-      </div>
+            <!-- Chatbot Section -->
+            <section class="slide-in">
+                <div class="section-header">
+                    <h3>Chatbot</h3>
+                </div>
+                <div class="card">
+                    <div class="chat-container">
+                        <!-- Cards with FAQs -->
+                        <h4>Vorgeschlagene Fragen</h4>
+                        <div class="faq-card-container">
+                            <div class="faq-card">Wann sollte ich meinen Mietvertrag kündigen?</div>
+                            <div class="faq-card">Wie hoch darf die Miete erhöht werden?</div>
+                            <div class="faq-card">Was sind die typischen Nebenkosten?</div>
+                        </div>
 
-      <!-- TODO: Add a neighborhood description section -->
+                        <form class="chat-form">
+                            <input type="text" placeholder="Frage eingeben" class="chat-input"/>
+                            <button type="submit" class="chat-submit">Senden</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
 
-      <!-- Chatbot Section -->
-      <section class="slide-in">
-        <div class="section-header">
-          <h3>Chatbot</h3>
+            <!-- Contract Document Analysis -->
+            <div class="grid grid-2 gap-lg mt-lg">
+                <section class="slide-in">
+                    <div class="section-header">
+                        <h3>Vertragsdokument</h3>
+                    </div>
+                    <div class="card" style="position: relative;">
+                        {% for file in contract.files.all %}
+                            <div class="file-preview" data-file-id="{{ file.id }}">
+                                <img src="{% url 'contract_file' contract.id file.id %}"
+                                     alt="Vertragsseite {{ forloop.counter }}"/>
+                            </div>
+                        {% endfor %}
+
+                        <!-- Document Hotspots -->
+                        <div class="tooltip" style="position: absolute; top: 15%; left: 70%;">
+                            <span class="badge">1</span>
+                            <span class="tooltip-text">Kündigungsfrist</span>
+                        </div>
+                        <div class="tooltip" style="position: absolute; top: 30%; left: 70%;">
+                            <span class="badge">2</span>
+                            <span class="tooltip-text">Nebenkosten</span>
+                        </div>
+                        <div class="tooltip" style="position: absolute; top: 45%; left: 70%;">
+                            <span class="badge">3</span>
+                            <span class="tooltip-text">Kaution</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Document Annotations -->
+                <section class="slide-in">
+                    <div class="section-header">
+                        <h3>Vertragsdetails</h3>
+                    </div>
+                    <div class="card">
+                        <div class="accordion active" id="kündigungsfrist">
+                            <div class="accordion-header">
+                                <span>Kündigungsfrist</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-content"
+                                 style="display: block;">{{ contract_details.termination_terms }}</div>
+                        </div>
+
+                        <div class="accordion" id="nebenkosten">
+                            <div class="accordion-header">
+                                <span>Nebenkosten</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">{{ contract_details.additional_costs }}</div>
+                        </div>
+
+                        <div class="accordion" id="kaution">
+                            <div class="accordion-header">
+                                <span>Kaution</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">€{{ contract_details.deposit|floatformat:2 }}</div>
+                        </div>
+
+                        <div class="accordion">
+                            <div class="accordion-header">
+                                <span>Zimmeranzahl</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">{{ contract_details.number_of_rooms }}</div>
+                        </div>
+
+                        <div class="accordion">
+                            <div class="accordion-header">
+                                <span>Heizungsart</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">{{ contract_details.heating_type }}</div>
+                        </div>
+
+                        <div class="accordion">
+                            <div class="accordion-header">
+                                <span>Zusätzliche Klauseln</span>
+                                <span class="accordion-icon">▼</span>
+                            </div>
+                            <div class="accordion-content">{{ contract_details.additional_clauses }}</div>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </div>
-        <div class="card">
-          <div class="chat-container">
-            <!-- Cards with FAQs -->
-            <h4>Vorgeschlagene Fragen</h4>
-            <div class="faq-card-container">
-              <div class="faq-card">Wann sollte ich meinen Mietvertrag kündigen?</div>
-              <div class="faq-card">Wie hoch darf die Miete erhöht werden?</div>
-              <div class="faq-card">Was sind die typischen Nebenkosten?</div>
-            </div>
-
-            <form class="chat-form">
-              <input type="text" placeholder="Frage eingeben" class="chat-input" />
-              <button type="submit" class="chat-submit">Senden</button>
-            </form>
-          </div>
-        </div>
-      </section>
-
-      <!-- Contract Document Analysis -->
-      <div class="grid grid-2 gap-lg mt-lg">
-        <section class="slide-in">
-          <div class="section-header">
-            <h3>Vertragsdokument</h3>
-          </div>
-          <div class="card" style="position: relative;">
-            {% for file in contract.files.all %}
-              <div class="file-preview" data-file-id="{{ file.id }}">
-                <img src="{% url 'contract_file' contract.id file.id %}" alt="Vertragsseite {{ forloop.counter }}" />
-              </div>
-            {% endfor %}
-
-            <!-- Document Hotspots -->
-            <div class="tooltip" style="position: absolute; top: 15%; left: 70%;">
-              <span class="badge">1</span>
-              <span class="tooltip-text">Kündigungsfrist</span>
-            </div>
-            <div class="tooltip" style="position: absolute; top: 30%; left: 70%;">
-              <span class="badge">2</span>
-              <span class="tooltip-text">Nebenkosten</span>
-            </div>
-            <div class="tooltip" style="position: absolute; top: 45%; left: 70%;">
-              <span class="badge">3</span>
-              <span class="tooltip-text">Kaution</span>
-            </div>
-          </div>
-        </section>
-
-        <!-- Document Annotations -->
-        <section class="slide-in">
-          <div class="section-header">
-            <h3>Vertragsdetails</h3>
-          </div>
-          <div class="card">
-            <div class="accordion active" id="kündigungsfrist">
-              <div class="accordion-header">
-                <span>Kündigungsfrist</span>
-                <span class="accordion-icon">▼</span>
-              </div>
-              <div class="accordion-content" style="display: block;">{{ contract_details.termination_terms }}</div>
-            </div>
-
-            <div class="accordion" id="nebenkosten">
-              <div class="accordion-header">
-                <span>Nebenkosten</span>
-                <span class="accordion-icon">▼</span>
-              </div>
-              <div class="accordion-content">{{ contract_details.additional_costs }}</div>
-            </div>
-
-            <div class="accordion" id="kaution">
-              <div class="accordion-header">
-                <span>Kaution</span>
-                <span class="accordion-icon">▼</span>
-              </div>
-              <div class="accordion-content">€{{ contract_details.deposit|floatformat:2 }}</div>
-            </div>
-
-            <div class="accordion">
-              <div class="accordion-header">
-                <span>Zimmeranzahl</span>
-                <span class="accordion-icon">▼</span>
-              </div>
-              <div class="accordion-content">{{ contract_details.number_of_rooms }}</div>
-            </div>
-
-            <div class="accordion">
-              <div class="accordion-header">
-                <span>Heizungsart</span>
-                <span class="accordion-icon">▼</span>
-              </div>
-              <div class="accordion-content">{{ contract_details.heating_type }}</div>
-            </div>
-
-            <div class="accordion">
-              <div class="accordion-header">
-                <span>Zusätzliche Klauseln</span>
-                <span class="accordion-icon">▼</span>
-              </div>
-              <div class="accordion-content">{{ contract_details.additional_clauses }}</div>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
-  {% endif %}
+    {% endif %}
 {% endblock %}
 
 {% block extra_js %}
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Check if location data exists
-      {% if location %}
-        // Initialize the map with pre-geocoded coordinates from the server
-        var map = L.map('map').setView([{{ location.lat }}, {{ location.lon }}], 15);
-        
-        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-        
-        // Add marker with popup using pre-geocoded coordinates
-        L.marker([{{ location.lat }}, {{ location.lon }}]).addTo(map)
-          .bindPopup('{{ contract_details.street }}, {{ contract_details.city }}')
-          .openPopup();
-      {% else %}
-        // If geocoding failed, display a message
-        document.getElementById('map').innerHTML = '<p>Location could not be found.</p>';
-      {% endif %}
-    });
-  </script>
+    <script>
+			document.addEventListener('DOMContentLoaded', function () {
+				// Check if location data exists
+				{% if location %}
+					// Initialize the map with pre-geocoded coordinates from the server
+					var map = L.map('map').setView([{{ location.lat }}, {{ location.lon }}], 16);
+
+					L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+						attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+					}).addTo(map);
+
+					// Add marker with popup using pre-geocoded coordinates
+					L.marker([{{ location.lat }}, {{ location.lon }}]).addTo(map)
+						.bindPopup('{{ contract_details.street }}, {{ contract_details.city }}')
+						.openPopup();
+				{% else %}
+					// If geocoding failed, display a message
+					document.getElementById('map').innerHTML = '<p>Location could not be found.</p>';
+				{% endif %}
+			});
+    </script>
 {% endblock %}

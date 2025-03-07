@@ -206,7 +206,7 @@ p {
 
 /* Utility Classes */
 .hide {
-    display: none;
+    display: none !important;
 }
 
 .flex {

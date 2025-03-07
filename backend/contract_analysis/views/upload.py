@@ -5,38 +5,45 @@ from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from pdf2image import convert_from_bytes
 
-from contract_analysis.models import Contract, ContractFile
+from contract_analysis.models.contract import ContractFile, Contract
 from contract_analysis.utils.error import handle_exception, error_response
-from contract_analysis.utils.utils import validate_image_type, validate_file_size
+from contract_analysis.utils.image import reduce_image_size
+from contract_analysis.utils.utils import validate_type, validate_file_size
 
 logger = logging.getLogger(__name__)
 
 allowed_types = ["application/pdf", "image/jpeg", "image/png"]
 
 
-def convert_pdf_to_images(file, uploaded_contract):
+def save_contract_file(contract, filename, content_type, content):
+    """Helper function to create and save a contract file with encrypted content."""
+    contract_file = ContractFile.objects.create(
+        contract=contract,
+        file_name=filename,
+        file_type=content_type,
+    )
+    contract_file.set_file_content(content)
+    contract_file.save()
+    logger.info(f"File {filename} saved for contract {contract.id}")
+    return contract_file
+
+
+def convert_pdf_to_images(file, contract):
+    """Convert PDF to images and save them as contract files."""
     try:
         images = convert_from_bytes(file.read(), dpi=200, thread_count=4, fmt="png")
+        base_name = file.name.split(".")[0]
+
         for i, img in enumerate(images):
+            # Reduce image size and save to buffer
+            resized_img = reduce_image_size(img, percent=35)
             buffer = io.BytesIO()
-            img.save(buffer, format="PNG")
+            resized_img.save(buffer, format="PNG")
             buffer.seek(0)
 
-            # Create new in-memory file
-            page_filename = f"{file.name.split('.')[0]}_page_{i+1}.png"
+            page_filename = f"{base_name}_page_{i+1}.png"
+            save_contract_file(contract, page_filename, "image/png", buffer.getvalue())
 
-            # Create and save contract file with encrypted content
-            contract_file = ContractFile.objects.create(
-                contract=uploaded_contract,
-                file_name=page_filename,
-                file_type="image/png",
-            )
-
-            # Encrypt and save the image content
-            contract_file.set_file_content(buffer.getvalue())
-            contract_file.save()
-
-            logger.info(f"PDF page {i+1} saved for contract {uploaded_contract.id}")
     except Exception as e:
         logger.error(f"PDF conversion error: {e}")
         raise ValidationError("Fehler bei der PDF-Konvertierung")
@@ -52,43 +59,21 @@ def upload_contract(request):
         if not files:
             return error_response("Keine Dateien hochgeladen", 400)
 
-        # Actually use the allowed_types for validation
-        for file in files:
-            if file.content_type not in allowed_types:
-                return error_response(f"Unerlaubter Dateityp: {file.content_type}", 400)
-
+        # Create a new contract
         uploaded_contract = Contract.objects.create(user=request.user)
         logger.info(f"Created new contract {uploaded_contract.id}")
 
-        unprocessed_files = list(files)
+        for file in files:
+            validate_file_size(file)
+            validate_type(file)
 
-        while unprocessed_files:
-            file = unprocessed_files.pop(0)
-
-            # Handle PDF conversion
             if file.content_type == "application/pdf":
                 convert_pdf_to_images(file, uploaded_contract)
-                continue
-
-            # Process image file
-            validate_image_type(file)
-            validate_file_size(file)
-
-            # Read the file content
-            file_content = file.read()
-
-            # Create and save contract file with encrypted content
-            contract_file = ContractFile.objects.create(
-                contract=uploaded_contract,
-                file_name=file.name,
-                file_type=file.content_type,
-            )
-
-            # Encrypt and save the content
-            contract_file.set_file_content(file_content)
-            contract_file.save()
-
-            logger.info(f"File {file.name} saved for contract {uploaded_contract.id}")
+            else:
+                # Process image files
+                save_contract_file(
+                    uploaded_contract, file.name, file.content_type, file.read()
+                )
 
         return JsonResponse({"success": True, "contract_id": str(uploaded_contract.id)})
 

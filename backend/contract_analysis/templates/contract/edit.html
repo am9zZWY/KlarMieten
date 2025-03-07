@@ -1,70 +1,87 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
-{% block content %}
-    <section class="contract-censor">
-        <h2>Vertragsdokument zensieren</h2>
-        <p>
-            Bitte zensieren Sie sensible Informationen in Ihrem Vertragsdokument. Wählen Sie eine Vertragsseite aus
-            und verwenden Sie den Stift oder Radiergummi, um die Informationen zu zensieren. Klicken Sie auf
-            "Speichern",
-            um Ihre Änderungen zu speichern, oder auf "Speichern und fortfahren", um fortzufahren.
-        </p>
+{% block title %}
+    Mietvertrag zensieren - {{ contract.name }}
+{% endblock %}
 
-        <div class="contract-thumbnails">
-            <h3>Vertragsseiten</h3>
-            <div class="thumbnail-grid">
-                {% for file in contract.files.all %}
-                    <div class="thumbnail-item {% if forloop.first %}active{% endif %}" data-file-id="{{ file.id }}">
-                        <img src="{% url 'contract_file' contract.id file.id %}"
-                             alt="Contract page {{ forloop.counter }}">
-                        <div class="thumbnail-status">
-                            <span class="status-indicator"></span>
-                            <span class="status-text">Original</span>
+{% block content %}
+    {% if not user.is_authenticated %}
+        <div class="login-section">
+            <div class="login-container">
+                <h2>Anmeldung erforderlich</h2>
+                <p>Bitte melden Sie sich an, um Ihre Mietverträge zu verwalten</p>
+                <a href="{% url 'login' %}" class="button">Anmelden</a>
+            </div>
+        </div>
+    {% else %}
+        <div class="fade-in">
+            <section class="dashboard-header">
+                <div class="user-greeting">
+                    <h2>Vertragsdokument zensieren</h2>
+                    <p>Bitte zensieren Sie sensible Informationen in Ihrem Vertragsdokument. Wählen Sie eine
+                        Vertragsseite aus und verwenden Sie den Stift oder Radiergummi, um die Informationen zu
+                        zensieren. Klicken Sie auf "Speichern", um Ihre Änderungen zu speichern, oder auf "Speichern und
+                        fortfahren", um fortzufahren.</p>
+                    <div>
+                        <a href="{% url 'home' %}">Zurück zur Übersicht</a>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <div class="contract-thumbnails">
+                    <h3>Vertragsseiten</h3>
+                    <div class="thumbnail-grid">
+                        {% for file in contract.files.all %}
+                            <div class="thumbnail-item {% if forloop.first %}active{% endif %}"
+                                 data-file-id="{{ file.id }}">
+                                <img src="{% url 'contract_file' contract.id file.id %}"
+                                     alt="Contract page {{ forloop.counter }}"/>
+                                <div class="thumbnail-status">
+                                    <span class="status-indicator"></span>
+                                    <span class="status-text">Original</span>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p>Kein Vertragsdokument gefunden.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="drawing-tools">
+                    <div class="drawing-controls">
+                        <button id="pen-tool" class="button highlight active"><i class="fas fa-pen"></i> Stift</button>
+                        <!--     <button id="eraser-tool" class="button highlight">
+                                <i class="fas fa-eraser"></i> Radiergummi
+                            </button>     -->
+                        <button id="reset-tool" class="button highlight"><i class="fas fa-undo"></i> Zurücksetzen
+                        </button>
+
+                        <div class="size-control">
+                            <label for="brush-size">Größe:</label>
+                            <input type="range" id="brush-size" min="5" max="50" value="20"/>
+                            <span id="size-value">20px</span>
                         </div>
                     </div>
-                {% empty %}
-                    <p>Kein Vertragsdokument gefunden.</p>
-                {% endfor %}
-            </div>
-        </div>
 
-        <div class="drawing-tools">
-            <div class="drawing-controls">
-                <button id="pen-tool" class="button highlight active">
-                    <i class="fas fa-pen"></i> Stift
-                </button>
-                <!-- <button id="eraser-tool" class="button highlight">
-                    <i class="fas fa-eraser"></i> Radiergummi
-                </button> -->
-                <button id="reset-tool" class="button highlight">
-                    <i class="fas fa-undo"></i> Zurücksetzen
-                </button>
+                    <div class="canvas-container">
+                        <canvas id="drawing-canvas"></canvas>
+                        <div class="canvas-placeholder">Wählen Sie eine Vertragsseite aus, um zu beginnen.</div>
+                    </div>
 
-                <div class="size-control">
-                    <label for="brush-size">Größe:</label>
-                    <input type="range" id="brush-size" min="5" max="50" value="20">
-                    <span id="size-value">20px</span>
+                    <div class="action-buttons">
+                        <button id="save-current" class="button">Speichern</button>
+                        <button id="save-all" class="button">Speichern und fortfahren</button>
+                    </div>
                 </div>
-            </div>
-
-            <div class="canvas-container">
-                <canvas id="drawing-canvas"></canvas>
-                <div class="canvas-placeholder">Wählen Sie eine Vertragsseite aus, um zu beginnen.</div>
-            </div>
-
-            <div class="action-buttons">
-                <button id="save-current" class="button">Speichern</button>
-                <button id="save-all" class="button">Speichern und fortfahren</button>
-            </div>
+            </section>
         </div>
-    </section>
+    {% endif %}
+{% endblock %}
 
+{% block extra_css %}
     <style>
-        .contract-censor {
-            margin-bottom: 2rem;
-        }
-
         .contract-thumbnails {
             margin-bottom: 1.5rem;
         }
@@ -199,289 +216,290 @@
             }
         }
     </style>
+{% endblock %}
 
+{% block extra_js %}
     <script>
 			document.addEventListener('DOMContentLoaded', function () {
 				// Elements
-				const canvas = document.getElementById('drawing-canvas');
-				const ctx = canvas.getContext('2d');
-				const penTool = document.getElementById('pen-tool');
-				const eraserTool = document.getElementById('eraser-tool');
-				const resetTool = document.getElementById('reset-tool');
-				const brushSize = document.getElementById('brush-size');
-				const sizeValue = document.getElementById('size-value');
-				const saveCurrentBtn = document.getElementById('save-current');
-				const saveAllBtn = document.getElementById('save-all');
-				const thumbnailItems = document.querySelectorAll('.thumbnail-item');
-				const canvasPlaceholder = document.querySelector('.canvas-placeholder');
+				const canvas = document.getElementById('drawing-canvas')
+				const ctx = canvas.getContext('2d')
+				const penTool = document.getElementById('pen-tool')
+				const eraserTool = document.getElementById('eraser-tool')
+				const resetTool = document.getElementById('reset-tool')
+				const brushSize = document.getElementById('brush-size')
+				const sizeValue = document.getElementById('size-value')
+				const saveCurrentBtn = document.getElementById('save-current')
+				const saveAllBtn = document.getElementById('save-all')
+				const thumbnailItems = document.querySelectorAll('.thumbnail-item')
+				const canvasPlaceholder = document.querySelector('.canvas-placeholder')
 
 				// Drawing state
-				let isDrawing = false;
-				let currentTool = 'pen';
-				let currentSize = brushSize.value;
-				let currentFileId = null;
-				let originalImageData = null;
-				let modifiedFiles = new Set();
-				let lastX = null;
-				let lastY = null;
+				let isDrawing = false
+				let currentTool = 'pen'
+				let currentSize = brushSize.value
+				let currentFileId = null
+				let originalImageData = null
+				let modifiedFiles = new Set()
+				let lastX = null
+				let lastY = null
 
 				// Update size display
-				sizeValue.textContent = `${currentSize}px`;
+				sizeValue.textContent = `${currentSize}px`
 
 				// Initialize with the first file if available
 				if (thumbnailItems.length > 0) {
-					const firstItem = thumbnailItems[0];
-					currentFileId = firstItem.dataset.fileId;
-					loadImage(firstItem.querySelector('img').src);
-					canvasPlaceholder.style.display = 'none';
+					const firstItem = thumbnailItems[0]
+					currentFileId = firstItem.dataset.fileId
+					loadImage(firstItem.querySelector('img').src)
+					canvasPlaceholder.style.display = 'none'
 				}
 
 				// Load image into canvas
 				function loadImage(src) {
-					const img = new Image();
-					img.crossOrigin = 'Anonymous';
-					img.src = src;
+					const img = new Image()
+					img.crossOrigin = 'Anonymous'
+					img.src = src
 
 					img.onload = function () {
 						// Resize canvas to match image dimensions
-						canvas.width = img.width;
-						canvas.height = img.height;
+						canvas.width = img.width
+						canvas.height = img.height
 
 						// Draw image on canvas
-						ctx.drawImage(img, 0, 0);
+						ctx.drawImage(img, 0, 0)
 
 						// Store original image data for reset
-						originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-					};
+						originalImageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+					}
 				}
 
 				// Thumbnail click handler
-				thumbnailItems.forEach(item => {
+				thumbnailItems.forEach((item) => {
 					item.addEventListener('click', function () {
 						// Save current canvas if modified
 						if (currentFileId && modifiedFiles.has(currentFileId)) {
-							saveCurrentCanvas();
+							saveCurrentCanvas()
 						}
 
 						// Update active thumbnail
-						thumbnailItems.forEach(t => t.classList.remove('active'));
-						this.classList.add('active');
+						thumbnailItems.forEach((t) => t.classList.remove('active'))
+						this.classList.add('active')
 
 						// Load selected image
-						currentFileId = this.dataset.fileId;
-						loadImage(this.querySelector('img').src);
-						canvasPlaceholder.style.display = 'none';
-					});
-				});
+						currentFileId = this.dataset.fileId
+						loadImage(this.querySelector('img').src)
+						canvasPlaceholder.style.display = 'none'
+					})
+				})
 
 				// Tool selection
 				penTool.addEventListener('click', function () {
-					currentTool = 'pen';
-					updateToolButtons(penTool);
-				});
+					currentTool = 'pen'
+					updateToolButtons(penTool)
+				})
 
 				/* eraserTool.addEventListener('click', function () {
-					currentTool = 'eraser';
-					updateToolButtons(eraserTool);
-				}); */
+                                              currentTool = 'eraser';
+                                              updateToolButtons(eraserTool);
+                                          }); */
 
 				resetTool.addEventListener('click', function () {
 					if (confirm('Are you sure you want to reset all censoring on this page?')) {
 						if (originalImageData) {
-							ctx.putImageData(originalImageData, 0, 0);
+							ctx.putImageData(originalImageData, 0, 0)
 
 							// If this file was marked as modified, update its status
 							if (modifiedFiles.has(currentFileId)) {
-								modifiedFiles.delete(currentFileId);
-								updateThumbnailStatus(currentFileId, false);
+								modifiedFiles.delete(currentFileId)
+								updateThumbnailStatus(currentFileId, false)
 							}
 						}
 					}
-				});
+				})
 
 				// Update active tool button
 				function updateToolButtons(activeButton) {
-					[penTool, eraserTool].forEach(btn => {
+					;[penTool, eraserTool].forEach((btn) => {
 						if (btn !== null) {
-							btn.classList.remove('active');
+							btn.classList.remove('active')
 						}
-					});
-					activeButton.classList.add('active');
+					})
+					activeButton.classList.add('active')
 				}
 
 				// Brush size slider
 				brushSize.addEventListener('input', function () {
-					currentSize = this.value;
-					sizeValue.textContent = `${currentSize}px`;
-				});
+					currentSize = this.value
+					sizeValue.textContent = `${currentSize}px`
+				})
 
 				// Drawing functionality
-				canvas.addEventListener('mousedown', startDrawing);
-				canvas.addEventListener('touchstart', handleTouchStart);
-				canvas.addEventListener('mousemove', draw);
-				canvas.addEventListener('touchmove', handleTouchMove);
-				canvas.addEventListener('mouseup', stopDrawing);
-				canvas.addEventListener('touchend', stopDrawing);
-				canvas.addEventListener('mouseout', stopDrawing);
+				canvas.addEventListener('mousedown', startDrawing)
+				canvas.addEventListener('touchstart', handleTouchStart)
+				canvas.addEventListener('mousemove', draw)
+				canvas.addEventListener('touchmove', handleTouchMove)
+				canvas.addEventListener('mouseup', stopDrawing)
+				canvas.addEventListener('touchend', stopDrawing)
+				canvas.addEventListener('mouseout', stopDrawing)
 
 				function startDrawing(e) {
-					isDrawing = true;
+					isDrawing = true
 
 					// Reset the last position when starting a new stroke
-					lastX = null;
-					lastY = null;
+					lastX = null
+					lastY = null
 
-					draw(e);
+					draw(e)
 				}
 
 				function handleTouchStart(e) {
-					e.preventDefault();
-					const touch = e.touches[0];
+					e.preventDefault()
+					const touch = e.touches[0]
 					const mouseEvent = new MouseEvent('mousedown', {
 						clientX: touch.clientX,
 						clientY: touch.clientY
-					});
-					canvas.dispatchEvent(mouseEvent);
+					})
+					canvas.dispatchEvent(mouseEvent)
 				}
 
 				function draw(e) {
-					if (!isDrawing) return;
+					if (!isDrawing) return
 
-					const rect = canvas.getBoundingClientRect();
-					const scaleX = canvas.width / rect.width;
-					const scaleY = canvas.height / rect.height;
+					const rect = canvas.getBoundingClientRect()
+					const scaleX = canvas.width / rect.width
+					const scaleY = canvas.height / rect.height
 
-					const x = (e.clientX - rect.left) * scaleX;
-					const y = (e.clientY - rect.top) * scaleY;
+					const x = (e.clientX - rect.left) * scaleX
+					const y = (e.clientY - rect.top) * scaleY
 
-					ctx.lineWidth = currentSize;
-					ctx.lineCap = 'round';
-					ctx.lineJoin = 'round';
+					ctx.lineWidth = currentSize
+					ctx.lineCap = 'round'
+					ctx.lineJoin = 'round'
 
 					if (currentTool === 'pen') {
-						ctx.strokeStyle = '#000000';
-						ctx.globalCompositeOperation = 'source-over';
+						ctx.strokeStyle = '#000000'
+						ctx.globalCompositeOperation = 'source-over'
 					} else {
 						// Eraser
-						ctx.strokeStyle = '#ffffff';
-						ctx.globalCompositeOperation = 'destination-out';
+						ctx.strokeStyle = '#ffffff'
+						ctx.globalCompositeOperation = 'destination-out'
 					}
 
 					// If this is the first point in the stroke or if the mouse moved too quickly
 					if (lastX === null || lastY === null) {
 						// Just draw a dot
-						ctx.beginPath();
-						ctx.arc(x, y, currentSize / 2, 0, Math.PI * 2);
-						ctx.fill();
+						ctx.beginPath()
+						ctx.arc(x, y, currentSize / 2, 0, Math.PI * 2)
+						ctx.fill()
 					} else {
 						// Draw a line from the last position to the current position
-						ctx.beginPath();
-						ctx.moveTo(lastX, lastY);
-						ctx.lineTo(x, y);
-						ctx.stroke();
+						ctx.beginPath()
+						ctx.moveTo(lastX, lastY)
+						ctx.lineTo(x, y)
+						ctx.stroke()
 					}
 
 					// Update the last position
-					lastX = x;
-					lastY = y;
+					lastX = x
+					lastY = y
 
 					// Mark this file as modified
 					if (currentFileId && !modifiedFiles.has(currentFileId)) {
-						modifiedFiles.add(currentFileId);
-						updateThumbnailStatus(currentFileId, true);
+						modifiedFiles.add(currentFileId)
+						updateThumbnailStatus(currentFileId, true)
 					}
 				}
 
-
 				function handleTouchMove(e) {
-					e.preventDefault();
-					const touch = e.touches[0];
+					e.preventDefault()
+					const touch = e.touches[0]
 					const mouseEvent = new MouseEvent('mousemove', {
 						clientX: touch.clientX,
 						clientY: touch.clientY
-					});
-					canvas.dispatchEvent(mouseEvent);
+					})
+					canvas.dispatchEvent(mouseEvent)
 				}
 
 				function stopDrawing() {
-					isDrawing = false;
+					isDrawing = false
 					// Reset the last position when ending a stroke
-					lastX = null;
-					lastY = null;
+					lastX = null
+					lastY = null
 				}
 
 				// Update thumbnail status
 				function updateThumbnailStatus(fileId, isCensored) {
-					const thumbnail = document.querySelector(`.thumbnail-item[data-file-id="${fileId}"]`);
+					const thumbnail = document.querySelector(`.thumbnail-item[data-file-id="${fileId}"]`)
 					if (thumbnail) {
 						if (isCensored) {
-							thumbnail.classList.add('censored');
-							thumbnail.querySelector('.status-text').textContent = 'Censored';
+							thumbnail.classList.add('censored')
+							thumbnail.querySelector('.status-text').textContent = 'Censored'
 						} else {
-							thumbnail.classList.remove('censored');
-							thumbnail.querySelector('.status-text').textContent = 'Original';
+							thumbnail.classList.remove('censored')
+							thumbnail.querySelector('.status-text').textContent = 'Original'
 						}
 					}
 				}
 
 				// Save current canvas
 				function saveCurrentCanvas() {
-					if (!currentFileId) return;
+					if (!currentFileId) return
 
-					const censoredImageData = canvas.toDataURL('image/png');
+					const censoredImageData = canvas.toDataURL('image/png')
 
 					// Find the thumbnail for this file
-					const thumbnail = document.querySelector(`.thumbnail-item[data-file-id="${currentFileId}"]`);
+					const thumbnail = document.querySelector(`.thumbnail-item[data-file-id="${currentFileId}"]`)
 					if (thumbnail) {
 						// Update the thumbnail image with the censored version
-						thumbnail.querySelector('img').src = censoredImageData;
-						updateThumbnailStatus(currentFileId, true);
+						thumbnail.querySelector('img').src = censoredImageData
+						updateThumbnailStatus(currentFileId, true)
 					}
 
 					// Send the censored image to the server
-					const formData = new FormData();
-					formData.append('file_id', currentFileId);
-					formData.append('censored_image', censoredImageData);
-					formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+					const formData = new FormData()
+					formData.append('file_id', currentFileId)
+					formData.append('censored_image', censoredImageData)
+					formData.append('csrfmiddlewaretoken', '{{ csrf_token }}')
 
 					fetch('{% url "save_edited_contract" contract.id %}', {
 						method: 'POST',
 						body: formData
 					})
-						.then(response => response.json())
-						.then(data => {
+						.then((response) => response.json())
+						.then((data) => {
 							if (data.success) {
-								console.log(`Successfully saved censored image for file ${currentFileId}`);
+								console.log(`Successfully saved censored image for file ${currentFileId}`)
 							} else {
-								alert('Error saving censored image. Please try again.');
-								console.error(data.error);
+								alert('Error saving censored image. Please try again.')
+								console.error(data.error)
 							}
 						})
-						.catch(error => {
-							console.error('Error:', error);
-							alert('An error occurred while saving. Please try again.');
-						});
+						.catch((error) => {
+							console.error('Error:', error)
+							alert('An error occurred while saving. Please try again.')
+						})
 				}
 
 				// Save current button
 				saveCurrentBtn.addEventListener('click', function () {
 					if (currentFileId) {
-						saveCurrentCanvas();
+						saveCurrentCanvas()
 					} else {
-						alert('Please select a contract page first.');
+						alert('Please select a contract page first.')
 					}
-				});
+				})
 
 				// Save all and continue
 				saveAllBtn.addEventListener('click', function () {
 					// Save current canvas if modified
 					if (currentFileId && modifiedFiles.has(currentFileId)) {
-						saveCurrentCanvas();
+						saveCurrentCanvas()
 					}
 
 					// Redirect to next step
-					window.location.href = "{% url 'analyze_contract' contract.id %}";
-				});
-			});
+					window.location.href = "{% url 'home' %}"
+				})
+			})
     </script>
 {% endblock %}
