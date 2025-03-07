@@ -25,7 +25,7 @@
     /* Spacing */
     --container-padding: clamp(1rem, 5vw, 2rem);
     --section-padding: clamp(1.5rem, 3vw, 2rem);
-    --container-width: min(100% - 2rem, 1200px);
+    --container-width: min(100% - 2rem, 1400px);
     --spacing-xs: 0.25rem;
     --spacing-sm: 0.5rem;
     --spacing-md: 1rem;
@@ -40,6 +40,11 @@
     --font-size-xl: 1.5rem;
     --font-size-xxl: 2rem;
     --line-height: 1.5;
+
+    /* Font Weights */
+    --font-weight-light: 300;
+    --font-weight-normal: 400;
+    --font-weight-bold: 700;
 
     /* Transitions */
     --transition-fast: 0.2s ease;
@@ -145,14 +150,11 @@ p {
     margin-bottom: var(--spacing-md);
 }
 
-/* Utility Classes */
-.hide {
-    display: none;
-}
-
+/* Text Styles */
 .text-center {
     text-align: center;
 }
+
 
 .text-left {
     text-align: left;
@@ -164,6 +166,47 @@ p {
 
 .text-white {
     color: white;
+}
+
+.text-small {
+    font-size: var(--font-size-sm);
+}
+
+.text-large {
+    font-size: var(--font-size-lg);
+}
+
+.text-xl {
+    font-size: var(--font-size-xl);
+}
+
+.text-xxl {
+    font-size: var(--font-size-xxl);
+}
+
+.text-uppercase {
+    text-transform: uppercase;
+}
+
+.text-bold {
+    font-weight: var(--font-weight-bold);
+}
+
+.text-light {
+    font-weight: var(--font-weight-light);
+}
+
+.text-normal {
+    font-weight: var(--font-weight-normal);
+}
+
+.text-italic {
+    font-style: italic;
+}
+
+/* Utility Classes */
+.hide {
+    display: none;
 }
 
 .flex {
@@ -357,7 +400,7 @@ button,
     border: none;
     border-radius: var(--border-radius);
     background: var(--primary);
-    color: var(--button-text) !important;
+    color: var(--button-text);
     cursor: pointer;
     transition: all var(--transition-normal);
     position: relative;

@@ -79,25 +79,10 @@ class ContractFile(models.Model):
 
     def save(self, *args, **kwargs):
         if self.pk:
-            logger.info(f"Updating ContractFile {self.pk} for contract {self.contract}")
+            logger.info(f"Updating ContractFile {self.pk} for {self.contract}")
         else:
-            logger.info(f"Creating new ContractFile for contract {self.contract}")
+            logger.info(f"Creating new ContractFile for {self.contract}")
         super().save(*args, **kwargs)
-
-    def get_image_data(self):
-        """Return decrypted image data"""
-        if not self.encrypted_content:
-            return None
-
-        # Decrypt data
-        decrypted_data = decrypt_data(self.encrypted_content)
-        return base64.b64encode(decrypted_data).decode("utf-8")
-
-    def get_data_url(self):
-        """Return complete data URL for embedding in HTML"""
-        if not self.file_content:
-            return None
-        return f"data:{self.file_type};base64,{self.get_image_data()}"
 
     encrypted_content = models.BinaryField(null=True)
 
@@ -107,10 +92,9 @@ class ContractDetails(models.Model):
         "Contract", on_delete=models.CASCADE, related_name="details"
     )
     contract_type = models.CharField(max_length=50, blank=True, null=True)
-    contract_text = models.TextField(blank=True, null=True)
 
     # Property Details
-    address = models.TextField(blank=True, null=True)
+    street = models.TextField(blank=True, null=True)
     city = models.CharField(max_length=100, blank=True, null=True)
     postal_code = models.CharField(max_length=10, blank=True, null=True)
     country = models.CharField(max_length=100, blank=True, null=True)
@@ -160,6 +144,9 @@ class ContractDetails(models.Model):
     num_apartment_keys = models.IntegerField(null=True, blank=True)
     num_mailbox_keys = models.IntegerField(null=True, blank=True)
     num_building_keys = models.IntegerField(null=True, blank=True)
+
+    # Neighborhood
+    neighborhood = models.TextField(blank=True, null=True)
 
     # Contract Duration
     start_date = models.DateField(null=True, blank=True, default=None)
@@ -285,25 +272,16 @@ class ContractDetails(models.Model):
             logger.error(f"Error saving ContractDetails: {e}")
 
 
-class Paragraph(models.Model):
-    contract_details = models.ForeignKey(
-        "ContractDetails", on_delete=models.CASCADE, related_name="paragraphs"
+class ContractText(models.Model):
+    contract = models.ForeignKey(
+        "Contract", on_delete=models.CASCADE, related_name="text"
     )
-    title = models.CharField(max_length=100)
-    content = models.TextField()
-    summary = models.TextField()
-    problems = models.TextField()
+    text = models.TextField(blank=True, null=True)
+
+    friendly_text = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"Paragraph {self.title} for {self.contract_details}"
-
-    def save(self, *args, **kwargs):
-        if self.pk:
-            logger.info(f"Updating Paragraph {self.pk} for contract {self.contract}")
-        else:
-            logger.info(f"Creating new Paragraph for contract {self.contract}")
-        super().save(*args, **kwargs)
-
+        return f"Contract Text for {self.contract}"
 
 class Mietspiegel(models.Model):
     wohnflaeche_qm = models.DecimalField(

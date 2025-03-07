@@ -10,6 +10,7 @@ from django.http.response import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 
 from contract_analysis.analysis import (
+    analyze_neighborhood_with_gemini,
     extract_text_with_gemini,
     extract_details_with_gemini,
 )
@@ -26,6 +27,7 @@ def analyze_contract(request, contract_id):
     if request.method != "POST":
         return error_response("Invalid request method", status=405)
 
+    total_token_count = 0
     logger.info(f"Analyzing contract {contract_id} for user {request.user}")
 
     try:
@@ -44,17 +46,26 @@ def analyze_contract(request, contract_id):
         extracted_details, detail_token_count = extract_details_with_gemini(
             contract_images=images
         )
-        total_token_count = detail_token_count
-        logger.info(
-            f"Total token count for contract {contract_id}: {total_token_count}"
-        )
+        total_token_count += detail_token_count
+
+        # Analyze neighborhood based on extracted address
+        logger.info("Analyzing neighborhood")
+        # Create full address string and geocode
+        street = extracted_details["street"] if extracted_details.get("street") else ""
+        postal_code = extracted_details["postal_code"] if extracted_details.get("postal_code") else ""
+        city = extracted_details["city"] if extracted_details.get("city") else ""
+        country = extracted_details["country"] if extracted_details.get("country") else ""
+        address = f"{street} {postal_code} {city} {country}"
+        neighborhood, analysis_token_count = analyze_neighborhood_with_gemini(address)
+        extracted_details["neighborhood"] = neighborhood
+        total_token_count += analysis_token_count
+
+        # Update contract details with extracted information
+        update_contract_details(contract, extracted_details)
 
         # Update contract status to "analyzed"
         contract.status = "analyzed"
         contract.save()
-
-        # Update contract details with extracted information
-        update_contract_details(contract, extracted_details)
 
         # Return a success response with the extracted details
         return JsonResponse({"success": True, "details": extracted_details})
@@ -128,7 +139,7 @@ def update_contract_details(contract, extracted_details):
 
     # Direct assignment of fields using .get() method with German defaults
     details.contract_type = get(extracted_details, "contract_type", "Mietvertrag")
-    details.address = get(extracted_details, "address", None)
+    details.street = get(extracted_details, "street", None)
     details.city = get(extracted_details, "city", None)
     details.postal_code = get(extracted_details, "postal_code", None)
     details.country = get(extracted_details, "country", None)
@@ -161,6 +172,9 @@ def update_contract_details(contract, extracted_details):
     details.num_apartment_keys = get(extracted_details, "num_apartment_keys", None)
     details.num_mailbox_keys = get(extracted_details, "num_mailbox_keys", None)
     details.num_building_keys = get(extracted_details, "num_building_keys", None)
+
+    # Neighbourhood details
+    details.neighborhood = get(extracted_details, "neighborhood", None)
 
     # Handle date fields with conversion if needed
     start_date = extracted_details.get("start_date")

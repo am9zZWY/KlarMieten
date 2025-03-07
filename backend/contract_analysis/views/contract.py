@@ -3,9 +3,11 @@ import logging
 
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
+from django.views.decorators.cache import cache_page
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404
 
+from contract_analysis.utils.map import geocode_address
 from contract_analysis.models import Contract, ContractDetails, ContractFile
 from contract_analysis.utils.error import handle_exception, error_response
 
@@ -31,7 +33,7 @@ def get_contract(request, contract_id):
     cache_key = f"contract_{contract_id}_{request.user.id}"
     cached_data = cache.get(cache_key)
 
-    # if cached_data:
+    #if cached_data:
     #    return render(request, "contract/contract.html", cached_data)
 
     # Get from database
@@ -39,11 +41,19 @@ def get_contract(request, contract_id):
         Contract, id=contract_id, user=request.user, archived=False
     )
     contract_details = ContractDetails.objects.filter(contract=contract).first()
+    
+    # Create full address string and geocode
+    street = contract_details.street if contract_details.street else ""
+    postal_code = contract_details.postal_code if contract_details.postal_code else ""
+    city = contract_details.city if contract_details.city else ""
+    country = contract_details.country if contract_details.country else ""
+    address = f"{street} {postal_code} {city} {country}"
+    location = geocode_address(address)
 
     # Cache for 10 minutes
-    context = {"contract": contract, "contract_details": contract_details}
+    context = {"contract": contract, "contract_details": contract_details, "location": location}
     cache.set(cache_key, context, 60 * 10)
-
+    
     return render(request, "contract/contract.html", context)
 
 

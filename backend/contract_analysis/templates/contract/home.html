@@ -63,6 +63,7 @@
                             <tr data-contract-id="{{ contract.id }}">
                                 <td>
                                     <strong>Mietvertrag {{ forloop.counter }}</strong>
+                                    <p class="text-small">{{ contract.uploaded_at|date:"d.m.Y" }}</p>
                                 </td>
                                 <td class="documents-cell">
                                     <div class="documents-container">
@@ -90,26 +91,20 @@
                                                 data-contract-id="{{ contract.id }}"
                                                 onclick="window.location = '{% url 'contract' contract.id %}'"
                                                 class="button small {% if contract.status != 'analyzed' %}hide{% endif %}"
-                                        >
-                                            Details anzeigen
+                                                {% if contract.status == 'processing' %}disabled{% endif %}>
+                                            Anzeigen
                                         </button>
                                         <button onclick="window.location = '{% url 'edit_contract' contract.id %}'"
-                                                class="small">
-                                            Bearbeiten
+                                                class="small" {% if contract.status == 'processing' %}disabled{% endif %}>
+                                            Zensieren
                                         </button>
                                         <button
                                                 data-contract-id="{{ contract.id }}"
                                                 onclick="analyzeContract('{{ contract.id }}')"
-                                                class="small"
+                                                class="small {% if contract.status == 'analyzed' %}bg-warning{% endif %}"
                                                 {% if contract.status == 'processing' %}disabled{% endif %}
                                         >
                                             Analyse starten
-                                        </button>
-                                        <button
-                                                onclick="archiveContract('{{ contract.id }}')"
-                                                class="small bg-error"
-                                        >
-                                            Archivieren
                                         </button>
                                     </div>
                                 </td>
