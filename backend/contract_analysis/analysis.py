@@ -77,82 +77,81 @@ def extract_details_with_gemini(
 ) -> tuple[dict, int]:
     detail_extraction_prompt = (
         """
-    You are a contract analysis expert.
-    Your task is to analyze the contract and extract key information, organizing it into a JSON object that *strictly* conforms to the following schema description:
-    """
+            Sie sind ein Vertragsanalyse-Experte. Ihre Aufgabe ist es, den Vertrag zu analysieren und wichtige Informationen zu extrahieren, die in einem JSON-Objekt organisiert werden, das *strikt* dem folgenden Schema entspricht:
+            """
         + json.dumps(contract_details_json_scheme, indent=2)
         + """
-    The JSON object should have the following keys:
-    
-    **Requirements:**
-    
-    1. Do not include personal contact information (names, phone numbers, emails, signatures). Include the property address (city, postal code).
-    2. Extract all pricing details with descriptions and amounts.
-    3. If a section is not present or not extractable, leave it as null or an empty string.
-    4. Do not include any legal advice or interpretation.
-    5. Do not include any links or references to external resources.
-    6. Try to be as accurate as possible in your extraction.
-    
-    **Additional Information:**
-    * The contract may contain information about the property, rental terms, costs, and other details.
-    * The contract may be in German.
-    * The contract may be in a scanned image format.
-    * The contract may contain tables, lists, or other structured data.
-    * The contract may have multiple pages.
-    * The contract may have handwritten annotations or text that should NOT be ignored since they are part of the contract!
-    * The contract may contain parts that are difficult to read or understand, that contain grammar errors, that are messed up. Do your best to extract the information accurately.
-    
-    Here are a few examples:
-    
-    **Contract Snippet for a rental agreement with noisy data:**
+    Das JSON-Objekt sollte die folgenden Schlüssel enthalten:
+
+    **Anforderungen:**
+
+    1. Geben Sie keine persönlichen Kontaktinformationen (Namen, Telefonnummern, E-Mails, Unterschriften) an. Geben Sie die Adresse der Immobilie (Stadt, Postleitzahl) an.
+    2. Extrahieren Sie alle Preisdetails mit Beschreibungen und Beträgen.
+    3. Wenn ein Abschnitt nicht vorhanden oder nicht extrahierbar ist, lassen Sie ihn als null oder eine leere Zeichenfolge.
+    4. Geben Sie keine rechtlichen Ratschläge oder Interpretationen.
+    5. Geben Sie keine Links oder Verweise auf externe Ressourcen an.
+    6. Seien Sie bei der Extraktion so genau wie möglich.
+
+    **Zusätzliche Informationen:**
+    * Der Vertrag kann Informationen über die Immobilie, Mietbedingungen, Kosten und andere Details enthalten.
+    * Der Vertrag kann auf Deutsch sein.
+    * Der Vertrag kann im Format eines gescannten Bildes vorliegen.
+    * Der Vertrag kann Tabellen, Listen oder andere strukturierte Daten enthalten.
+    * Der Vertrag kann mehrere Seiten umfassen.
+    * Der Vertrag kann handschriftliche Anmerkungen oder Text enthalten, die nicht ignoriert werden sollten, da sie Teil des Vertrags sind!
+    * Der Vertrag kann Teile enthalten, die schwer zu lesen oder zu verstehen sind, die Grammatikfehler enthalten oder durcheinander sind. Geben Sie Ihr Bestes, um die Informationen genau zu extrahieren.
+
+    Hier sind einige Beispiele:
+
+    **Vertragsschnipsel für einen Mietvertrag mit verrauschten Daten:**
 
     "Wohnraummietvertrag Zwischen Sibylle Reisecista, Serbergst. 15, 78074 Tübingen als Verm Vor- und Zuname) Adam Reisecsita Serbergst. 15, 78074 Tabingen(Straße Nr., PLZ, Ort) 07011-00000 adameinecib@gmail com als Vermieter/in
-und Josef Maier X 28.01.1995
-(Geburtsdatum)
-(Straße Nr., PLZ, Ort) Schützenstraße Straße. 31, 39123 Sorgenhausen
-(Vor- und Zuname) (Geburtsdatum)
-(Straße Nr., PLZ, Ort)
-0176 0000000 x max.mustermann@protonmail.com als Mieter/in
-DE 39 0000 0000 0000 0000 00
-(Bankverbindung: IBAN)
-wird folgender Mietvertrag geschlossen:
-§ 1 Mietsache
-1. Vermietet werden im EG Geschoss links-mitte rechts des Hauses Hotzenplotzige Straße. 538 Whg.Nr.10, rechts, 3. Stock, 78921 Festburg zu Wohnzwecken und alleiniger Nutzung:
-4 Zimmer 2 Keller/Nr.
-Sonstiges/Wohnungszubehör (z.B. Einbauküche) 1
-Küche 1
-Bad/Dusche 1
-Abstellraum/Nr.
-Gartenanteil 1
-separates WC
-Balkon/Terrasse 1
-Stellplatz/Nr. 13
-Garage/Nr. Es handelt sich um eine Eigentumswohnung
-2. Beheizung Einzelofen X Etagenheizung Zentralheizung Sonstiges:
-3. Gemeinschaftlich X Waschküche • Trockenraum < Garten Sonstiges:
-4. Ausgehändigte Schlüssel Schließanlage 1 Wohnung 1 Haustür Zimmer Briefkasten
-Keller Garage Handsender Zugangskarte
-Sonstiges:
-Das Mietverhältnis beginnt am 01.07.2023 und wird auf unbestimmte Zeit geschlossen.
-Die Miete beträgt monatlich für
-a) Wohnung
-b) Garage/Stellplatz
-c) Einbauküche/Möblierung
-dem Eregiewusarge errechner
-d) Betriebskosten-Vorauszahlung (siehe folg. Ziffer 2), 1400,00 € Betriebskosten werden direkt mit dem Energieversorger abgerechnet.
-Untervermietung an folgende Personen genehmigt: Jürgen Maier, Petra Schmitt, Max Mustermann
-    
+    und Josef Maier X 28.01.1995
+    (Geburtsdatum)
+    (Straße Nr., PLZ, Ort) Schützenstraße Straße. 31, 39123 Sorgenhausen
+    (Vor- und Zuname) (Geburtsdatum)
+    (Straße Nr., PLZ, Ort)
+    0176 0000000 x max.mustermann@protonmail.com als Mieter/in
+    DE 39 0000 0000 0000 0000 00
+    (Bankverbindung: IBAN)
+    wird folgender Mietvertrag geschlossen:
+    § 1 Mietsache
+    1. Vermietet werden im EG Geschoss links-mitte rechts des Hauses Hotzenplotzige Straße. 538 Whg.Nr.10, rechts, 3. Stock, 78921 Festburg zu Wohnzwecken und alleiniger Nutzung:
+    4 Zimmer 2 Keller/Nr.
+    Sonstiges/Wohnungszubehör (z.B. Einbauküche) 1
+    Küche 1
+    Bad/Dusche 1
+    Abstellraum/Nr.
+    Gartenanteil 1
+    separates WC
+    Balkon/Terrasse 1
+    Stellplatz/Nr. 13
+    Garage/Nr. Es handelt sich um eine Eigentumswohnung
+    2. Beheizung Einzelofen X Etagenheizung Zentralheizung Sonstiges:
+    3. Gemeinschaftlich X Waschküche • Trockenraum < Garten Sonstiges:
+    4. Ausgehändigte Schlüssel Schließanlage 1 Wohnung 1 Haustür Zimmer Briefkasten
+    Keller Garage Handsender Zugangskarte
+    Sonstiges:
+    Das Mietverhältnis beginnt am 01.07.2023 und wird auf unbestimmte Zeit geschlossen.
+    Die Miete beträgt monatlich für
+    a) Wohnung
+    b) Garage/Stellplatz
+    c) Einbauküche/Möblierung
+    dem Eregiewusarge errechner
+    d) Betriebskosten-Vorauszahlung (siehe folg. Ziffer 2), 1400,00 € Betriebskosten werden direkt mit dem Energieversorger abgerechnet.
+    Untervermietung an folgende Personen genehmigt: Jürgen Maier, Petra Schmitt, Max Mustermann
+
     **JSON Output:**
-    
+
     ```json
-    {{
+    {
         "contract_type": "Unbefristeter Mietvertrag",
         "start_date": "2023-07-01",
         "address": "Hotzenplotzige Straße 538",
         "city": "Festburg",
         "postal_code": "78921",
         "property_type": "Wohnung",
-        "number_of_rooms": 3,
+        "number_of_rooms": 4,
         "kitchen": true,
         "bathroom": true,
         "separate_wc": true,
@@ -164,14 +163,16 @@ Untervermietung an folgende Personen genehmigt: Jürgen Maier, Petra Schmitt, Ma
         "operation_costs": 0,
         "heating_costs": 0,
         "garage_costs": 0,
-        "deposit_amount": 2800,
+        "deposit_amount": null,
         "pets_allowed": false,
-        "subletting_allowed": true,
-    }}
-    
-    Another example:
-    
-    **Contract Snippet:**
+        "subletting_allowed": true
+    }
+    ```
+
+    Ein weiteres Beispiel:
+
+    **Vertragsschnipsel:**
+
     *Untermietvertrag*
     *zwischen*
     *Herrn Max Mustermann*
@@ -179,7 +180,7 @@ Untervermietung an folgende Personen genehmigt: Jürgen Maier, Petra Schmitt, Ma
     *Frau Maria Musterfrau*
     Der Untermietvertrag beginnt am 18.04.2024
     Die Mietdauer bestimmt sich nach der Dauer des Hauptmietvertrages. Endet der Hauptmietvertrag,
-gleich auch welchen Gründen, endet damit ohne Ausnahme auch der Untermietvertrag.
+    gleich auch welchen Gründen, endet damit ohne Ausnahme auch der Untermietvertrag.
     *Addresse: Musterstr. 12, 12345 Musterstadt*
     Die Wohnung befindet sich in der EG Etage auf der linken Seite rechten Seite. Folgende Räume werden vermietet: .1. Zimmer, 1 Küche/Kochnische,1 Bad/Dusche/WC, 1 Bodenräume / Speicher
     Nr........., 2 Kellerräume Nr. 1. Garage / Stellplatz,.1. Garten,/ gewerblich genutzte Räume
