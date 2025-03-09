@@ -1,152 +1,129 @@
 {% load static %}
 
-<div class="upload-area"
-     aria-label="Datei-Upload-Bereich"
-     data-max-size="{{ max_file_size }}"
-     data-accepted-types="{{ accepted_file_types|join:',' }}"
->
-    <input
-            accept="{{ accepted_file_types|join:',' }}"
-            hidden
-            id="fileInput"
-            multiple
-            type="file"
-    />
-    <div class="upload-content">
-        <ul class="file-preview" id="file-preview"></ul>
-        <span class="upload-instructions">
-            Ziehen Sie Ihren Mietvertrag
-            hierher oder
-        </span>
-        <label for="fileInput" class="file-label">
-            Wählen Sie Dateien aus
-        </label>
+<div class="container mt-4" x-data="fileUpload()" x-init="init()">
+
+    <!-- Upload Area -->
+    <div class="text-center d-flex flex-column align-items-center border rounded p-4 mb-4 bg-transparent"
+         x-on:dragover.prevent="handleDragOver"
+         x-on:dragleave.prevent="handleDragLeave"
+         x-on:drop.prevent="handleDrop"
+         :class="{ 'dragging': isDragging, 'has-error': hasError }"
+         aria-label="Datei-Upload-Bereich"
+         :data-max-size="maxFileSize"
+         :data-accepted-types="acceptedTypes.join(',')"
+    >
+        <input
+                accept="{{ accepted_file_types|join:',' }}"
+                hidden
+                id="fileInput"
+                multiple
+                type="file"
+                @change="handleFileInput"
+        />
+        <div class="upload-icon mb-2">
+            <ul class="file-preview list-group mb-3" id="file-preview" x-ref="preview"></ul>
+            <p class="upload-instructions mb-2">
+                Ziehen Sie Ihren Mietvertrag hierher oder
+            </p>
+            <label for="fileInput" class="btn btn-primary">
+                Wählen Sie Dateien aus
+            </label>
+        </div>
     </div>
-</div>
 
-<div class="error-message hide" role="alert">
-    {{ form.errors }}
-</div>
+    <!-- Error Message -->
+    <div class="error-message alert alert-danger" role="alert" x-show="hasError" x-text="errorMessage"></div>
 
-<form method="POST"
-      enctype="multipart/form-data"
-      class="upload-form"
-      data-upload-url="{% url 'upload_contract' %}"
->
-    {% csrf_token %}
-    <button type="submit" class="btn btn-primary btn-large" disabled>
-        Hochladen
-        <span class="spinner hide"></span>
-    </button>
-</form>
+    <!-- Upload Form -->
+    <form method="POST"
+          enctype="multipart/form-data"
+          class="upload-form"
+          hx-post="{% url 'upload_contract' %}"
+          hx-target="#file-preview"
+          hx-swap="outerHTML"
+          @submit.prevent="handleSubmit"
+    >
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-lg" :disabled="uploadStatus !== 'idle'">
+            Hochladen
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"
+                  x-show="uploadStatus === 'uploading'"></span>
+        </button>
+    </form>
+
+</div>
 
 <script>
-	const config = {
-		maxFileSize: {{ max_file_size|default:"10485760" }},  // 10MB default
-		acceptedTypes: {{ accepted_file_types|safe|default:"['application/pdf', 'image/jpeg', 'image/png']" }},
-		csrf: "{{ csrf_token }}"
-	};
+	function fileUpload() {
+		return {
+			files: [],
+			maxFileSize: {{ max_file_size|default:'10485760' }},
+			acceptedTypes: {{ accepted_file_types|safe|default:"['application/pdf', 'image/jpeg', 'image/png']" }},
+			csrf: '{{ csrf_token }}',
+			uploadStatus: 'idle',
+			isDragging: false,
+			hasError: false,
+			errorMessage: '',
 
-	class FileUploadHandler {
-		constructor(config) {
-			this.files = new Set();
-			this.initElements();
-			this.bindEvents();
-		}
+			init() {
+				this.updateUI();
+			},
 
-		initElements() {
-			this.elements = {
-				uploadArea: document.querySelector('.upload-area'),
-				fileInput: document.querySelector('input[type="file"]'),
-				preview: document.querySelector('.file-preview'),
-				errorMessage: document.querySelector('.error-message'),
-				uploadButton: document.querySelector('button[type="submit"]'),
-			};
-		}
+			handleDragOver(event) {
+				this.isDragging = true;
+			},
 
-		bindEvents() {
-			this.elements.uploadArea.addEventListener('dragover', this.handleDragOver.bind(this));
-			this.elements.uploadArea.addEventListener('dragleave', this.handleDragLeave.bind(this));
-			this.elements.uploadArea.addEventListener('drop', this.handleDrop.bind(this));
-			this.elements.fileInput.addEventListener('change', this.handleFileInput.bind(this));
-			document.querySelector('form').addEventListener('submit', this.handleSubmit.bind(this));
-		}
+			handleDragLeave(event) {
+				this.isDragging = false;
+			},
 
-		handleDragOver(event) {
-			event.preventDefault();
-			this.elements.uploadArea.classList.add('dragging');
-		}
+			handleDrop(event) {
+				this.isDragging = false;
+				this.handleFiles(event.dataTransfer.files);
+			},
 
-		handleDragLeave(event) {
-			event.preventDefault();
-			this.elements.uploadArea.classList.remove('dragging');
-		}
+			handleFileInput(event) {
+				this.handleFiles(event.target.files);
+			},
 
-		handleDrop(event) {
-			event.preventDefault();
-			this.elements.uploadArea.classList.remove('dragging');
-			this.handleFiles(event.dataTransfer.files);
-		}
-
-		handleFileInput(event) {
-			this.handleFiles(event.target.files);
-		}
-
-		UPLOAD_STATES = ['idle', 'disabled', 'uploading'];
-
-		setUploadStatus(uploadState) {
-			this.elements.uploadButton.querySelector('.spinner').classList.add('hide');
-			this.elements.uploadButton.disabled = false;
-			switch (uploadState) {
-				case 'idle':
-					break;
-				case 'disabled':
-					this.elements.uploadButton.disabled = true;
-					break;
-				case 'uploading':
-					this.elements.uploadButton.disabled = true;
-					this.elements.uploadButton.querySelector('.spinner').classList.remove('hide');
-					break;
-			}
-		}
-
-		// Validate file
-		validateFile(file) {
-			if (!config.acceptedTypes.includes(file.type)) {
-				this.showError(`Ungültiger Dateityp (${file.type || 'unbekannt'}). Erlaubt: ${config.acceptedTypes.join(', ')}`);
-				return false;
-			}
-			if (file.size > config.maxFileSize) {
-				this.showError("Die Datei darf nicht größer als 10MB sein.");
-				return false;
-			}
-			return true
-		}
-
-		showError(message) {
-			this.elements.errorMessage.textContent = message;
-			this.elements.errorMessage.classList.remove('hide');
-			this.elements.uploadArea.classList.add('has-error');
-		}
-
-		resetError() {
-			this.elements.errorMessage.textContent = '';
-			this.elements.errorMessage.classList.add('hide');
-			this.elements.uploadArea.classList.remove('has-error');
-		}
-
-		// Handle files
-		handleFiles(fileList) {
-			for (const file of fileList) {
-				if (!this.validateFile(file)) {
-					return;
+			handleFiles(fileList) {
+				for (const file of fileList) {
+					if (!this.validateFile(file)) {
+						return;
+					}
+					this.files.push(file);
+					this.createPreview(file);
 				}
-				this.files.add(file);
-				const listItem = document.createElement("li");
+				this.updateUI();
+			},
+
+			validateFile(file) {
+				if (!this.acceptedTypes.includes(file.type)) {
+					this.showError(`Ungültiger Dateityp (${file.type || 'unbekannt'}). Erlaubt: ${this.acceptedTypes.join(', ')}`);
+					return false;
+				}
+				if (file.size > this.maxFileSize) {
+					this.showError('Die Datei darf nicht größer als 10MB sein.');
+					return false;
+				}
+				return true;
+			},
+
+			showError(message) {
+				this.errorMessage = message;
+				this.hasError = true;
+			},
+
+			resetError() {
+				this.errorMessage = '';
+				this.hasError = false;
+			},
+
+			createPreview(file) {
+				const listItem = document.createElement('li');
 				listItem.dataset.filename = file.name;
 
-				// Display image / PDF preview
-				if (file.type.startsWith("image/")) {
+				if (file.type.startsWith('image/')) {
 					const imgLink = document.createElement('a');
 					imgLink.href = URL.createObjectURL(file);
 					imgLink.target = '_blank';
@@ -165,72 +142,34 @@
 					listItem.prepend(pdfPreview);
 				}
 
-				listItem.className = "file";
-				listItem.innerHTML += `<button type="button" class="remove" onclick="uploader.removeFile('${file.name}')">Entfernen</button>`;
-				this.elements.preview.appendChild(listItem);
+				listItem.className = 'file list-group-item d-flex justify-content-between align-items-center';
+				listItem.innerHTML += `
+                    <button type="button" class="btn btn-danger btn-sm" @click="removeFile('${file.name}')">Entfernen</button>
+                `;
+				this.$refs.preview.appendChild(listItem);
+			},
 
+			removeFile(fileName) {
+				this.files = this.files.filter(file => file.name !== fileName);
+				document.querySelector(`li[data-filename="${fileName}"]`).remove();
+				this.updateUI();
+			},
+
+			updateUI() {
+				if (this.files.length === 0) {
+					this.uploadStatus = 'disabled';
+				} else {
+					this.uploadStatus = 'idle';
+				}
+				this.resetError();
+			},
+
+			handleSubmit() {
+				if (this.files.length === 0) {
+					return this.showError('Bitte wählen Sie mindestens eine Datei aus.');
+				}
+				this.uploadStatus = 'uploading';
 			}
-			this.updateUI();
-		}
-
-		// Remove a file
-		removeFile(fileName) {
-			this.files = new Set([...this.files].filter((file) => file.name !== fileName));
-			document.querySelector(`li[data-filename="${fileName}"]`).remove()
-			this.updateUI();
-		}
-
-		// Update UI
-		updateUI() {
-			if (this.files.size === 0) {
-				this.setUploadStatus('disabled');
-			} else {
-				this.setUploadStatus('idle');
-			}
-			this.resetError()
-		}
-
-		// Drag and drop events
-
-		// Form submission
-		handleSubmit(event) {
-			event.preventDefault();
-			if (this.files.size === 0) {
-				return this.showError("Bitte wählen Sie mindestens eine Datei aus.");
-			}
-			const formData = new FormData();
-			this.files.forEach((file) => formData.append("files", file));
-			this.setUploadStatus('uploading');
-			fetch('{% url "upload_contract" %}', {
-				method: "POST",
-				body: formData,
-				headers: {
-					"X-CSRFToken": "{{ csrf_token }}",
-				},
-			})
-				.then((response) => response.json())
-				.then((data) => {
-					if (data.success) {
-						alert("Dateien erfolgreich hochgeladen!");
-						this.files.clear();
-						this.elements.preview.innerHTML = "";
-						this.updateUI();
-					} else {
-						this.showError("Fehler beim Hochladen.");
-					}
-				})
-				.catch((error) => {
-					console.error("Upload error:", error);
-					this.showError("Fehler beim Hochladen.");
-				})
-				.finally(() => {
-					this.setUploadStatus('idle')
-
-					// Reload the page after successful upload
-					window.location.reload();
-				});
 		}
 	}
-
-	const uploader = new FileUploadHandler(config);
 </script>

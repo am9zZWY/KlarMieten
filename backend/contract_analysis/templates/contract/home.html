@@ -6,212 +6,219 @@
 
 {% block content %}
     {% if not user.is_authenticated %}
-        <section class="login-section">
-            <div class="login-container">
-                <h2>Willkommen bei Darf Vermieter Das?</h2>
-                <p>Bitte melden Sie sich an, um Ihre Mietverträge zu analysieren und zu verwalten.</p>
-                <a href="{% url 'login' %}" class="button highlight active larger">Anmelden</a>
-            </div>
-        </section>
+        {% include 'not_authed.html' %}
     {% else %}
-        <!-- Dashboard Header -->
-        <section class="dashboard-header">
-            <div class="user-greeting">
-                <h2>Willkommen zurück, {{ user.username }}!</h2>
-                <p>Hier können Sie Ihre Mietverträge hochladen, analysieren und verwalten.</p>
-            </div>
-            <div class="quick-actions">
-                <button id="showUploadForm" class="highlight active">Neuen Vertrag hochladen</button>
-            </div>
-        </section>
-
-        <!-- Upload Contract Section (Initially Hidden) -->
-        <section id="uploadContractSection" class="upload-section hide">
-            {% include 'contract/upload.html' %}
-        </section>
-
-        <!-- Contracts Management Section -->
-        <section class="contracts-section">
-            <div class="section-header">
-                <h3>Meine Mietverträge</h3>
-
-                <!-- Search and Filter -->
-                <div class="table-controls">
-                    <input
-                            type="text"
-                            id="contractSearch"
-                            placeholder="Verträge durchsuchen..."
-                            class="search-input"
-                    >
+        <!-- Alpine app wrapper for global state -->
+        <div x-data="{
+            showUploadForm: false,
+            searchText: ''
+        }">
+            <!-- Dashboard Header -->
+            <section class="mb-4">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2>Willkommen zurück, {{ user.username }}!</h2>
+                            <p>Hier können Sie Ihre Mietverträge hochladen, analysieren und verwalten.</p>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <button
+                                    @click="showUploadForm = !showUploadForm"
+                                    class="btn btn-primary"
+                                    x-text="showUploadForm ? 'Upload ausblenden' : 'Neuen Vertrag hochladen'">
+                                Neuen Vertrag hochladen
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Contracts Table -->
-            {% if contracts %}
-                <div class="table-responsive">
-                    <table class="contracts-table">
-                        <thead>
-                        <tr>
-                            <th>Vertrag</th>
-                            <th>Dokumente</th>
-                            <th>Status</th>
-                            <th>Aktionen</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for contract in contracts %}
-                            <tr data-contract-id="{{ contract.id }}">
-                                <td>
-                                    <strong>Mietvertrag {{ forloop.counter }}</strong>
-                                    <p class="text-small">{{ contract.uploaded_at|date:"d.m.Y" }}</p>
-                                </td>
-                                <td class="documents-cell">
-                                    <div class="documents-container">
-                                        {% for file in contract.files.all %}
-                                            <div class="thumbnail-item" data-file-id="{{ file.id }}">
-                                                <img src="{% url 'contract_file' contract.id file.id %}"
-                                                     alt="Vertragsseite {{ forloop.counter }}">
+            <!-- Upload Contract Section (Toggle visibility with Alpine) -->
+            <section
+                    class="mb-4"
+                    x-show="showUploadForm"
+                    x-transition>
+                {% include 'contract/upload.html' %}
+            </section>
+
+            <!-- Contracts Management Section -->
+            <section class="mb-4">
+                <div class="container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3>Meine Mietverträge</h3>
+
+                        <!-- Search with Alpine binding -->
+                        <div class="col-md-4">
+                            <input
+                                    type="text"
+                                    placeholder="Verträge durchsuchen..."
+                                    class="form-control"
+                                    x-model="searchText"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Contracts Table -->
+                    {% if contracts %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Vertrag</th>
+                                    <th>Dokumente</th>
+                                    <th>Status</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for contract in contracts %}
+                                    <tr
+                                            data-contract-id="{{ contract.id }}"
+                                            x-show="'{{ contract.id }}'.toLowerCase().includes(searchText.toLowerCase())"
+                                    >
+                                        <td>
+                                            <span class="fw-bold">Mietvertrag {{ forloop.counter }}</span>
+                                            <p class="small text-muted">{{ contract.uploaded_at|date:"d.m.Y" }}</p>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-1 overflow-auto">
+                                                {% for file in contract.files.all %}
+                                                    <div class="position-relative"
+                                                         style="min-width: 80px; max-width: 100px;"
+                                                         data-file-id="{{ file.id }}">
+                                                        <img src="{% url 'contract_file' contract.id file.id %}"
+                                                             alt="Vertragsseite {{ forloop.counter }}"
+                                                             class="img-fluid rounded border">
+                                                    </div>
+                                                {% empty %}
+                                                    <p class="mb-0">Keine Vertragsdateien gefunden. Bitte laden Sie
+                                                        zuerst Dateien hoch.</p>
+                                                {% endfor %}
                                             </div>
-                                        {% empty %}
-                                            <p>Keine Vertragsdateien gefunden. Bitte laden Sie zuerst Dateien hoch.</p>
-                                        {% endfor %}
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="status-badge
-                                      {% if contract.status == 'analyzed' %}status-success
-                                      {% elif contract.status == 'pending' %}status-warning
-                                      {% else %}status-default{% endif %}">
-                                      {{ contract.status }}
-                                    </span>
-                                </td>
-                                <td class="action-column">
-                                    <div class="action-buttons">
-                                        <button
-                                                data-contract-id="{{ contract.id }}"
-                                                onclick="window.location = '{% url 'contract' contract.id %}'"
-                                                class="button small {% if contract.status != 'analyzed' %}hide{% endif %}"
-                                                {% if contract.status == 'processing' %}disabled{% endif %}>
-                                            Anzeigen
-                                        </button>
-                                        <button onclick="window.location = '{% url 'edit_contract' contract.id %}'"
-                                                class="small"
-                                                {% if contract.status == 'processing' %}disabled{% endif %}>
-                                            Zensieren
-                                        </button>
-                                        <button
-                                                data-contract-id="{{ contract.id }}"
-                                                onclick="analyzeContract('{{ contract.id }}')"
-                                                class="small {% if contract.status == 'analyzed' %}bg-warning{% endif %}"
-                                                {% if contract.status == 'processing' %}disabled{% endif %}
-                                        >
-                                            Analyse starten
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                                        </td>
+                                        <td>
+                                            <span class="badge
+                                            {% if contract.status == 'analyzed' %}bg-success
+                                            {% elif contract.status == 'pending' %}bg-warning
+                                            {% else %}bg-secondary{% endif %}"
+                                                  id="status-badge-{{ contract.id }}">
+                                                {{ contract.status }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="container mx-auto">
+                                                <div class="d-flex flex-column gap-2">
+                                                    <a href="{% url 'contract' contract.id %}"
+                                                       class="btn btn-sm btn-outline-primary {% if contract.status != 'analyzed' %}d-none{% endif %}"
+                                                       id="view-button-{{ contract.id }}"
+                                                       {% if contract.status == 'processing' %}disabled{% endif %}>
+                                                        Anzeigen
+                                                    </a>
+                                                    <a href="{% url 'edit_contract' contract.id %}"
+                                                       class="btn btn-sm btn-outline-secondary"
+                                                       {% if contract.status == 'processing' %}disabled{% endif %}>
+                                                        Bearbeiten
+                                                    </a>
+                                                    <button
+                                                            hx-post="/contracts/{{ contract.id }}/analyze"
+                                                            hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                                            hx-trigger="click"
+                                                            hx-indicator="#spinner-{{ contract.id }}"
+                                                            hx-swap="none"
+                                                            @htmx:before-request="$event.detail.target.disabled = true"
+                                                            class="btn btn-sm {% if contract.status == 'analyzed' %}btn-warning{% else %}btn-primary{% endif %}"
+                                                            {% if contract.status == 'processing' %}disabled{% endif %}
+                                                            id="analyze-button-{{ contract.id }}"
+                                                    >
+                                                        Analyse starten
+                                                        <span id="spinner-{{ contract.id }}"
+                                                              class="htmx-indicator spinner-border spinner-border-sm"
+                                                              style="display:none"></span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5 bg-light rounded">
+                            <p class="mb-3">Sie haben noch keine Verträge hochgeladen.</p>
+                            <button @click="showUploadForm = true" class="btn btn-primary">Ersten Vertrag hochladen
+                            </button>
+                        </div>
+                    {% endif %}
                 </div>
-            {% else %}
-                <div class="no-contracts">
-                    <p>Sie haben noch keine Verträge hochgeladen.</p>
-                    <button id="noContractsUpload" class="highlight active">Ersten Vertrag hochladen</button>
-                </div>
-            {% endif %}
-        </section>
-
-        {% block extra_js %}
-            <script>
-							// Toggle upload form visibility
-							document.getElementById('showUploadForm').addEventListener('click', function () {
-								const uploadSection = document.getElementById('uploadContractSection');
-								uploadSection.classList.toggle('hide');
-								this.textContent = uploadSection.classList.contains('hide')
-									? 'Neuen Vertrag hochladen'
-									: 'Upload ausblenden';
-							});
-
-							// Handle "Upload first contract" button if no contracts exist
-							const noContractsUpload = document.getElementById('noContractsUpload');
-							if (noContractsUpload) {
-								noContractsUpload.addEventListener('click', function () {
-									const uploadSection = document.getElementById('uploadContractSection');
-									uploadSection.classList.remove('hide');
-									document.getElementById('showUploadForm').textContent = 'Upload ausblenden';
-								});
-							}
-
-							// Enhanced search functionality
-							document.getElementById('contractSearch').addEventListener('input', function (e) {
-								const searchText = e.target.value.toLowerCase()
-								const rows = document.querySelectorAll('.contracts-table tbody tr')
-
-								rows.forEach((row) => {
-									const text = row.textContent.toLowerCase()
-									row.style.display = text.includes(searchText) ? '' : 'none'
-								})
-							})
-
-							function updateStatus(id, status) {
-								const row = document.querySelector(`tr[data-contract-id="${id}"]`)
-								const button = row.querySelector(`button[data-contract-id="${id}"]`)
-								const link = row.querySelector(`a[data-contract-id="${id}"]`)
-
-								if (row) {
-									const statusCell = row.querySelector('.status-badge')
-									if (statusCell) {
-										statusCell.textContent = status
-										statusCell.className = `status-badge
-                                      ${status === 'analyzed' ? 'status-success'
-											: status === 'pending' ? 'status-warning'
-												: 'status-default'}`
-									}
-								}
-
-								if (button) {
-									button.disabled = status === 'processing'
-								}
-
-								if (link) {
-									link.classList.toggle('hide', status !== 'analyzed')
-								}
-							}
-
-							function analyzeContract(id) {
-								// Send a request to start the analysis
-								// Disable the button to prevent multiple clicks
-								const button = document.querySelector(`button[data-contract-id="${id}"]`)
-								if (button) {
-									button.disabled = true
-								}
-								updateStatus(id, 'processing')
-
-								fetch(`/contracts/${id}/analyze`, {
-									method: 'POST',
-									headers: {
-										'X-CSRFToken': '{{ csrf_token }}'
-									}
-								})
-							}
-
-							function archiveContract(id) {
-								if (confirm('Sind Sie sicher, dass Sie diesen Vertrag archivieren möchten?')) {
-									fetch(`/contracts/${id}/archive`, {
-										method: 'POST',
-										headers: {
-											'X-CSRFToken': '{{ csrf_token }}'
-										}
-									}).then(() => {
-										const row = document.querySelector(`tr[data-contract-id="${id}"]`)
-										if (row) {
-											row.remove()
-										}
-									})
-								}
-							}
-            </script>
-        {% endblock %}
+            </section>
+        </div>
     {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+			document.body.addEventListener('htmx:afterRequest', function (event) {
+				const path = event.detail.pathInfo.requestPath;
+
+				if (path.includes('/analyze')) {
+					const contractId = path.split('/')[2]; // Extract contract ID from path
+
+					// Update UI to processing state
+					const statusBadge = document.getElementById(`status-badge-${contractId}`);
+					if (statusBadge) {
+						statusBadge.textContent = 'processing';
+						statusBadge.className = 'status-badge status-default';
+					}
+
+					const analyzeButton = document.getElementById(`analyze-button-${contractId}`);
+					if (analyzeButton) {
+						analyzeButton.disabled = true;
+					}
+
+					// Start polling for status changes
+					pollContractStatus(contractId);
+				}
+			});
+
+			function pollContractStatus(contractId) {
+				// Poll the server every 3 seconds to check analysis status
+				const interval = setInterval(() => {
+					fetch(`/contracts/${contractId}/status`)
+						.then(response => response.json())
+						.then(data => {
+							if (data.status !== 'processing') {
+								clearInterval(interval);
+								updateContractUI(contractId, data.status);
+							}
+						});
+				}, 3000);
+			}
+
+			function updateContractUI(contractId, status) {
+				const statusBadge = document.getElementById(`status-badge-${contractId}`);
+				const analyzeButton = document.getElementById(`analyze-button-${contractId}`);
+				const viewButton = document.getElementById(`view-button-${contractId}`);
+
+				if (statusBadge) {
+					statusBadge.textContent = status;
+					statusBadge.className = `status-badge ${
+						status === 'analyzed' ? 'status-success' :
+							status === 'pending' ? 'status-warning' :
+								'status-default'
+					}`;
+				}
+
+				if (analyzeButton) {
+					analyzeButton.disabled = false;
+					if (status === 'analyzed') {
+						analyzeButton.classList.add('bg-warning');
+					}
+				}
+
+				if (viewButton) {
+					viewButton.classList.toggle('hide', status !== 'analyzed');
+				}
+			}
+    </script>
 {% endblock %}

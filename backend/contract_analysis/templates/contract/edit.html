@@ -7,24 +7,23 @@
 
 {% block content %}
     {% if not user.is_authenticated %}
-        <div class="login-section">
-            <div class="login-container">
-                <h2>Anmeldung erforderlich</h2>
-                <p>Bitte melden Sie sich an, um Ihre Mietverträge zu verwalten</p>
-                <a href="{% url 'login' %}" class="button">Anmelden</a>
-            </div>
-        </div>
+        {% include 'not_authed.html' %}
     {% else %}
-        <div class="fade-in">
-            <section class="dashboard-header">
-                <div class="user-greeting">
-                    <h2>Vertragsdokument zensieren</h2>
-                    <p>Bitte zensieren Sie sensible Informationen in Ihrem Vertragsdokument. Wählen Sie eine
-                        Vertragsseite aus und verwenden Sie den Stift oder Radiergummi, um die Informationen zu
-                        zensieren. Klicken Sie auf "Speichern", um Ihre Änderungen zu speichern, oder auf "Speichern und
-                        fortfahren", um fortzufahren.</p>
-                    <div>
-                        <a href="{% url 'home' %}">Zurück zur Übersicht</a>
+        <div x-data="drawing">
+            <section class="mb-4">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2>Mietvertrag bearbeiten</h2>
+
+                            <p>Bitte zensieren Sie sensible Informationen in Ihrem Mietvertrag, bevor Sie fortfahren.
+                                Sie können die Vertragsseiten einzeln bearbeiten und speichern oder alle Seiten auf
+                                einmal
+                                zensieren und fortfahren.</p>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <a href="{% url 'home' %}">Zurück zur Übersicht</a>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -49,31 +48,38 @@
                     </div>
                 </div>
 
-                <div class="drawing-tools">
-                    <div class="drawing-controls">
-                        <button id="pen-tool" class="button highlight active"><i class="fas fa-pen"></i> Stift</button>
-                        <!--     <button id="eraser-tool" class="button highlight">
-                                <i class="fas fa-eraser"></i> Radiergummi
-                            </button>     -->
-                        <button id="reset-tool" class="button highlight"><i class="fas fa-undo"></i> Zurücksetzen
-                        </button>
-
-                        <div class="size-control">
-                            <label for="brush-size">Größe:</label>
-                            <input type="range" id="brush-size" min="5" max="50" value="20"/>
-                            <span id="size-value">20px</span>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="btn-group-sm">
+                                <button id="pen-tool" class="btn btn-outline-primary active"><i class="fas fa-pen"></i>
+                                    Stift
+                                </button>
+                                <button id="reset-tool" class="btn btn-outline-primary"><i class="fas fa-undo"></i>
+                                    Zurücksetzen
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col text-md-end">
+                            <div class="btn-group-sm">
+                                <button id="save-current" class="btn btn-primary">Speichern</button>
+                                <button id="save-all" class="btn btn-primary">Speichern und fortfahren</button>
+                                <button id="archive" class="btn btn-danger">Archivieren</button>
+                            </div>
+                        </div>
+                        <div class="col-md-auto text-md-end">
+                            <div class="input-group-sm">
+                                <label for="brush-size" class="input-group-text"
+                                       x-text="`Größe: ${currentSize}px`"></label>
+                                <input type="range" id="brush-size" min="5" max="50" x-model="currentSize"/>
+                            </div>
                         </div>
                     </div>
+                </div>
 
-                    <div class="canvas-container">
-                        <canvas id="drawing-canvas"></canvas>
-                        <div class="canvas-placeholder">Wählen Sie eine Vertragsseite aus, um zu beginnen.</div>
-                    </div>
-
-                    <div class="action-buttons">
-                        <button id="save-current" class="button">Speichern</button>
-                        <button id="save-all" class="button">Speichern und fortfahren</button>
-                    </div>
+                <div class="canvas-container">
+                    <canvas id="drawing-canvas"></canvas>
+                    <div class="canvas-placeholder">Wählen Sie eine Vertragsseite aus, um zu beginnen.</div>
                 </div>
             </section>
         </div>
@@ -139,28 +145,6 @@
             background: var(--primary);
         }
 
-        .drawing-tools {
-            background: var(--section-bg);
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 1rem;
-        }
-
-        .drawing-controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            align-items: center;
-        }
-
-        .size-control {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-left: auto;
-        }
-
         .canvas-container {
             border: 2px solid var(--text);
             margin: 1rem 0;
@@ -189,28 +173,7 @@
             cursor: crosshair;
         }
 
-        .action-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 1rem;
-        }
-
         @media (max-width: 768px) {
-            .drawing-controls {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            .size-control {
-                margin-left: 0;
-                width: 100%;
-            }
-
-            .action-buttons {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
             .thumbnail-grid {
                 grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             }
@@ -220,7 +183,10 @@
 
 {% block extra_js %}
     <script>
-			document.addEventListener('DOMContentLoaded', function () {
+			document.addEventListener('alpine:init', () => {
+				Alpine.data('drawing', () => ({
+					currentSize: 20
+				}))
 				// Elements
 				const canvas = document.getElementById('drawing-canvas')
 				const ctx = canvas.getContext('2d')
@@ -231,21 +197,18 @@
 				const sizeValue = document.getElementById('size-value')
 				const saveCurrentBtn = document.getElementById('save-current')
 				const saveAllBtn = document.getElementById('save-all')
+				const archiveBtn = document.getElementById('archive')
 				const thumbnailItems = document.querySelectorAll('.thumbnail-item')
 				const canvasPlaceholder = document.querySelector('.canvas-placeholder')
 
 				// Drawing state
 				let isDrawing = false
 				let currentTool = 'pen'
-				let currentSize = brushSize.value
 				let currentFileId = null
 				let originalImageData = null
 				let modifiedFiles = new Set()
 				let lastX = null
 				let lastY = null
-
-				// Update size display
-				sizeValue.textContent = `${currentSize}px`
 
 				// Initialize with the first file if available
 				if (thumbnailItems.length > 0) {
@@ -328,12 +291,6 @@
 					activeButton.classList.add('active')
 				}
 
-				// Brush size slider
-				brushSize.addEventListener('input', function () {
-					currentSize = this.value
-					sizeValue.textContent = `${currentSize}px`
-				})
-
 				// Drawing functionality
 				canvas.addEventListener('mousedown', startDrawing)
 				canvas.addEventListener('touchstart', handleTouchStart)
@@ -373,7 +330,7 @@
 					const x = (e.clientX - rect.left) * scaleX
 					const y = (e.clientY - rect.top) * scaleY
 
-					ctx.lineWidth = currentSize
+					ctx.lineWidth = parseInt(brushSize.value);
 					ctx.lineCap = 'round'
 					ctx.lineJoin = 'round'
 
@@ -390,7 +347,7 @@
 					if (lastX === null || lastY === null) {
 						// Just draw a dot
 						ctx.beginPath()
-						ctx.arc(x, y, currentSize / 2, 0, Math.PI * 2)
+						ctx.arc(x, y, parseInt(brushSize.value) / 2, 0, Math.PI * 2);
 						ctx.fill()
 					} else {
 						// Draw a line from the last position to the current position
@@ -442,6 +399,10 @@
 					}
 				}
 
+				const headers = new Headers({
+					'X-CSRFToken': '{{ csrf_token }}'
+				});
+
 				// Save current canvas
 				function saveCurrentCanvas() {
 					if (!currentFileId) return
@@ -464,7 +425,8 @@
 
 					fetch('{% url "save_edited_contract" contract.id %}', {
 						method: 'POST',
-						body: formData
+						body: formData,
+						headers: headers
 					})
 						.then((response) => response.json())
 						.then((data) => {
@@ -499,6 +461,30 @@
 
 					// Redirect to next step
 					window.location.href = "{% url 'home' %}"
+				})
+
+				// Archive button
+				archiveBtn.addEventListener('click', function () {
+					if (confirm('Are you sure you want to archive this contract?')) {
+						fetch('{% url "archive_contract" contract.id %}', {
+							method: 'POST',
+							headers: headers
+						})
+							.then((response) => response.json())
+							.then((data) => {
+								if (data.success) {
+									alert('Contract archived successfully.')
+									window.location.href = "{% url 'home' %}"
+								} else {
+									alert('Error archiving contract. Please try again.')
+									console.error(data.error)
+								}
+							})
+							.catch((error) => {
+								console.error('Error:', error)
+								alert('An error occurred while archiving. Please try again.')
+							})
+					}
 				})
 			})
     </script>

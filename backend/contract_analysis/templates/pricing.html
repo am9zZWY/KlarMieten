@@ -1,47 +1,74 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    Darf Vermieter Das? - Mietverträge
+    Darf Vermieter Das? - Preise
 {% endblock %}
 
 {% block content %}
-    <div class="pricing">
-        <div class="pricing__header">
-            <h1>Preise</h1>
-            <p>Wählen Sie das für Sie passende Paket</p>
+    <section class="pricing py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center mb-5">
+                    <h1 class="display-4 mb-3">Preise</h1>
+                    <p class="lead">Wählen Sie das für Sie passende Paket für die KI-basierte Mietvertragsanalyse</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <h2 class="h4 mb-3">Basic</h2>
+                            <p class="display-6 mb-4"><span class="fs-4">€</span> 5</p>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>1 Analyse</li>
+                                <li class="mb-2"><i class="bi bi-x-circle-fill text-danger me-2"></i>Keine Speicherung
+                                </li>
+                                <li class="mb-2"><i class="bi bi-x-circle-fill text-danger me-2"></i>Keine
+                                    Exportfunktion
+                                </li>
+                            </ul>
+                            <a href="#" class="btn btn-outline-primary w-100">Basic wählen</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <h2 class="h4 mb-3">Pro</h2>
+                            <p class="display-6 mb-4"><span class="fs-4">€</span> 10</p>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>5 Analysen
+                                </li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Speicherung
+                                    für 30 Tage
+                                </li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Exportfunktion
+                                </li>
+                            </ul>
+                            <a href="#" class="btn btn-primary w-100">Pro wählen</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            <h2 class="h4 mb-3">Business</h2>
+                            <p class="display-6 mb-4"><span class="fs-4">€</span> 20</p>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Unbegrenzte
+                                    Analysen
+                                </li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Speicherung
+                                    für 90 Tage
+                                </li>
+                                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>Exportfunktion
+                                </li>
+                            </ul>
+                            <a href="#" class="btn btn-outline-primary w-100">Business wählen</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="pricing__cards">
-            <div class="pricing__card">
-                <h2>Basic</h2>
-                <p>€ 5</p>
-                <ul>
-                    <li>1 Analyse</li>
-                    <li>Keine Speicherung</li>
-                    <li>Keine Exportfunktion</li>
-                </ul>
-                <button class="button">Basic wählen</button>
-            </div>
-            <div class="pricing__card">
-                <h2>Pro</h2>
-                <p>€ 10</p>
-                <ul>
-                    <li>5 Analysen</li>
-                    <li>Speicherung für 30 Tage</li>
-                    <li>Exportfunktion</li>
-                </ul>
-                <button class="button">Pro wählen</button>
-            </div>
-            <div class="pricing__card">
-                <h2>Business</h2>
-                <p>€ 20</p>
-                <ul>
-                    <li>Unbegrenzte Analysen</li>
-                    <li>Speicherung für 90 Tage</li>
-                    <li>Exportfunktion</li>
-                </ul>
-                <button class="button">Business wählen</button>
-            </div>
-        </div>
-
-    </div>
+    </section>
 {% endblock %}
