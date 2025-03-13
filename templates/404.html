@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Darf Vermieter Das? | 404{% endblock %}
+
+{% block content %}
+    <div class="quantum-container">
+        <!-- Hero Section -->
+        <section class="hero-section position-relative overflow-hidden">
+            <div class="container">
+                <div class="row align-items-center hero-wrapper">
+                    <!-- Left Side - Content -->
+                    <div class="col-lg-6 hero-content-wrapper">
+                        <div class="hero-content">
+                            <h1 class="hero-title display-4 fw-bold mb-4">Selbst <span
+                                    class="hero-highlight position-relative">KI</span> konnte diese Seite nicht finden
+                            </h1>
+                            <p class="hero-subtitle lead mb-4">Die Seite, die Sie suchen, existiert nicht oder wurde
+                                verschoben. Bitte überprüfen Sie die URL und versuchen Sie es erneut.</p>
+                            <a href="{% url 'home' %}" class="btn btn-primary">Zurück zur Startseite</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Background decorative elements -->
+            <div class="position-absolute bg-blob-1"></div>
+            <div class="position-absolute bg-blob-2"></div>
+        </section>
+    </div>
+{% endblock %}

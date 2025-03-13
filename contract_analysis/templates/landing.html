@@ -1,0 +1,646 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Darf Vermieter Das? | KI-gestützte Mietvertragsanalyse{% endblock %}
+
+{% block content %}
+    <div class="quantum-container">
+        <!-- Hero Section -->
+        <section class="hero-section position-relative overflow-hidden">
+            <div class="container">
+                <div class="row align-items-center hero-wrapper">
+                    <!-- Left Side - Content -->
+                    <div class="col-lg-6 hero-content-wrapper">
+                        <div class="hero-content">
+                            <div class="badge bg-secondary-subtle text-secondary mb-3 py-2 px-3 rounded-pill">
+                                <i class="bi bi-shield-check me-1"></i> Rechtssicher & DSGVO-konform
+                            </div>
+                            <h1 class="hero-title display-4 fw-bold mb-4">Mietverträge prüfen mit <span
+                                    class="hero-highlight position-relative">KI</span></h1>
+                            <p class="hero-subtitle lead mb-4">Erfahren Sie in Sekunden, was Ihr Vermieter darf und was
+                                nicht – dank unserer fortschrittlichen KI-Analyse.</p>
+
+                            <div class="hero-stats d-flex flex-wrap gap-4 mb-5">
+                                <div class="stat-item pe-4 border-end border-2">
+                                    <span class="stat-number d-block">ab 0€</span>
+                                    <span class="stat-text">Kostenlose Basisanalyse</span>
+                                </div>
+                                <div class="stat-item pe-4 border-end border-2">
+                                    <span class="stat-number d-block"><15s</span>
+                                    <span class="stat-text">Analysezeit</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-number d-block">3 Klicks</span>
+                                    <span class="stat-text">zur Analyse</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-3 mb-4">
+                                <button class="btn btn-primary btn-lg pulse-animation" x-data
+                                        x-on:click="scrollAndHighlightUploadForm()">
+                                    <i class="bi bi-file-earmark-text me-2"></i>Jetzt Mietvertrag prüfen
+                                </button>
+                                <a href="#how-it-works" class="btn btn-outline-secondary btn-lg">
+                                    Mehr erfahren <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+
+                            <div class="d-flex flex-wrap gap-3 mt-4 security-badges">
+                                <div class="security-badge d-flex align-items-center">
+                                    <i class="bi bi-shield-check me-2 text-success"></i>
+                                    <span>SSL verschlüsselt</span>
+                                </div>
+                                <div class="security-badge d-flex align-items-center">
+                                    <i class="bi bi-eye-slash me-2 text-success"></i>
+                                    <span>DSGVO-konform</span>
+                                </div>
+                                <div class="security-badge d-flex align-items-center">
+                                    <i class="bi bi-trash me-2 text-success"></i>
+                                    <span>Daten werden nach Analyse gelöscht</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Side - Upload Form -->
+                    <div class="col-lg-6 mt-5 mt-lg-0">
+                        <section class="upload-form-wrapper bg-white p-3 p-lg-4 rounded-4 shadow"
+                                 id="upload-form-section">
+                            <h3 class="mb-4 text-center">Hochladen & Analysieren</h3>
+                            <div class="upload-form">
+                                {% include 'contract/upload.html' %}
+                            </div>
+                        </section>
+
+                        <!-- Trust indicators -->
+                        <div class="mt-4 text-center">
+                            <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-star-fill text-warning me-1"></i>
+                                    <i class="bi bi-star-fill text-warning me-1"></i>
+                                    <i class="bi bi-star-fill text-warning me-1"></i>
+                                    <i class="bi bi-star-fill text-warning me-1"></i>
+                                    <i class="bi bi-star-half text-warning"></i>
+                                </div>
+                                <span class="text-secondary">Über 10.000 geprüfte Mietverträge</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Background decorative elements -->
+            <div class="position-absolute bg-blob-1"></div>
+            <div class="position-absolute bg-blob-2"></div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features-section" id="functions">
+            <div class="section-header">
+                <h2>Was unsere KI erkennen kann</h2>
+                <p>Mietrecht ist komplex – unsere KI macht es verständlich</p>
+            </div>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-cash-coin"></i>
+                    </div>
+                    <h3>Mieterhöhungen</h3>
+                    <p>Prüfung auf unzulässige Mieterhöhungen und versteckte Kosten</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-tools"></i>
+                    </div>
+                    <h3>Renovierungsklauseln</h3>
+                    <p>Erkennung unwirksamer Schönheitsreparatur- und Renovierungsklauseln</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-house-door"></i>
+                    </div>
+                    <h3>Nebenkosten</h3>
+                    <p>Identifikation unzulässiger Umlagemöglichkeiten bei den Nebenkosten</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-calendar-x"></i>
+                    </div>
+                    <h3>Kündigungsfristen</h3>
+                    <p>Prüfung der Korrektheit von Kündigungsfristen und -bedingungen</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-shield-exclamation"></i>
+                    </div>
+                    <h3>Haftungsklauseln</h3>
+                    <p>Analyse von übermäßigen oder unzulässigen Haftungsregelungen</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                    <h3>Vertragsgesamtheit</h3>
+                    <p>Bewertung der allgemeinen Fairness und Rechtmäßigkeit des Vertrags</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works -->
+        <section class="how-it-works" id="how-it-works">
+            <div class="section-header">
+                <h2>So einfach funktioniert's</h2>
+                <p>In nur drei Schritten zu Ihrer rechtlichen Einschätzung</p>
+            </div>
+
+            <div class="steps-container">
+                <div class="step-item">
+                    <div class="step-number">01</div>
+                    <div class="step-content">
+                        <h3>Mietvertrag hochladen</h3>
+                        <p>Laden Sie Ihren Mietvertrag als PDF oder Foto hoch</p>
+                    </div>
+                    <div class="step-icon">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                    </div>
+                </div>
+
+                <div class="step-connector"></div>
+
+                <div class="step-item">
+                    <div class="step-number">02</div>
+                    <div class="step-content">
+                        <h3>KI-Analyse</h3>
+                        <p>Unsere KI analysiert Ihren Vertrag auf problematische Klauseln und rechtliche
+                            Schwachstellen</p>
+                    </div>
+                    <div class="step-icon">
+                        <i class="bi bi-cpu"></i>
+                    </div>
+                </div>
+
+                <div class="step-connector"></div>
+
+                <div class="step-item">
+                    <div class="step-number">03</div>
+                    <div class="step-content">
+                        <h3>Ergebnis erhalten</h3>
+                        <p>Bekommen Sie eine detaillierte Auswertung mit konkreten Handlungsempfehlungen</p>
+                    </div>
+                    <div class="step-icon">
+                        <i class="bi bi-file-earmark-check"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials -->
+        <section class="testimonials-section" id="testimonials">
+            <div class="section-header">
+                <h2>Was unsere Nutzer sagen</h2>
+                <p>Tausende Mieter vertrauen bereits auf unsere KI-Analyse</p>
+            </div>
+
+            <div class="testimonials-container" id="testimonials-carousel">
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <p class="testimonial-text">"Die KI hat in meinem Vertrag drei ungültige Klauseln gefunden. Dank der
+                        Handlungsempfehlungen konnte ich 240€ pro Jahr sparen!"</p>
+                    <div class="testimonial-author">
+                        <img src="{% static 'img/testimonials/marie.jpg' %}" alt="Marie S.">
+                        <div>
+                            <h4>Marie S.</h4>
+                            <span>Berlin</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <p class="testimonial-text">"Schnell, präzise und verständlich erklärt. Die Renovierungsklausel in
+                        meinem Vertrag war unwirksam. Das hat mir viel Geld und Ärger erspart."</p>
+                    <div class="testimonial-author">
+                        <img src="{% static 'img/testimonials/thomas.jpg' %}" alt="Thomas K.">
+                        <div>
+                            <h4>Thomas K.</h4>
+                            <span>München</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-rating">
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star-fill"></i>
+                        <i class="bi bi-star"></i>
+                    </div>
+                    <p class="testimonial-text">"Als Jurastudentin bin ich beeindruckt von der Genauigkeit. Die KI hat
+                        sogar Details gefunden, die mir nicht aufgefallen wären."</p>
+                    <div class="testimonial-author">
+                        <img src="{% static 'img/testimonials/laura.jpg' %}" alt="Laura M.">
+                        <div>
+                            <h4>Laura M.</h4>
+                            <span>Hamburg</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="testimonial-controls">
+                <button id="prev-testimonial"><i class="bi bi-chevron-left"></i></button>
+                <button id="next-testimonial"><i class="bi bi-chevron-right"></i></button>
+            </div>
+        </section>
+
+        <!-- Benefits Section -->
+        <section class="benefits-section" id="benefits">
+            <div class="section-header">
+                <h2>Ihre Vorteile</h2>
+                <p>Warum immer mehr Mieter auf unsere KI-Analyse vertrauen</p>
+            </div>
+
+            <div class="benefits-container">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-lightning"></i>
+                    </div>
+                    <h3>Schnelle Analyse</h3>
+                    <p>Ergebnisse in unter 60 Sekunden statt tagelangem Warten auf einen Termin</p>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-piggy-bank"></i>
+                    </div>
+                    <h3>Kostengünstig</h3>
+                    <p>Deutlich günstiger als eine anwaltliche Beratung oder ein Rechtsgutachten</p>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-translate"></i>
+                    </div>
+                    <h3>Verständliche Sprache</h3>
+                    <p>Komplexe Rechtsfragen werden einfach und nachvollziehbar erklärt</p>
+                </div>
+
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <h3>Kontinuierliches Lernen</h3>
+                    <p>Unsere KI wird ständig mit aktuellen Urteilen und Gesetzesänderungen aktualisiert</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="faq-section" id="faq">
+            <div class="section-header">
+                <h2>Häufig gestellte Fragen</h2>
+                <p>Antworten auf Ihre wichtigsten Fragen</p>
+            </div>
+
+            <div class="faq-accordion">
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Wie sicher sind meine Daten?</span>
+                        <i class="bi bi-plus"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Ihre Daten werden verschlüsselt übertragen und nach der Analyse automatisch gelöscht. Wir
+                            speichern keine persönlichen Informationen oder Vertragsinhalte. Unsere Plattform ist
+                            vollständig DSGVO-konform.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Wie genau ist die KI-Analyse?</span>
+                        <i class="bi bi-plus"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Unsere KI wurde mit über 50.000 Mietverträgen und aktuellen Gerichtsurteilen trainiert. Sie
+                            erreicht eine Genauigkeit von 97% bei der Erkennung problematischer Klauseln. In komplexen
+                            Einzelfällen empfehlen wir dennoch zusätzlich eine anwaltliche Beratung.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Welche Dateiformate kann ich hochladen?</span>
+                        <i class="bi bi-plus"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Sie können Ihren Mietvertrag als PDF oder als Bild (JPG/PNG)
+                            hochladen. Bei Fotos achten Sie bitte auf gute Lesbarkeit für optimale Ergebnisse.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Kann ich die Analyse als Beweis vor Gericht nutzen?</span>
+                        <i class="bi bi-plus"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Unsere Analyse gibt Ihnen eine fundierte rechtliche Einschätzung und kann als Orientierung
+                            dienen. Für ein Gerichtsverfahren empfehlen wir jedoch, die Ergebnisse von einem Fachanwalt
+                            bestätigen zu lassen.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question">
+                        <span>Was kostet die Nutzung des Services?</span>
+                        <i class="bi bi-plus"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Wir bieten eine kostenlose Basisanalyse an. Für detaillierte Auswertungen und
+                            Handlungsempfehlungen gibt es verschiedene Preismodelle ab 19,90€ pro Vertragsanalyse.
+                            Informationen zu unseren Preispaketen finden Sie unter "Preise".</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="cta-section">
+            <div class="cta-content">
+                <h2>Bereit, Ihren Mietvertrag zu prüfen?</h2>
+                <p>Erfahren Sie in wenigen Minuten, was Ihr Vermieter darf und was nicht.</p>
+                <button class="btn-primary btn-large" x-data x-on:click="scrollAndHighlightUploadForm()">
+                    <i class="bi bi-file-earmark-text me-2"></i>Jetzt Mietvertrag prüfen
+                </button>
+            </div>
+        </section>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+    <style>
+        .bg-blob-1 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(67, 97, 238, 0.05) 0%, rgba(67, 97, 238, 0) 70%);
+            border-radius: 50%;
+            top: -300px;
+            right: -300px;
+            z-index: 1;
+        }
+
+        .bg-blob-2 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(0, 216, 187, 0.05) 0%, rgba(0, 216, 187, 0) 70%);
+            border-radius: 50%;
+            bottom: -250px;
+            left: -250px;
+            z-index: 1;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .hero-stats {
+                justify-content: center;
+            }
+
+            .stat-item {
+                border: none !important;
+                padding: 0 1rem !important;
+                text-align: center;
+            }
+
+            .security-badges {
+                justify-content: center;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+			function scrollAndHighlightUploadForm() {
+				const uploadForm = document.getElementById('upload-form-section');
+				if (uploadForm) {
+					const offsetTop = uploadForm.offsetTop;
+					window.scrollTo({
+						top: offsetTop,
+						behavior: 'smooth'
+					});
+
+					uploadForm.classList.add('highlight');
+					uploadForm.classList.add('active');
+
+					setTimeout(() => {
+						uploadForm.classList.remove('active');
+						setTimeout(() => {
+							uploadForm.classList.remove('highlight');
+						}, 300);
+					}, 2000);
+				}
+			}
+    </script>
+
+    <script type="module">
+			document.addEventListener('DOMContentLoaded', function () {
+				// Original JS functionality remains the same
+				initializeTestimonialCarousel();
+				initializeFAQAccordion();
+				initializeMobileMenu();
+				initializeSmoothScroll();
+				initializeScrollAnimations();
+			});
+
+			// Testimonial Carousel
+			function initializeTestimonialCarousel() {
+				const carousel = document.getElementById('testimonials-carousel');
+				const prevButton = document.getElementById('prev-testimonial');
+				const nextButton = document.getElementById('next-testimonial');
+
+				if (!carousel || !prevButton || !nextButton) return;
+
+				const testimonials = Array.from(carousel.children);
+				let currentIndex = 0;
+				let startX, moveX;
+
+				// Touch-Event-Listener für mobile Geräte
+				carousel.addEventListener('touchstart', (e) => {
+					startX = e.touches[0].clientX;
+				});
+
+				carousel.addEventListener('touchmove', (e) => {
+					if (!startX) return;
+					moveX = e.touches[0].clientX;
+				});
+
+				carousel.addEventListener('touchend', () => {
+					if (!startX || !moveX) return;
+
+					const diffX = startX - moveX;
+
+					if (diffX > 50) {
+						showNextTestimonial();
+					} else if (diffX < -50) {
+						showPrevTestimonial();
+					}
+
+					startX = null;
+					moveX = null;
+				});
+
+				// Buttons für Testimonial-Navigation
+				prevButton.addEventListener('click', showPrevTestimonial);
+				nextButton.addEventListener('click', showNextTestimonial);
+
+				function showPrevTestimonial() {
+					const visibleCount = getVisibleCount();
+					currentIndex = Math.max(0, currentIndex - 1);
+					scrollCarousel();
+				}
+
+				function showNextTestimonial() {
+					const visibleCount = getVisibleCount();
+					currentIndex = Math.min(testimonials.length - visibleCount, currentIndex + 1);
+					scrollCarousel();
+				}
+
+				function scrollCarousel() {
+					const testimonial = testimonials[currentIndex];
+					const scrollPos = testimonial.offsetLeft - carousel.offsetLeft;
+
+					carousel.scrollTo({
+						left: scrollPos,
+						behavior: 'smooth'
+					});
+				}
+
+				function getVisibleCount() {
+					const carouselWidth = carousel.offsetWidth;
+					const testimonialWidth = testimonials[0].offsetWidth + parseInt(window.getComputedStyle(testimonials[0]).marginRight);
+					return Math.max(1, Math.floor(carouselWidth / testimonialWidth));
+				}
+
+				// Initiales Scrollen zum ersten Element
+				scrollCarousel();
+
+				// Responsive Anpassung
+				window.addEventListener('resize', scrollCarousel);
+			}
+
+			// FAQ Accordion
+			function initializeFAQAccordion() {
+				const faqItems = document.querySelectorAll('.faq-item');
+
+				faqItems.forEach(item => {
+					const question = item.querySelector('.faq-question');
+
+					question.addEventListener('click', () => {
+						const isActive = item.classList.contains('active');
+
+						// Alle schließen
+						faqItems.forEach(faq => faq.classList.remove('active'));
+
+						// Wenn es nicht aktiv war, öffnen
+						if (!isActive) {
+							item.classList.add('active');
+						}
+					});
+				});
+			}
+
+			// Mobile Menü
+			function initializeMobileMenu() {
+				const menuToggle = document.getElementById('menuToggle');
+				if (!menuToggle) return;
+
+				const navLinks = document.querySelector('.nav-links');
+				const navActions = document.querySelector('.nav-actions');
+
+				menuToggle.addEventListener('click', () => {
+					menuToggle.classList.toggle('active');
+
+					// Einfache mobile Menü-Implementierung
+					// In einer echten Implementierung würde hier ein vollständiges mobiles Menü erstellt werden
+					if (menuToggle.classList.contains('active')) {
+						// Mobile Menü-Logik hier
+						alert('Mobiles Menü würde hier geöffnet werden');
+					}
+				});
+			}
+
+			// Smooth Scroll für Anker-Links
+			function initializeSmoothScroll() {
+				document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+					anchor.addEventListener('click', function (e) {
+						e.preventDefault();
+
+						const targetId = this.getAttribute('href').substring(1);
+						const targetElement = document.getElementById(targetId);
+
+						if (targetElement) {
+							window.scrollTo({
+								top: targetElement.offsetTop - 80, // Abstand für Navbar
+								behavior: 'smooth'
+							});
+						}
+					});
+				});
+			}
+
+			// Scroll-Animationen
+			function initializeScrollAnimations() {
+				const elements = document.querySelectorAll('.feature-card, .step-item, .benefit-card, .testimonial-card');
+
+				const observer = new IntersectionObserver((entries) => {
+					entries.forEach(entry => {
+						if (entry.isIntersecting) {
+							entry.target.classList.add('animated');
+							observer.unobserve(entry.target);
+						}
+					});
+				}, {
+					threshold: 0.1
+				});
+
+				elements.forEach(element => {
+					observer.observe(element);
+				});
+
+				// CSS für Animation hinzufügen
+				const style = document.createElement('style');
+				style.textContent = `
+    .feature-card, .step-item, .benefit-card, .testimonial-card {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+
+    .feature-card.animated, .step-item.animated, .benefit-card.animated, .testimonial-card.animated {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  `;
+				document.head.appendChild(style);
+			}
+    </script>
+{% endblock %}

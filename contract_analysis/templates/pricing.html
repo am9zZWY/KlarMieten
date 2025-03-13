@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Darf Vermieter Das? | Preise
+{% endblock %}
+
+{% block content %}
+    <section class="pricing-section">
+        <div class="quantum-container">
+            <div class="section-header">
+                <h2>Faire Preisgestaltung</h2>
+                <p>Einmalige Zahlungen für die KI-basierte Mietvertragsanalyse - ohne versteckte Kosten oder
+                    Abofallen</p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Student Plan -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="pricing-card student-plan">
+                        <div class="pricing-badge">Studenten</div>
+                        <h3>Student</h3>
+                        <div class="pricing-price">
+                            <span class="price-currency">€</span>
+                            <span class="price-amount">3</span>
+                            <span class="price-period">einmalig</span>
+                        </div>
+                        <p class="pricing-description">Für Studierende mit begrenztem Budget</p>
+                        <ul class="list-unstyled pricing-features">
+                            <li><i class="bi bi-check-circle-fill text-success"></i> 1 Analyse</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Speicherung für 14 Tage</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> PDF Export</li>
+                            <li><i class="bi bi-x-circle-fill text-danger"></i> Keine erweiterte Analyse</li>
+                        </ul>
+                        <a href="#" class="btn btn-primary w-100">Student wählen</a>
+                        <div class="pricing-note">*Nachweis erforderlich</div>
+                    </div>
+                </div>
+
+                <!-- Basic Plan -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="pricing-card">
+                        <h3>Basic</h3>
+                        <div class="pricing-price">
+                            <span class="price-currency">€</span>
+                            <span class="price-amount">5</span>
+                            <span class="price-period">einmalig</span>
+                        </div>
+                        <p class="pricing-description">Für die einmalige Nutzung</p>
+                        <ul class="list-unstyled pricing-features">
+                            <li><i class="bi bi-check-circle-fill text-success"></i> 1 Analyse</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Speicherung für 7 Tage</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> PDF Export</li>
+                            <li><i class="bi bi-x-circle-fill text-danger"></i> Keine erweiterte Analyse</li>
+                        </ul>
+                        <a href="#" class="btn btn-secondary w-100">Basic wählen</a>
+                    </div>
+                </div>
+
+                <!-- Pro Plan -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="pricing-card">
+                        <h3>Pro</h3>
+                        <div class="pricing-price">
+                            <span class="price-currency">€</span>
+                            <span class="price-amount">8</span>
+                            <span class="price-period">einmalig</span>
+                        </div>
+                        <p class="pricing-description">Für mehrere Mietverträge</p>
+                        <ul class="list-unstyled pricing-features">
+                            <li><i class="bi bi-check-circle-fill text-success"></i> 5 Analysen</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Speicherung für 30 Tage</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> PDF & DOCX Export</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Erweiterte Analyse</li>
+                        </ul>
+                        <a href="#" class="btn btn-secondary w-100">Pro wählen</a>
+                    </div>
+                </div>
+
+                <!-- Chat Support Option -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="pricing-card chat-plan">
+                        <div class="pricing-badge">Neu</div>
+                        <h3>Chat+</h3>
+                        <div class="pricing-price">
+                            <span class="price-currency">€</span>
+                            <span class="price-amount">2</span>
+                            <span class="price-period">/monat</span>
+                        </div>
+                        <p class="pricing-description">Persönlicher Rechtsassistent</p>
+                        <ul class="list-unstyled pricing-features">
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Unbegrenzte Chat-Anfragen</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Rechtliche Beratung via KI</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> Monatlich kündbar</li>
+                            <li><i class="bi bi-check-circle-fill text-success"></i> 50% Rabatt für Studierende</li>
+                        </ul>
+                        <a href="#" class="btn btn-secondary w-100">Chat+ hinzufügen</a>
+                        <div class="pricing-note">*Kombinierbar mit allen Paketen</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pricing-faq mt-5">
+                <h3 class="text-center mb-4">Häufig gestellte Fragen</h3>
+
+                <div class="accordion" id="pricingFaq">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeadingOne">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faqOne" aria-expanded="false" aria-controls="faqOne">
+                                Sind wirklich keine Abos versteckt?
+                            </button>
+                        </h2>
+                        <div id="faqOne" class="accordion-collapse collapse" aria-labelledby="faqHeadingOne"
+                             data-bs-parent="#pricingFaq">
+                            <div class="accordion-body">
+                                Absolut! Unsere Basic-, Student- und Pro-Pakete sind reine Einmalzahlungen ohne
+                                versteckte Kosten oder automatische Verlängerungen. Nur das Chat+ Paket ist ein
+                                monatliches Abo, das jedoch jederzeit kündbar ist.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeadingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faqTwo" aria-expanded="false" aria-controls="faqTwo">
+                                Wie funktioniert der Studentenrabatt?
+                            </button>
+                        </h2>
+                        <div id="faqTwo" class="accordion-collapse collapse" aria-labelledby="faqHeadingTwo"
+                             data-bs-parent="#pricingFaq">
+                            <div class="accordion-body">
+                                Studierende können bei der Registrierung einen gültigen Studentenausweis oder eine
+                                Immatrikulationsbescheinigung hochladen. Nach Überprüfung werden alle Studentenrabatte
+                                automatisch freigeschaltet.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeadingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faqThree" aria-expanded="false" aria-controls="faqThree">
+                                Was passiert, wenn ich mehr Analysen benötige?
+                            </button>
+                        </h2>
+                        <div id="faqThree" class="accordion-collapse collapse" aria-labelledby="faqHeadingThree"
+                             data-bs-parent="#pricingFaq">
+                            <div class="accordion-body">
+                                Sie können jederzeit ein zusätzliches Paket erwerben oder auf ein höherwertiges Paket
+                                upgraden. Die nicht genutzten Analysen aus Ihrem bisherigen Paket bleiben dabei
+                                erhalten.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="faqHeadingFour">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faqFour" aria-expanded="false" aria-controls="faqFour">
+                                Was ist in der erweiterten Analyse enthalten?
+                            </button>
+                        </h2>
+                        <div id="faqFour" class="accordion-collapse collapse" aria-labelledby="faqHeadingFour"
+                             data-bs-parent="#pricingFaq">
+                            <div class="accordion-body">
+                                Die erweiterte Analyse umfasst detailliertere rechtliche Bewertungen, Vergleiche mit
+                                aktuellen Gerichtsurteilen und personalisierte Handlungsempfehlungen. Außerdem erhalten
+                                Sie Zugang zu Vorlagen für Widersprüche und andere wichtige Dokumente.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cta-box mt-5">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <h3>Unsicher, welches Paket das richtige ist?</h3>
+                        <p>Kontaktieren Sie uns für eine individuelle Beratung oder testen Sie unsere Demo-Analyse.</p>
+                    </div>
+                    <div class="col-lg-4 text-center text-lg-end mt-3 mt-lg-0">
+                        <a href="#" class="btn btn-primary">Demo testen</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_css %}
+    <style>
+        .pricing-section {
+            padding: 5rem 0;
+            background-color: var(--background);
+        }
+
+        .pricing-card {
+            background-color: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            box-shadow: var(--shadow-small);
+            transition: var(--transition-normal);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .pricing-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border-radius: 0 var(--radius-lg) 0 var(--radius-lg);
+        }
+
+        .pricing-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .pricing-price {
+            margin-bottom: 1.5rem;
+        }
+
+        .price-currency {
+            font-size: 1.25rem;
+            vertical-align: top;
+            margin-right: 0.25rem;
+        }
+
+        .price-amount {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .price-period {
+            font-size: 0.875rem;
+            color: var(--text-tertiary);
+            margin-left: 0.25rem;
+        }
+
+        .pricing-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+
+        .pricing-features {
+            margin-bottom: 2rem;
+        }
+
+        .pricing-features li {
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .pricing-features li i {
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .pricing-note {
+            font-size: 0.875rem;
+            color: var(--text-tertiary);
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .student-plan {
+            background: linear-gradient(to bottom, var(--surface), rgba(67, 97, 238, 0.05));
+        }
+
+        .chat-plan {
+            background: linear-gradient(to bottom, var(--surface), rgba(0, 216, 187, 0.05));
+        }
+
+        .cta-box {
+            background-color: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem;
+            box-shadow: var(--shadow-small);
+        }
+
+        .accordion-item {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md) !important;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+
+        .accordion-header {
+            background-color: var(--surface);
+        }
+
+        .accordion-button {
+            background-color: var(--surface);
+            color: var(--text-primary);
+            font-weight: 600;
+            box-shadow: none;
+            padding: 1.25rem;
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: var(--surface);
+            color: var(--primary);
+            box-shadow: none;
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+            border-color: var(--border);
+        }
+
+        .accordion-body {
+            color: var(--text-secondary);
+            padding: 1rem 1.25rem 1.5rem;
+        }
+
+        .accordion-button::after {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%234361EE' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z'/%3E%3C/svg%3E");
+        }
+
+        .accordion-button:not(.collapsed)::after {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%234361EE' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8Z'/%3E%3C/svg%3E");
+        }
+
+        @media (max-width: 991.98px) {
+            .pricing-card {
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+{% endblock %}
