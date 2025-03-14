@@ -26,7 +26,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-o16csu(h4b_8y*c%#bczr-ggx!(1lg+e*wa66ox4mv9t5v*byt"
+# Secret key used for cryptographic operations
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+# Encryption key used for file encryption
+if "FILE_ENCRYPTION_KEY" not in os.environ:
+    # Generate key
+    key_path = os.path.join(BASE_DIR, ".encryption_key")
+    if os.path.exists(key_path):
+        with open(key_path, "rb") as f:
+            FILE_ENCRYPTION_KEY = f.read()
+    else:
+        # Only for development - in production, set from environment
+        FILE_ENCRYPTION_KEY = secrets.token_bytes(32)
+        # Save key for development
+        with open(key_path, "wb") as f:
+            f.write(FILE_ENCRYPTION_KEY)
+else:
+    # Get from environment (hex encoded for easy storage)
+    FILE_ENCRYPTION_KEY = bytes.fromhex(os.environ["FILE_ENCRYPTION_KEY"])
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -180,23 +198,6 @@ PRIVATE_STORAGE_S3_PARAMETERS = {
     "ACL": "private",
     "ServerSideEncryption": "AES256",
 }
-
-# Encryption
-if "FILE_ENCRYPTION_KEY" not in os.environ:
-    # Generate key
-    key_path = os.path.join(BASE_DIR, ".encryption_key")
-    if os.path.exists(key_path):
-        with open(key_path, "rb") as f:
-            FILE_ENCRYPTION_KEY = f.read()
-    else:
-        # Only for development - in production, set from environment
-        FILE_ENCRYPTION_KEY = secrets.token_bytes(32)
-        # Save key for development
-        with open(key_path, "wb") as f:
-            f.write(FILE_ENCRYPTION_KEY)
-else:
-    # Get from environment (hex encoded for easy storage)
-    FILE_ENCRYPTION_KEY = bytes.fromhex(os.environ["FILE_ENCRYPTION_KEY"])
 
 # Cache
 CACHES = {
