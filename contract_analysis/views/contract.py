@@ -6,7 +6,10 @@ from django.core.cache import cache
 from django.http import HttpResponse, JsonResponse
 from django.http.response import HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404
+from django.utils import timezone
+from django.views.decorators.http import require_http_methods
 
+from contract_analysis.faq import FAQ_landing
 from contract_analysis.models.contract import Contract, ContractDetails, ContractFile
 from contract_analysis.utils.error import handle_exception, error_response
 from contract_analysis.utils.map import geocode_address
@@ -14,29 +17,58 @@ from contract_analysis.utils.map import geocode_address
 logger = logging.getLogger(__name__)
 
 
-# Create your views here.
 def landing(request):
-    logger.info("Rendering landing page")
-    return render(request, "landing.html")
+    """
+    Landing page view for non-authenticated users.
+
+    Args:
+        request: HttpRequest object
+
+    Returns:
+        Rendered landing page with FAQ content
+    """
+    context = {
+        "faq": FAQ_landing
+    }
+    return render(request, "landing.html", context)
 
 
 @login_required
 def home(request):
-    logger.info(f"Rendering home page for user {request.user}")
+    """
+    Home page view displaying active contracts for the authenticated user.
+
+    Args:
+        request: HttpRequest object
+
+    Returns:
+        Rendered home page with user's active contracts
+    """
     contracts = Contract.objects.filter(user=request.user, archived=False)
     return render(request, "contract/home.html", {"contracts": contracts})
 
 
 @login_required
 def get_contract(request, contract_id):
+    """
+    View for displaying contract details with location information.
+    Uses caching to improve performance for frequently accessed contracts.
+
+    Args:
+        request: HttpRequest object
+        contract_id: ID of the requested contract
+
+    Returns:
+        Rendered contract detail view or 404 if not found
+    """
     # Try to get from cache first
     cache_key = f"contract_{contract_id}_{request.user.id}"
     cached_data = cache.get(cache_key)
 
-    # if cached_data:
-    #    return render(request, "contract/contract.html", cached_data)
+    if cached_data:
+        return render(request, "contract/contract.html", cached_data)
 
-    # Get from database
+    # Get from the database
     contract = get_object_or_404(
         Contract, id=contract_id, user=request.user, archived=False
     )
@@ -45,10 +77,13 @@ def get_contract(request, contract_id):
         return HttpResponseNotFound("Contract details not found")
 
     # Create full address string and geocode
-    street = contract_details.street if contract_details.street else ""
-    postal_code = contract_details.postal_code if contract_details.postal_code else ""
-    city = contract_details.city if contract_details.city else ""
-    address = f"{street} {postal_code} {city} Germany"
+    address_parts = [
+        contract_details.street or "",
+        contract_details.postal_code or "",
+        contract_details.city or "",
+        "Germany"  # Default country
+    ]
+    address = " ".join(filter(None, address_parts))
     location = geocode_address(address)
 
     # Cache for 10 minutes
@@ -64,7 +99,17 @@ def get_contract(request, contract_id):
 
 @login_required
 def get_contract_file(request, contract_id, file_id):
-    """Serve encrypted file contents from database"""
+    """
+    Serve encrypted file contents from database.
+
+    Args:
+        request: HttpRequest object
+        contract_id: ID of the contract
+        file_id: ID of the file to retrieve
+
+    Returns:
+        HttpResponse with file content or error response
+    """
     logger.info(f"Accessing contract file {file_id} for contract {contract_id}")
 
     contract = get_object_or_404(Contract, id=contract_id, user=request.user)
@@ -73,40 +118,44 @@ def get_contract_file(request, contract_id, file_id):
     if contract_file.encrypted_content is None:
         return error_response("File not found", status=404)
 
-    # Decrypt the file
     try:
         file_content = contract_file.get_file_content()
         return HttpResponse(file_content, content_type=contract_file.file_type)
-    except ValueError as e:
+    except ValueError:
         return error_response("Error accessing file", status=500)
 
 
 @login_required
 def edit_contract(request, contract_id):
     """
-    View for editing a contract
+    View for editing a contract.
+
+    Args:
+        request: HttpRequest object
+        contract_id: ID of the contract to edit
+
+    Returns:
+        Rendered contract edit page
     """
-    # Remove duplicate logging statement
     logger.info(f"Editing contract {contract_id} for user {request.user}")
     contract = get_object_or_404(Contract, id=contract_id, user=request.user)
 
-    context = {
-        "contract": contract,
-    }
-
-    return render(request, "contract/edit.html", context)
+    return render(request, "contract/edit.html", {"contract": contract})
 
 
 @login_required
+@require_http_methods(["POST"])
 def save_edited_contract(request, contract_id):
     """
-    AJAX endpoint to save a censored contract image
+    AJAX endpoint to save a censored contract image.
+
+    Args:
+        request: HttpRequest object
+        contract_id: ID of the contract being edited
+
+    Returns:
+        JsonResponse with success status or error response
     """
-
-    # Check if the request is a POST request
-    if request.method != "POST":
-        return error_response("Invalid request method", status=405)
-
     file_id = request.POST.get("file_id")
     censored_image = request.POST.get("censored_image")
 
@@ -116,18 +165,18 @@ def save_edited_contract(request, contract_id):
     try:
         # Get the contract file and verify ownership
         contract = get_object_or_404(Contract, id=contract_id, user=request.user)
-        contract_file = get_object_or_404(ContractFile, id=file_id)
-        if (
-            contract_file.contract.user != request.user
-            or contract_file.contract.id != contract.id
-        ):
-            return error_response("Invalid contract file", status=403)
+        contract_file = get_object_or_404(ContractFile, id=file_id, contract=contract)
 
         # Process the data URL
         if "," in censored_image:
             file_content = base64.b64decode(censored_image.split(",")[1])
             contract_file.set_file_content(file_content)
             contract_file.save()
+
+            # Invalidate any cached versions of this contract
+            cache_key = f"contract_{contract_id}_{request.user.id}"
+            cache.delete(cache_key)
+
             return JsonResponse({"success": True})
         else:
             return error_response("Invalid data URL format", status=400)
@@ -137,13 +186,18 @@ def save_edited_contract(request, contract_id):
 
 
 @login_required
+@require_http_methods(["POST"])
 def archive_contract(request, contract_id):
-    from django.utils import timezone
+    """
+    Archive a contract instead of deleting it.
 
-    # Check if the request is a POST request
-    if request.method != "POST":
-        return error_response("Invalid request method", status=405)
+    Args:
+        request: HttpRequest object
+        contract_id: ID of the contract to archive
 
+    Returns:
+        JsonResponse with success status
+    """
     logger.info(f"Archiving contract {contract_id} for user {request.user}")
 
     # Get the contract and verify ownership
@@ -153,5 +207,9 @@ def archive_contract(request, contract_id):
     contract.archived = True
     contract.archived_date = timezone.now()
     contract.save()
+
+    # Invalidate any cached versions of this contract
+    cache_key = f"contract_{contract_id}_{request.user.id}"
+    cache.delete(cache_key)
 
     return JsonResponse({"success": True})
