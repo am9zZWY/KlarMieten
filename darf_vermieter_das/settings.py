@@ -11,12 +11,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
-from pathlib import Path
 import secrets
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -27,8 +26,7 @@ SECRET_KEY = "django-insecure-o16csu(h4b_8y*c%#bczr-ggx!(1lg+e*wa66ox4mv9t5v*byt
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app']
 
 # Application definition
 
@@ -55,7 +53,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "darf_vermieter_das.urls"
 
-
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -77,7 +74,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "darf_vermieter_das.wsgi.application"
-
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -126,7 +122,6 @@ LOGOUT_REDIRECT_URL = "home"
 
 AUTH_USER_MODEL = "accounts.User"
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -137,7 +132,6 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Logging
 
