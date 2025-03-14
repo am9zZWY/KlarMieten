@@ -151,6 +151,10 @@ img {
     -webkit-text-fill-color: transparent;
 }
 
+.navbar-toggler {
+    border: none;
+}
+
 .nav-links {
     display: flex;
     gap: 2rem;
@@ -175,11 +179,6 @@ img {
 
 .nav-links a:hover::after {
     width: 100%;
-}
-
-.nav-actions {
-    display: flex;
-    gap: 1rem;
 }
 
 .menu-toggle {
@@ -1449,10 +1448,6 @@ canvas {
 }
 
 @media (max-width: 992px) {
-    .nav-links, .nav-actions {
-        display: none;
-    }
-
     .menu-toggle {
         display: flex;
     }
