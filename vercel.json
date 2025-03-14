@@ -1,0 +1,8 @@
+{
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "darf_vermieter_das/wsgi.py"
+    }
+  ]
+}
