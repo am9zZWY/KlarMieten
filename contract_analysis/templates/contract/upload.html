@@ -235,6 +235,10 @@
 						alert('Upload erfolgreich!');
 						this.resetForm();
 					} else {
+						// Check status code and show error message
+						if (response.status === 401) {
+							window.location.href = "{% url 'login' %}";
+						}
 						const error = await response.text();
 						this.showError(`Fehler: ${error}`);
 					}
