@@ -49,6 +49,7 @@ def convert_pdf_to_images(file, contract):
         raise ValidationError("Fehler bei der PDF-Konvertierung")
 
 
+
 def upload_contract(request):
     if request.method != "POST":
         return error_response("Invalid request method", 405)

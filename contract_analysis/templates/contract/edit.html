@@ -62,6 +62,15 @@
                                 </button>
                             </div>
                         </div>
+                        <div class="col-md-3">
+                            <div class="brush-size-control">
+                                <label for="brush-size" class="brush-size-label"
+                                       x-text="`Pinselgröße: ${currentSize}px`"></label>
+                                <input type="range" id="brush-size" class="brush-size-slider" min="5" max="50"
+                                       x-model="currentSize"/>
+                            </div>
+                        </div>
+
                         <div class="col-md-6 text-md-end">
                             <div class="action-buttons">
                                 <button id="save-current" class="btn btn-primary">
@@ -75,14 +84,7 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="brush-size-control">
-                                <label for="brush-size" class="brush-size-label"
-                                       x-text="`Größe: ${currentSize}px`"></label>
-                                <input type="range" id="brush-size" class="brush-size-slider" min="5" max="50"
-                                       x-model="currentSize"/>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
 
