@@ -214,8 +214,8 @@ class ContractDetails(models.Model):
     )
 
     # Permissions
-    pets_allowed = models.BooleanField(default=False)
-    subletting_allowed = models.BooleanField(default=False)
+    pets_allowed = models.BooleanField(default=False, null=True, blank=True)
+    subletting_allowed = models.BooleanField(default=False, null=True, blank=True)
 
     # Quiet Hours (Structured time fields)
     quiet_hours_start = models.TimeField(null=True, blank=True)
@@ -225,8 +225,8 @@ class ContractDetails(models.Model):
     renovation_interval_years = models.PositiveIntegerField(null=True, blank=True)
 
     # Additional Legal Clauses (Optional structured data)
-    has_stepped_rent = models.BooleanField(default=False)
-    has_indexed_rent = models.BooleanField(default=False)
+    has_stepped_rent = models.BooleanField(default=False, null=True, blank=True)
+    has_indexed_rent = models.BooleanField(default=False, null=True, blank=True)
 
     # AI Extracted Data
     neighborhood_description = models.TextField(null=True, blank=True)
