@@ -201,7 +201,7 @@
 			function pollContractStatus(contractId) {
 				// Poll the server every 3 seconds to check analysis status
 				const interval = setInterval(() => {
-					fetch(`/contracts/${contractId}/status`)
+					fetch(`/contracts/${contractId}/analyze/status`)
 						.then(response => response.json())
 						.then(data => {
 							if (data.status !== 'processing') {

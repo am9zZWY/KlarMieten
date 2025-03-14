@@ -39,5 +39,10 @@ urlpatterns = [
         analyze_contract,
         name="analyze_contract",
     ),
+    path(
+        "contracts/<uuid:contract_id>/analyze/update",
+        analyze_contract_update,
+        name="analyze_contract_update",
+    ),
     path("price", TemplateView.as_view(template_name="pricing.html"), name="pricing"),
 ]

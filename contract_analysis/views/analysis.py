@@ -1,12 +1,9 @@
 import logging
 import os
 import tempfile
-import time
 
 from django.contrib.auth.decorators import login_required
-from django.core.handlers.wsgi import WSGIRequest
 from django.http import JsonResponse
-from django.http.response import StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 
 from contract_analysis.analysis import (
@@ -156,35 +153,11 @@ def update_contract_details(contract, extracted_details):
 
 
 @login_required
-def analyze_contract_update(request: WSGIRequest) -> StreamingHttpResponse:
+def analyze_contract_update(request):
     contract_id = request.GET.get("id")
     contract = get_object_or_404(
         Contract, id=contract_id, user=request.user
-    )  # Add ownership check
-    last_status = contract.status  # Store initial status
+    )
 
-    def event_stream():
-        nonlocal last_status
-        max_duration = 300  # 5 minutes
-        start_time = time.time()
-
-        while time.time() - start_time < max_duration:
-            contract.refresh_from_db()
-
-            # Exit conditions
-            if contract.status in ["analyzed", "error"]:
-                yield f"data: {contract.status}\n\n"
-                yield "event: close\ndata: Connection closed\n\n"
-                break
-
-            if contract.status != last_status:
-                yield f"data: {contract.status}\n\n"
-                last_status = contract.status
-
-            time.sleep(0.5)
-
-        # Close connection after timeout
-        if time.time() - start_time >= max_duration:
-            yield "event: close\ndata: Timeout\n\n"
-
-    return StreamingHttpResponse(event_stream(), content_type="text/event-stream")
+    # Return status of the contract
+    return JsonResponse({"status": contract.status})
