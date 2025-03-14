@@ -561,26 +561,6 @@
 				});
 			}
 
-			// Mobile Menü
-			function initializeMobileMenu() {
-				const menuToggle = document.getElementById('menuToggle');
-				if (!menuToggle) return;
-
-				const navLinks = document.querySelector('.nav-links');
-				const navActions = document.querySelector('.nav-actions');
-
-				menuToggle.addEventListener('click', () => {
-					menuToggle.classList.toggle('active');
-
-					// Einfache mobile Menü-Implementierung
-					// In einer echten Implementierung würde hier ein vollständiges mobiles Menü erstellt werden
-					if (menuToggle.classList.contains('active')) {
-						// Mobile Menü-Logik hier
-						alert('Mobiles Menü würde hier geöffnet werden');
-					}
-				});
-			}
-
 			// Smooth Scroll für Anker-Links
 			function initializeSmoothScroll() {
 				document.querySelectorAll('a[href^="#"]').forEach(anchor => {
