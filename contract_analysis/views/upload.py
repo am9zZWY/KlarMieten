@@ -41,7 +41,7 @@ def convert_pdf_to_images(file, contract):
             resized_img.save(buffer, format="PNG")
             buffer.seek(0)
 
-            page_filename = f"{base_name}_page_{i+1}.png"
+            page_filename = f"{base_name}_page_{i + 1}.png"
             save_contract_file(contract, page_filename, "image/png", buffer.getvalue())
 
     except Exception as e:
@@ -52,6 +52,10 @@ def convert_pdf_to_images(file, contract):
 def upload_contract(request):
     if request.method != "POST":
         return error_response("Invalid request method", 405)
+
+    # Check if user is authenticated
+    if not request.user.is_authenticated:
+        return error_response("Unauthorized", 401)
 
     logger.info(f"Uploading files for user {request.user}")
     try:
