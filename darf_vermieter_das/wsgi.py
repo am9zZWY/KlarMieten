@@ -14,3 +14,5 @@ from django.core.wsgi import get_wsgi_application
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "darf_vermieter_das.settings")
 
 application = get_wsgi_application()
+# Make the app variable available to the Vercel serverless function
+app = application
