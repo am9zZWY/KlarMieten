@@ -14,7 +14,7 @@
         }" class="quantum-container">
             <!-- Dashboard Header -->
             <section class="hero-section py-4">
-                <div class="container">
+                <div class="hero-wrapper container">
                     <div class="row align-items-center g-3">
                         <!-- Left Side - Content -->
                         <div class="col-lg-6">
@@ -30,13 +30,11 @@
                             <div class="hero-actions">
                                 <a href="#contracts" class="btn btn-primary">Meine Mietverträge</a>
                                 <a href="#benefits" class="btn btn-secondary">Zum Konto</a>
-
                             </div>
                         </div>
 
                         <div class="col-lg-6">
-                            <section class="upload-form-wrapper bg-white p-3 p-lg-4 rounded-4 shadow"
-                                     id="upload-form-section">
+                            <section class="neo-card upload-form-wrapper p-3 p-lg-4" id="upload-form-section">
                                 <h3 class="mb-3 text-center">Hochladen & Analysieren</h3>
                                 <div class="upload-form">
                                     {% include 'contract/upload.html' %}
@@ -48,15 +46,15 @@
             </section>
 
             <!-- Contracts Management Section -->
-            <section class="features-section" id="contracts">
+            <section class="section features-section" id="contracts">
                 <div class="container">
                     <div class="section-header">
                         <h2>Meine Mietverträge</h2>
                         <div class="search-wrapper">
                             <input
                                     type="text"
-                                    placeholder="Verträge durchsuchen..."
-                                    class="search-input"
+                                    placeholder="Verträge filtern..."
+                                    class="input-base"
                                     x-model="searchText"
                             >
                             <i class="bi bi-search"></i>
@@ -68,7 +66,7 @@
                         <div class="contracts-grid">
                             {% for contract in contracts %}
                                 <div
-                                        class="feature-card contract-card no-translate"
+                                        class="contract-card"
                                         data-contract-id="{{ contract.id }}"
                                         x-show="'{{ contract.id }}'.toLowerCase().includes(searchText.toLowerCase())">
                                     <div class="contract-header">
@@ -117,7 +115,7 @@
                                                 hx-indicator="#spinner-{{ contract.id }}"
                                                 hx-swap="none"
                                                 @htmx:before-request="$event.detail.target.disabled = true"
-                                                class="btn-primary analyze-btn {% if contract.status == 'analyzed' %}analyze-complete{% endif %}"
+                                                class="btn btn-primary analyze-btn {% if contract.status == 'analyzed' %}analyze-complete{% endif %}"
                                                 {% if contract.status == 'processing' %}disabled{% endif %}
                                                 id="analyze-button-{{ contract.id }}">
                                             <i class="bi bi-lightning-charge"></i>Analyse starten
@@ -130,40 +128,42 @@
                             {% endfor %}
                         </div>
                     {% else %}
-                        <div class="empty-state">
-                            <div class="empty-icon">
-                                <i class="bi bi-file-earmark-text"></i>
+                        <div class="empty-state neo-card text-center p-5">
+                            <div class="empty-icon mb-3">
+                                <i class="bi bi-file-earmark-text fs-1"></i>
                             </div>
                             <p>Sie haben noch keine Verträge hochgeladen.</p>
-                            <a href="#upload-form-section" class="btn btn-primary">Ersten Vertrag hochladen</a>
+                            <a href="#upload-form-section" class="btn btn-primary mt-3">Ersten Vertrag hochladen</a>
                         </div>
                     {% endif %}
                 </div>
             </section>
 
-            <section class="benefits-section" id="benefits">
-                <div class="section-header">
-                    <h2>Mein Konto</h2>
-                    <p>Verwalten Sie Ihre Benutzerdaten und sehen Sie Ihre letzten Aktivitäten.</p>
-                </div>
-
-                <div class="benefits-container d-flex gap-5">
-                    <div>
-                        <h3>Benutzerdaten</h3>
-                        <p>Benutzername: <strong>{{ user.username }}</strong></p>
-                        <div class="d-flex gap-3 mt-3">
-                            <button class="btn btn-secondary">E-Mail ändern</button>
-                            <button class="btn btn-secondary">Passwort ändern</button>
-                            <button class="btn btn-danger">Konto löschen</button>
-                        </div>
+            <section class="section section-alt benefits-section" id="benefits">
+                <div class="container">
+                    <div class="section-header">
+                        <h2>Mein Konto</h2>
+                        <p>Verwalten Sie Ihre Benutzerdaten und sehen Sie Ihre letzten Aktivitäten.</p>
                     </div>
 
-                    <div>
-                        <h3>Zahlungsinformationen</h3>
-                        <p>Abonnement: <strong>Basic</strong></p>
-                        <div class="d-flex gap-3 mt-3">
-                            <button class="btn btn-secondary">Abonnement ändern</button>
-                            <button class="btn btn-secondary">Zahlungsinformationen ändern</button>
+                    <div class="benefits-container d-flex gap-5 flex-wrap">
+                        <div class="neo-card p-4 flex-grow-1">
+                            <h3 class="mb-3">Benutzerdaten</h3>
+                            <p>Benutzername: <strong>{{ user.username }}</strong></p>
+                            <div class="d-flex gap-3 mt-3 flex-wrap">
+                                <button class="btn btn-secondary">E-Mail ändern</button>
+                                <button class="btn btn-secondary">Passwort ändern</button>
+                                <button class="btn btn-danger">Konto löschen</button>
+                            </div>
+                        </div>
+
+                        <div class="neo-card p-4 flex-grow-1">
+                            <h3 class="mb-3">Zahlungsinformationen</h3>
+                            <p>Abonnement: <strong>Basic</strong></p>
+                            <div class="d-flex gap-3 mt-3 flex-wrap">
+                                <button class="btn btn-secondary">Abonnement ändern</button>
+                                <button class="btn btn-secondary">Zahlungsinformationen ändern</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -172,250 +172,6 @@
     {% endif %}
 {% endblock %}
 
-{% block extra_css %}
-    <style>
-        /* Search Input Styling */
-        .search-wrapper {
-            position: relative;
-            max-width: 400px;
-            margin: 2rem auto 0;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 1rem 1.5rem;
-            border: none;
-            border-radius: var(--radius-md);
-            background-color: var(--surface-alt);
-            box-shadow: var(--shadow-inset);
-            font-family: var(--font-family);
-            color: var(--text-primary);
-            transition: var(--transition-normal);
-        }
-
-        .search-input:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px var(--primary-light), var(--shadow-inset);
-        }
-
-        .search-wrapper i {
-            position: absolute;
-            right: 1.25rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-tertiary);
-            pointer-events: none;
-        }
-
-        /* Contract Cards Grid */
-        .contracts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .contract-card {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
-
-        .contract-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 0.75rem;
-        }
-
-        .contract-title {
-            font-size: 1.25rem;
-            margin: 0;
-        }
-
-        .contract-date {
-            color: var(--text-tertiary);
-            font-size: 0.875rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.35rem 0.75rem;
-            border-radius: 2rem;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge-success {
-            background-color: var(--success);
-            color: white;
-        }
-
-        .badge-warning {
-            background-color: var(--warning);
-            color: var(--text-primary);
-        }
-
-        .badge-default {
-            background-color: var(--text-tertiary);
-            color: white;
-        }
-
-        /* Contract Files */
-        .contract-files {
-            display: flex;
-            gap: 0.75rem;
-            overflow-x: auto;
-            padding-bottom: 1rem;
-            margin-bottom: 1.5rem;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        .contract-files::-webkit-scrollbar {
-            display: none;
-        }
-
-        .contract-file {
-            position: relative;
-            min-width: 80px;
-            max-width: 100px;
-            border-radius: var(--radius-sm);
-            overflow: hidden;
-            box-shadow: var(--shadow-small);
-        }
-
-        .contract-thumbnail {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-        }
-
-        .file-number {
-            position: absolute;
-            bottom: 0.25rem;
-            right: 0.25rem;
-            background-color: var(--text-primary);
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 0.2rem 0.5rem;
-            border-radius: 1rem;
-        }
-
-        .contract-empty {
-            color: var(--text-tertiary);
-            font-style: italic;
-            padding: 1rem 0;
-        }
-
-        /* Contract Actions */
-        .contract-actions {
-            display: flex;
-            gap: 0.75rem;
-            margin-top: auto;
-            padding-top: 1.5rem;
-        }
-
-        .contract-actions a,
-        .contract-actions button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            flex: 1;
-            font-size: 0.875rem;
-            padding: 0.75rem;
-        }
-
-        .contract-actions i {
-            font-size: 1rem;
-        }
-
-        .analyze-btn {
-            position: relative;
-        }
-
-        .analyze-complete {
-            background: linear-gradient(135deg, var(--warning), var(--warning));
-        }
-
-        .spinner-icon {
-            position: absolute;
-            right: 0.75rem;
-            width: 1rem;
-            height: 1rem;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            background-color: var(--surface);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-small);
-        }
-
-        .empty-icon {
-            font-size: 3rem;
-            color: var(--text-tertiary);
-            margin-bottom: 1.5rem;
-        }
-
-        .empty-state p {
-            color: var(--text-secondary);
-            margin-bottom: 2rem;
-        }
-
-        /* Alpine Transitions */
-        .transition-normal {
-            transition: opacity var(--transition-normal), transform var(--transition-normal);
-        }
-
-        .opacity-0 {
-            opacity: 0;
-        }
-
-        .opacity-100 {
-            opacity: 1;
-        }
-
-        .transform-down {
-            transform: translateY(-20px);
-        }
-
-        .transform-none {
-            transform: translateY(0);
-        }
-
-        /* Responsive Adjustments */
-        @media (max-width: 992px) {
-            .contract-actions {
-                flex-direction: column;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .contracts-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
-{% endblock %}
 
 {% block extra_js %}
     <script>

@@ -14,7 +14,7 @@
 
         <div class="nav-actions">
             {% if user.is_authenticated %}
-                {% if request.resolver_match.url_name != 'dashboard' %}
+                {% if request.resolver_match.url_name != 'home' %}
                     <a href="{% url 'home' %}" class="btn btn-primary">
                         Zum Dashboard
                     </a>

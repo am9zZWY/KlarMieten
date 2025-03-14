@@ -321,63 +321,56 @@
                 <p>Antworten auf Ihre wichtigsten Fragen</p>
             </div>
 
-            <div class="faq-accordion">
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span>Wie sicher sind meine Daten?</span>
-                        <i class="bi bi-plus"></i>
+            <div class="accordion-wrapper">
+                <div class="accordion" id="landingFaq">
+                    <div class="accordion-item">
+                        <div class="accordion-header" id="faqHeadingOne">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faqOne" aria-expanded="false" aria-controls="faqOne">
+                                Welche Dateiformate kann ich hochladen?
+                            </button>
+                        </div>
+                        <div id="faqOne" class="accordion-collapse collapse" aria-labelledby="faqHeadingOne"
+                             data-bs-parent="#landingFaq">
+                            <div class="accordion-body">
+                                Sie können Ihren Mietvertrag als PDF oder als Bild (JPG/PNG)
+                                hochladen. Bei Fotos achten Sie bitte auf gute Lesbarkeit für optimale Ergebnisse.
+                            </div>
+                        </div>
                     </div>
-                    <div class="faq-answer">
-                        <p>Ihre Daten werden verschlüsselt übertragen und nach der Analyse automatisch gelöscht. Wir
-                            speichern keine persönlichen Informationen oder Vertragsinhalte. Unsere Plattform ist
-                            vollständig DSGVO-konform.</p>
-                    </div>
-                </div>
 
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span>Wie genau ist die KI-Analyse?</span>
-                        <i class="bi bi-plus"></i>
+                    <div class="accordion-item">
+                        <div class="accordion-header" id="faqHeadingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faqTwo" aria-expanded="false" aria-controls="faqTwo">
+                                Ist die Analyse rechtlich verbindlich?
+                            </button>
+                        </div>
+                        <div id="faqTwo" class="accordion-collapse collapse" aria-labelledby="faqHeadingTwo"
+                             data-bs-parent="#landingFaq">
+                            <div class="accordion-body">
+                                Nein, unsere Analyse ersetzt keine anwaltliche Beratung. Sie dient als
+                                Orientierungshilfe
+                                und
+                                kann Ihnen wichtige Hinweise geben, ob Ihr Vertrag rechtliche Probleme enthalten könnte.
+                            </div>
+                        </div>
                     </div>
-                    <div class="faq-answer">
-                        <p>Unsere KI wurde mit über 50.000 Mietverträgen und aktuellen Gerichtsurteilen trainiert. Sie
-                            erreicht eine Genauigkeit von 97% bei der Erkennung problematischer Klauseln. In komplexen
-                            Einzelfällen empfehlen wir dennoch zusätzlich eine anwaltliche Beratung.</p>
-                    </div>
-                </div>
 
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span>Welche Dateiformate kann ich hochladen?</span>
-                        <i class="bi bi-plus"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Sie können Ihren Mietvertrag als PDF oder als Bild (JPG/PNG)
-                            hochladen. Bei Fotos achten Sie bitte auf gute Lesbarkeit für optimale Ergebnisse.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span>Kann ich die Analyse als Beweis vor Gericht nutzen?</span>
-                        <i class="bi bi-plus"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Unsere Analyse gibt Ihnen eine fundierte rechtliche Einschätzung und kann als Orientierung
-                            dienen. Für ein Gerichtsverfahren empfehlen wir jedoch, die Ergebnisse von einem Fachanwalt
-                            bestätigen zu lassen.</p>
-                    </div>
-                </div>
-
-                <div class="faq-item">
-                    <div class="faq-question">
-                        <span>Was kostet die Nutzung des Services?</span>
-                        <i class="bi bi-plus"></i>
-                    </div>
-                    <div class="faq-answer">
-                        <p>Wir bieten eine kostenlose Basisanalyse an. Für detaillierte Auswertungen und
-                            Handlungsempfehlungen gibt es verschiedene Preismodelle ab 19,90€ pro Vertragsanalyse.
-                            Informationen zu unseren Preispaketen finden Sie unter "Preise".</p>
+                    <div class="accordion-item">
+                        <div class="accordion-header" id="faqHeadingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#faqThree" aria-expanded="false" aria-controls="faqThree">
+                                Was kostet die Nutzung des Services?
+                            </button>
+                        </div>
+                        <div id="faqThree" class="accordion-collapse collapse" aria-labelledby="faqHeadingThree"
+                             data-bs-parent="#landingFaq">
+                            <div class="accordion-body">
+                                Wir bieten eine kostenlose Basisanalyse an. Mehr Informationen finden Sie auf unser <a
+                                    href="{% url 'pricing' %}">Preisübersichtsseite</a>.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -549,7 +542,7 @@
 
 			// FAQ Accordion
 			function initializeFAQAccordion() {
-				const faqItems = document.querySelectorAll('.faq-item');
+				const faqItems = document.querySelectorAll('.accordion-item');
 
 				faqItems.forEach(item => {
 					const question = item.querySelector('.faq-question');

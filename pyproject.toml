@@ -1,7 +1,7 @@
 [project]
 name = "backend"
 version = "0.1.0"
-description = "Darf Vermieter Das? Backend"
+description = "Darf Vermieter Das?"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

@@ -1,9 +1,12 @@
 # utils/encryption.py
+import logging
 import os
 import secrets
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 
 def get_encryption_key():
@@ -17,6 +20,7 @@ def get_encryption_key():
 
     # Look for key file
     key_path = os.path.join(settings.BASE_DIR, ".encryption_key")
+    logger.info(f"Looking for encryption key at {key_path}")
     if os.path.exists(key_path):
         with open(key_path, "rb") as f:
             return f.read()
@@ -78,5 +82,6 @@ def decrypt_file(encrypted_data):
         return aesgcm.decrypt(nonce, ciphertext, b"")
     except Exception as e:
         # InvalidTag exception will be raised if tampered with
-        logging.error(f"Decryption error: {e}")
+        logger.exception("File decryption failed")
+        logger.error(e)
         raise ValueError("File decryption failed - data may be corrupted")

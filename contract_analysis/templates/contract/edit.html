@@ -11,7 +11,7 @@
     {% else %}
         <div x-data="drawing" class="quantum-container">
             <!-- Dashboard Header -->
-            <section class="hero-section py-5 mb-4">
+            <section class="section hero-section py-5 mb-4">
                 <div class="container">
                     <div class="row align-items-center">
                         <div class="col-md-8">
@@ -23,14 +23,14 @@
                                 einmal zensieren und fortfahren.</p>
                         </div>
                         <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                            <a href="{% url 'home' %}" class="btn-text"><i class="fas fa-arrow-left"></i> Zurück zur
-                                Übersicht</a>
+                            <a href="{% url 'home' %}" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Zurück zur Übersicht</a>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section class="edit-contract-section">
+            <section class="section edit-contract-section">
                 <div class="contract-thumbnails">
                     <h3 class="mb-3">Vertragsseiten</h3>
                     <div class="thumbnail-grid">
@@ -93,265 +93,6 @@
             </section>
         </div>
     {% endif %}
-{% endblock %}
-
-{% block extra_css %}
-    <style>
-        /* Edit Contract Page Styles */
-        .edit-contract-section {
-            background-color: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            box-shadow: var(--shadow-small);
-            margin-bottom: 2rem;
-        }
-
-        /* Thumbnails Grid */
-        .contract-thumbnails {
-            margin-bottom: 2rem;
-        }
-
-        .thumbnail-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1rem;
-        }
-
-        .thumbnail-item {
-            border: 3px solid var(--border);
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            cursor: pointer;
-            transition: var(--transition-normal);
-            position: relative;
-        }
-
-        .thumbnail-item.active {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px var(--primary-light);
-            transform: translateY(-5px);
-        }
-
-        .thumbnail-item:hover:not(.active) {
-            border-color: var(--primary-light);
-            transform: translateY(-3px);
-        }
-
-        .thumbnail-item img {
-            width: 100%;
-            height: 180px;
-            object-fit: contain;
-            background: var(--surface-alt);
-        }
-
-        .thumbnail-status {
-            display: flex;
-            align-items: center;
-            padding: 0.5rem;
-            background: linear-gradient(to right, rgba(13, 17, 55, 0.8), rgba(43, 71, 201, 0.8));
-            color: white;
-            font-size: 0.8rem;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            font-weight: 500;
-        }
-
-        .status-indicator {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--border);
-            margin-right: 0.75rem;
-            transition: var(--transition-normal);
-        }
-
-        .thumbnail-item.censored .status-indicator {
-            background: var(--success);
-            box-shadow: 0 0 5px var(--success);
-        }
-
-        /* Editing Tools */
-        .edit-tools-container {
-            background-color: var(--surface-alt);
-            border-radius: var(--radius-md);
-            padding: 1.25rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .edit-tools {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .action-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-        }
-
-        .brush-size-control {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .brush-size-label {
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: var(--text-secondary);
-        }
-
-        .brush-size-slider {
-            width: 100%;
-            height: 6px;
-            -webkit-appearance: none;
-            background: linear-gradient(to right, var(--primary-light), var(--primary-dark));
-            border-radius: 3px;
-            outline: none;
-            cursor: pointer;
-        }
-
-        .brush-size-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            background: white;
-            border: 2px solid var(--primary);
-            border-radius: 50%;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            transition: var(--transition-fast);
-        }
-
-        .brush-size-slider::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-        }
-
-        /* Canvas Container */
-        .canvas-container {
-            border: 2px solid var(--border);
-            border-radius: var(--radius-md);
-            margin: 1rem 0;
-            overflow: auto;
-            max-height: 70vh;
-            background: var(--surface-alt);
-            position: relative;
-            min-height: 400px;
-            box-shadow: var(--shadow-inset);
-        }
-
-        .canvas-placeholder {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f0f0f0' fill-opacity='1' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
-        }
-
-        canvas {
-            display: block;
-            cursor: crosshair;
-        }
-
-        /* Button styling from main.css */
-        .btn {
-            display: inline-block;
-            padding: 0.75rem 1.25rem;
-            font-weight: 600;
-            border: none;
-            border-radius: var(--radius-md);
-            transition: var(--transition-normal);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn i {
-            font-size: 1rem;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(67, 97, 238, 0.3);
-        }
-
-        .btn-primary.active {
-            background: var(--primary-dark);
-            box-shadow: var(--shadow-inset);
-        }
-
-        .btn-secondary {
-            background-color: rgba(67, 97, 238, 0.1);
-            color: var(--primary);
-        }
-
-        .btn-secondary:hover {
-            background-color: rgba(67, 97, 238, 0.15);
-            color: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-
-        .btn-danger {
-            background: linear-gradient(135deg, var(--error), #ff2d2d);
-            color: white;
-            box-shadow: 0 4px 12px rgba(255, 90, 90, 0.2);
-        }
-
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(255, 90, 90, 0.3);
-        }
-
-        /* Responsive styles */
-        @media (max-width: 992px) {
-            .action-buttons {
-                margin-top: 1rem;
-                margin-bottom: 1rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .edit-contract-section {
-                padding: 1.5rem;
-            }
-
-            .thumbnail-grid {
-                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-            }
-
-            .thumbnail-item img {
-                height: 140px;
-            }
-
-            .edit-tools, .action-buttons {
-                flex-direction: column;
-                width: 100%;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .brush-size-control {
-                margin-top: 1rem;
-            }
-        }
-    </style>
 {% endblock %}
 
 {% block extra_js %}
