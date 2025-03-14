@@ -44,7 +44,28 @@ FAQ = [
         "answer": "Sie können in Ihrem Vertrag sensible Daten selbst schwärzen oder entfernen, bevor Sie ihn hochladen. Wir können nicht unterscheiden, welche Informationen persönlich sind. Falls dies nicht oder fehlerhaft erfolgt, können auch personenbezogene Daten verarbeitet werden – dafür übernehmen wir keine Haftung.",
         "for": ["landing", "faq"]
     },
+    {
+        "question": "Sind wirklich keine Abos im Basic- oder Studenten-Paket enthalten?",
+        "answer": "Absolut! Unsere Basic-, Student-Pakete sind reine Einmalzahlungen ohne versteckte Kosten oder automatische Verlängerungen. Nur die Pro- und Chat+ Pakete sind als Abos verfügbar.",
+        "for": ["pricing"]
+    },
+    {
+        "question": "Wie funktioniert der Studentenrabatt?",
+        "answer": "Studierende können bei der Registrierung einen gültigen Studentenausweis oder eine Immatrikulationsbescheinigung hochladen. Nach Überprüfung werden alle Studentenrabatte automatisch freigeschaltet.",
+        "for": ["pricing"]
+    },
+    {
+        "question": "Was passiert, wenn ich mehr Analysen benötige?",
+        "answer": "Sie können jederzeit ein zusätzliches Paket erwerben oder auf ein höherwertiges Paket upgraden. Die nicht genutzten Analysen aus Ihrem bisherigen Paket bleiben dabei erhalten.",
+        "for": ["pricing"]
+    },
+    {
+        "question": "Was ist in der erweiterten Analyse enthalten?",
+        "answer": "Die erweiterte Analyse enthält zusätzliche Informationen zu den Klauseln in Ihrem Mietvertrag. Sie zeigt Ihnen, ob die Klauseln zulässig sind und welche Rechte Sie als Mieter haben. Die erweiterte Analyse ist kostenpflichtig und ersetzt keine individuelle Rechtsberatung.",
+        "for": ["pricing"]
+    }
 ]
 
 FAQ_landing = [q for q in FAQ if "landing" in q["for"]]
+FAQ_pricing = [q for q in FAQ if "pricing" in q["for"]]
 FAQ_all = [q for q in FAQ if "faq" in q["for"]]

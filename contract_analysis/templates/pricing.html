@@ -104,76 +104,23 @@
 
                 <div class="accordion-wrapper">
                     <div class="accordion" id="pricingFaq">
-                        <div class="accordion-item">
-                            <div class="accordion-header" id="faqHeadingOne">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                        data-bs-target="#faqOne" aria-expanded="false" aria-controls="faqOne">
-                                    Sind wirklich keine Abos versteckt?
-                                </button>
-                            </div>
-                            <div id="faqOne" class="accordion-collapse collapse" aria-labelledby="faqHeadingOne"
-                                 data-bs-parent="#pricingFaq">
-                                <div class="accordion-body">
-                                    Absolut! Unsere Basic-, Student- und Pro-Pakete sind reine Einmalzahlungen ohne
-                                    versteckte Kosten oder automatische Verlängerungen. Nur das Chat+ Paket ist ein
-                                    monatliches Abo, das jedoch jederzeit kündbar ist.
+                        {% for item in faq %}
+                            <div class="accordion-item">
+                                <div class="accordion-header" id="faqHeading{{ forloop.counter }}">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#faq{{ forloop.counter }}" aria-expanded="false"
+                                            aria-controls="faq{{ forloop.counter }}">
+                                        {{ item.question }}
+                                    </button>
+                                </div>
+                                <div id="faq{{ forloop.counter }}" class="accordion-collapse collapse"
+                                     aria-labelledby="faqHeading{{ forloop.counter }}" data-bs-parent="#landingFaq">
+                                    <div class="accordion-body">
+                                        {{ item.answer }}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="accordion-item">
-                            <div class="accordion-header" id="faqHeadingTwo">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                        data-bs-target="#faqTwo" aria-expanded="false" aria-controls="faqTwo">
-                                    Wie funktioniert der Studentenrabatt?
-                                </button>
-                            </div>
-                            <div id="faqTwo" class="accordion-collapse collapse" aria-labelledby="faqHeadingTwo"
-                                 data-bs-parent="#pricingFaq">
-                                <div class="accordion-body">
-                                    Studierende können bei der Registrierung einen gültigen Studentenausweis oder eine
-                                    Immatrikulationsbescheinigung hochladen. Nach Überprüfung werden alle
-                                    Studentenrabatte
-                                    automatisch freigeschaltet.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="accordion-item">
-                            <div class="accordion-header" id="faqHeadingThree">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                        data-bs-target="#faqThree" aria-expanded="false" aria-controls="faqThree">
-                                    Was passiert, wenn ich mehr Analysen benötige?
-                                </button>
-                            </div>
-                            <div id="faqThree" class="accordion-collapse collapse" aria-labelledby="faqHeadingThree"
-                                 data-bs-parent="#pricingFaq">
-                                <div class="accordion-body">
-                                    Sie können jederzeit ein zusätzliches Paket erwerben oder auf ein höherwertiges
-                                    Paket
-                                    upgraden. Die nicht genutzten Analysen aus Ihrem bisherigen Paket bleiben dabei
-                                    erhalten.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="accordion-item">
-                            <div class="accordion-header" id="faqHeadingFour">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                        data-bs-target="#faqFour" aria-expanded="false" aria-controls="faqFour">
-                                    Was ist in der erweiterten Analyse enthalten?
-                                </button>
-                            </div>
-                            <div id="faqFour" class="accordion-collapse collapse" aria-labelledby="faqHeadingFour"
-                                 data-bs-parent="#pricingFaq">
-                                <div class="accordion-body">
-                                    Die erweiterte Analyse umfasst detailliertere rechtliche Bewertungen, Vergleiche mit
-                                    aktuellen Gerichtsurteilen und personalisierte Handlungsempfehlungen. Außerdem
-                                    erhalten
-                                    Sie Zugang zu Vorlagen für Widersprüche und andere wichtige Dokumente.
-                                </div>
-                            </div>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
             </div>

@@ -1,5 +1,4 @@
 from django.urls import path
-from django.views.generic import TemplateView
 
 from .views.analysis import analyze_contract, analyze_contract_update
 from .views.contract import (
@@ -9,7 +8,7 @@ from .views.contract import (
     landing,
     save_edited_contract,
     get_contract,
-    edit_contract,
+    edit_contract, pricing,
 )
 from .views.upload import upload_contract
 
@@ -44,5 +43,5 @@ urlpatterns = [
         analyze_contract_update,
         name="analyze_contract_update",
     ),
-    path("price", TemplateView.as_view(template_name="pricing.html"), name="pricing"),
+    path("price", pricing, name="pricing"),
 ]
