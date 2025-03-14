@@ -102,6 +102,13 @@ img {
     transform: translate(0) !important;
 }
 
+.disclaimer {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 1rem;
+}
+
 /* Container */
 .quantum-container {
     width: 100%;
