@@ -27,7 +27,7 @@
             <meta property="og:title" content="Darf Vermieter Das? | Mietverträge prüfen mit KI für Studierende">
             <meta property="og:description"
                   content="Mit unserer KI prüfen Sie Mietverträge schnell, sicher und einfach. Perfekt für Studierende und alle, die unzulässige Klauseln erkennen wollen.">
-            <meta property="og:image" content="{% static '/img/og-image.png' %}">
+            <meta property="og:image" content="{% static 'img/og-image.png' %}">
             <meta property="og:url" content="https://darf-vermieter-das.de">
             <meta property="og:type" content="website">
 
@@ -36,7 +36,7 @@
             <meta name="twitter:title" content="Darf Vermieter Das? | Mietverträge prüfen mit KI">
             <meta name="twitter:description"
                   content="Erfahren Sie in Sekunden, was Ihr Vermieter darf und was nicht – dank unserer KI-gestützten Mietvertragsanalyse.">
-            <meta name="twitter:image" content="{% static '/img/og-image.png' %}">
+            <meta name="twitter:image" content="{% static 'img/og-image.png' %}">
 
             <!-- Robots -->
             <meta name="robots" content="index, follow">
@@ -57,17 +57,16 @@
         </noscript>
 
         <!-- Stylesheets -->
-        <link rel="stylesheet" href="{% static '/css/main.css' %}">
-        <link rel="stylesheet" href="{% static '/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'bootstrap-5.3.3-dist/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'css/main.css' %}">
 
         {% block link %}
         {% endblock %}
 
         <!-- Scripts -->
-        <script src="{% static '/js/alpine.min.js' %}"></script>
-        <script src="{% static '/js/htmx.min.js' %}"></script>
-        <script src="{% static '/js/popper.min.js' %}"></script>
-        <script src="{% static '/js/bootstrap.min.js' %}"></script>
+        <script src="{% static 'js/alpine.min.js' %}"></script>
+        <script src="{% static 'js/htmx.min.js' %}"></script>
+        <script src="{% static 'bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js' %}"></script>
 
         {% block script %}
         {% endblock %}

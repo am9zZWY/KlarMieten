@@ -14,48 +14,46 @@ import os
 import secrets
 from pathlib import Path
 
-# Read .env file
 from dotenv import load_dotenv
 
+# Load environment variables from .env file
 load_dotenv()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Base directory of the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+# SECURITY SETTINGS
+# ------------------------------------------------------------------------------
+# Secret key for cryptographic operations
+SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-default-key")  # Default for dev only
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# Secret key used for cryptographic operations
-SECRET_KEY = os.getenv("SECRET_KEY")
-
-# Encryption key used for file encryption
+# Encryption key for file encryption
+key_path = BASE_DIR / ".encryption_key"
 if "FILE_ENCRYPTION_KEY" not in os.environ:
-    # Generate key
-    key_path = os.path.join(BASE_DIR, ".encryption_key")
-    if os.path.exists(key_path):
+    if key_path.exists():
         with open(key_path, "rb") as f:
             FILE_ENCRYPTION_KEY = f.read()
     else:
-        # Only for development - in production, set from environment
         FILE_ENCRYPTION_KEY = secrets.token_bytes(32)
-        # Save key for development
         with open(key_path, "wb") as f:
             f.write(FILE_ENCRYPTION_KEY)
 else:
-    # Get from environment (hex encoded for easy storage)
     FILE_ENCRYPTION_KEY = bytes.fromhex(os.environ["FILE_ENCRYPTION_KEY"])
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# Debug mode (ensure this is False in production)
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app', '.darf-vermieter-das.de', 'localhost']
+# Allowed hosts for the application
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
 
-# Application definition
-
+# APPLICATION SETTINGS
+# ------------------------------------------------------------------------------
 INSTALLED_APPS = [
+    # Local apps
     "accounts",
     "contract_analysis",
+
+    # Django default apps
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -66,6 +64,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # For serving static files in production
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -79,11 +78,7 @@ ROOT_URLCONF = "darf_vermieter_das.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [
-            BASE_DIR / "templates",
-            "contract_analysis/templates",
-            "accounts/templates",
-        ],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -98,9 +93,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "darf_vermieter_das.wsgi.application"
 
-# Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
+# DATABASE SETTINGS
+# ------------------------------------------------------------------------------
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -108,56 +102,75 @@ DATABASES = {
     }
 }
 
-# Media files
-
+# MEDIA FILES
+# ------------------------------------------------------------------------------
 MEDIA_URL = "/media/"
-MEDIA_ROOT = os.path.join(BASE_DIR, "private_media")  # außerhalb des Web-Root
+MEDIA_ROOT = BASE_DIR / "private_media"  # Store media files outside the web root
 
-# File permissions
+# FILE UPLOAD SETTINGS
+# ------------------------------------------------------------------------------
 FILE_UPLOAD_PERMISSIONS = 0o640
-# Limit the maximum size of uploaded files to 10MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 
-# Password validation
-# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
-
+# AUTHENTICATION SETTINGS
+# ------------------------------------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# Login
+AUTH_USER_MODEL = "accounts.User"  # Custom user model
 
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
-# User model
-
-AUTH_USER_MODEL = "accounts.User"
-
-# Internationalization
-# https://docs.djangoproject.com/en/5.1/topics/i18n/
-
+# INTERNATIONALIZATION
+# ------------------------------------------------------------------------------
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "UTC"
-
 USE_I18N = True
-
 USE_TZ = True
 
-# Logging
+# STATIC FILES
+# ------------------------------------------------------------------------------
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# DEFAULT FILE STORAGE
+# ------------------------------------------------------------------------------
+STORAGES = {
+    # Static files storage (using WhiteNoise for production)
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+    # Default file storage (e.g., for uploaded files)
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    # Private file storage (e.g., for sensitive files)
+    "private": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "ACL": "private",
+            "ServerSideEncryption": "AES256",
+        },
+    },
+}
+
+# CACHING
+# ------------------------------------------------------------------------------
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-contracts",
+    }
+}
+
+# LOGGING
+# ------------------------------------------------------------------------------
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -179,39 +192,6 @@ LOGGING = {
     },
 }
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
-
-STATIC_URL = "static/"
-
-# Directories containing your source static files
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
-
-# Production static file settings
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
-
-DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-# or for local development
-# DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-
-# For private files
-PRIVATE_STORAGE_CLASS = "storages.backends.s3boto3.S3Boto3Storage"
-PRIVATE_STORAGE_S3_PARAMETERS = {
-    "ACL": "private",
-    "ServerSideEncryption": "AES256",
-}
-
-# Cache
-CACHES = {
-    "default": {
-        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-        "LOCATION": "unique-contracts",
-    }
-}
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
-
+# DEFAULT PRIMARY KEY FIELD TYPE
+# ------------------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
