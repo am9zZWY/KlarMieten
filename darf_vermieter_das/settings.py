@@ -133,14 +133,14 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-# STATIC FILES
+# STATIC FILES AND STORAGE
 # ------------------------------------------------------------------------------
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# DEFAULT FILE STORAGE
-# ------------------------------------------------------------------------------
+WHITENOISE_KEEP_ONLY_HASHED_FILES = True
+
 STORAGES = {
     # Static files storage (using WhiteNoise for production)
     "staticfiles": {
