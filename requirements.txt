@@ -41,3 +41,4 @@ tqdm==4.67.1
 typing-extensions==4.12.2
 urllib3==2.3.0
 websockets==14.2
+whitenoise==6.9.0
