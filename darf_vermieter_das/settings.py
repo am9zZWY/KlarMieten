@@ -47,7 +47,7 @@ else:
     FILE_ENCRYPTION_KEY = bytes.fromhex(os.environ["FILE_ENCRYPTION_KEY"])
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ['127.0.0.1', '.vercel.app', '.darf-vermieter-das.de', 'localhost']
 
@@ -183,9 +183,13 @@ LOGGING = {
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "static/"
+
+# Directories containing your source static files
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+# Production static file settings
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
