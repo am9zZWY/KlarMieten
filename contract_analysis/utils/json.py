@@ -6,6 +6,7 @@ from django.db import models
 
 logger = logging.getLogger(__name__)
 
+
 def model_to_schema(model_class):
     fields = model_class._meta.get_fields()
     schema = {}
@@ -32,8 +33,8 @@ def model_to_schema(model_class):
         else:
             schema[field_name] = "string, null"
 
-    logger.info(f"Generated JSON schema for {model_class}: {schema}")
     return schema
+
 
 def model_to_json_schema(model):
     """
@@ -58,6 +59,7 @@ def model_to_json_schema(model):
                 schema["required"].append(field.name)
 
     return schema
+
 
 def field_to_schema(field):
     """
@@ -129,6 +131,7 @@ def field_to_schema(field):
 
     return schema
 
+
 def clean_json(json_string: str) -> Any | None:
     """
     Cleans a JSON string received, ensuring it's valid JSON,
@@ -150,7 +153,7 @@ def clean_json(json_string: str) -> Any | None:
         return data  # If it loads without error, it's already valid.
 
     except json.JSONDecodeError as e:
-        logger.error(f"Initial JSONDecodeError: {e}")
+        logger.error(f"Failed to load JSON. Trying to clean: {e}")
 
         # Attempt cleaning strategies:
         cleaned_string = json_string

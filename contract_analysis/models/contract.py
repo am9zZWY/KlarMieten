@@ -230,6 +230,8 @@ class ContractDetails(models.Model):
 
     # AI Extracted Data
     neighborhood_description = models.TextField(null=True, blank=True)
+    full_contract_text = models.TextField(null=True, blank=True)
+    simplified_paragraphs = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Rental Contract"
@@ -242,11 +244,11 @@ class ContractDetails(models.Model):
     def total_rent(self):
         """Calculate total monthly rent including all cost components"""
         return (
-            (self.basic_rent or 0)
-            + (self.operating_costs or 0)
-            + (self.heating_costs or 0)
-            + (self.garage_costs or 0)
-            + (self.other_costs or 0)
+                (self.basic_rent or 0)
+                + (self.operating_costs or 0)
+                + (self.heating_costs or 0)
+                + (self.garage_costs or 0)
+                + (self.other_costs or 0)
         )
 
     @property
@@ -265,7 +267,22 @@ class ContractDetails(models.Model):
     def has_valid_cosmetic_repair_clause(self):
         """Check if cosmetic repair clause meets legal requirements"""
         return (
-            self.cosmetic_repairs == "tenant"
-            and self.renovation_interval_years is not None
-            and self.renovation_interval_years >= 5
+                self.cosmetic_repairs == "tenant"
+                and self.renovation_interval_years is not None
+                and self.renovation_interval_years >= 5
         )
+
+    @staticmethod
+    def update_contract_details(contract, updated_contract_details):
+        # Check if details already exist
+        contract_details = ContractDetails.objects.filter(contract=contract).first()
+        if not contract_details:
+            contract_details = ContractDetails.objects.create(contract=contract)
+
+        # Update fields with extracted information
+        valid_fields = [f.name for f in ContractDetails._meta.fields]
+        for key, value in updated_contract_details.items():
+            if key in valid_fields:
+                setattr(contract_details, key, value)
+
+        contract_details.save()

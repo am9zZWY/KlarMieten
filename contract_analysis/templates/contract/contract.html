@@ -17,45 +17,45 @@
         {% include 'not_authed.html' %}
     {% else %}
         <div class="quantum-container">
-            <!-- Greeting Section -->
-            <section class="hero-section mb-4">
-                <div class="container">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h2 class="hero-title mb-4">Vertragsanalyse</h2>
-                            <p class="hero-subtitle lead mb-4">Sehen Sie sich die Details Ihres Mietvertrags an und
-                                erhalten
-                                Sie
-                                nützliche
-                                Informationen</p>
-                        </div>
-                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                            <a href="{% url 'home' %}" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left me-1"></i>Zurück zur Übersicht</a>
-                        </div>
+        <!-- Greeting Section -->
+        <section class="hero-section mb-4">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="hero-title mb-4">Vertragsanalyse</h2>
+                        <p class="hero-subtitle lead mb-4">Sehen Sie sich die Details Ihres Mietvertrags an und
+                            erhalten
+                            Sie
+                            nützliche
+                            Informationen</p>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <a href="{% url 'home' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i>Zurück zur Übersicht</a>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <!-- Contract Overview Cards -->
-            <section>
-                <div class="row row-cols-1 row-cols-md-2 g-4">
-                    <div class="col">
-                        <div class="contract-card">
-                            <h3>Vertragsübersicht</h3>
-                            <div>
-                                <ul class="contract-detail-list list-group list-group-flush">
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Vertragsart</span>
-                                        <span class="fw-bold">{{ contract_details.contract_type }}</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span>Laufzeit</span>
-                                        <span class="fw-bold">
+        <!-- Contract Overview Cards -->
+        <section>
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+                <div class="col">
+                    <div class="contract-card">
+                        <h3>Vertragsübersicht</h3>
+                        <div>
+                            <ul class="contract-detail-list list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Vertragsart</span>
+                                    <span class="fw-bold">{{ contract_details.contract_type }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Laufzeit</span>
+                                    <span class="fw-bold">
                                         {% if contract_details.start_date %}
-                                            {{ contract_details.start_date|date:'Y' }} -
+                                            {{ contract_details.start_date|date:'d.m.Y' }} -
                                             {% if contract_details.end_date %}
-                                                {{ contract_details.end_date|date:'Y' }}
+                                                {{ contract_details.end_date|date:'d.m.Y' }}
                                             {% else %}
                                                 Unbefristet
                                             {% endif %}
@@ -63,35 +63,35 @@
                                             Unbekannt
                                         {% endif %}
                                     </span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span class="text-muted">Kaltmiete</span>
-                                        <span class="fw-bold">{{ contract_details.basic_rent|floatformat:2 }}€</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span class="text-muted">Nebenkosten</span>
-                                        <span class="fw-bold">{{ contract_details.operating_costs|floatformat:2 }}€</span>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                                        <span class="text-muted">Wohnfläche</span>
-                                        <span class="fw-bold">{{ contract_details.living_space|floatformat:2 }} m<sup>2</sup></span>
-                                    </li>
-                                </ul>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span class="text-muted">Kaltmiete</span>
+                                    <span class="fw-bold">{{ contract_details.basic_rent|floatformat:2 }}€</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span class="text-muted">Nebenkosten</span>
+                                    <span class="fw-bold">{{ contract_details.operating_costs|floatformat:2 }}€</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span class="text-muted">Wohnfläche</span>
+                                    <span class="fw-bold">{{ contract_details.living_space|floatformat:2 }} m<sup>2</sup></span>
+                                </li>
+                            </ul>
 
-                                <!-- Price comparison -->
-                                <div class="price-comparison mt-3">
-                                    <div class="progress">
-                                        <div class="progress-bar" role="progressbar"
-                                             style="width: {% widthratio contract_details.monthly_rent 1500 100 %}%;"
-                                             aria-valuenow="{% widthratio contract_details.monthly_rent 1500 100 %}"
-                                             aria-valuemin="0" aria-valuemax="100"></div>
-                                    </div>
-                                    <div class="d-flex justify-content-between mt-2">
-                                        <small class="text-success">Günstig</small>
-                                        <small>Durchschnitt</small>
-                                        <small class="text-warning">Hochpreisig</small>
-                                    </div>
-                                    <div class="text-center mt-3">
+                            <!-- Price comparison -->
+                            <div class="mt-3">
+                                <div class="progress">
+                                    <div class="progress-bar" role="progressbar"
+                                         style="width: {% widthratio contract_details.monthly_rent 1500 100 %}%;"
+                                         aria-valuenow="{% widthratio contract_details.monthly_rent 1500 100 %}"
+                                         aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-2">
+                                    <small class="text-success">Günstig</small>
+                                    <small>Durchschnitt</small>
+                                    <small class="text-warning">Hochpreisig</small>
+                                </div>
+                                <div class="text-center mt-3">
                                     <span class="price-badge {% if contract_details.monthly_rent < 800 %}bg-success{% elif contract_details.monthly_rent > 1200 %}bg-warning{% else %}bg-secondary{% endif %}">
                                         {% if contract_details.monthly_rent < 800 %}
                                             Günstig
@@ -101,205 +101,224 @@
                                             Durchschnitt
                                         {% endif %}
                                     </span>
-                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Map -->
-                    <div class="col">
-                        <div class="contract-card">
-                            <h3>Standort</h3>
-                            <div class="text-muted small mb-3">
-                                {{ contract_details.street }}<br/>{{ contract_details.postal_code|default:'' }} {{ contract_details.city }}
-                            </div>
-                            <div>
-                                <div id="map" class="map-container" style="height: 300px;"></div>
-                                <p class="mt-3 text-muted fst-italic">
-                                    "{{ contract_details.neighborhood_description }}"</p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </section>
 
-            <!-- Chatbot Section -->
-            <section class="mt-4">
-                <div class="contract-card">
-                    <h3>Chatbot</h3>
-                    <div x-data="{ chat: '', questions: [ 'Wie hoch darf die Miete erhöht werden?', 'Was sind umlagefähige Nebenkosten?', 'Wann sollte ich meinen Mietvertrag kündigen?' ]}">
-                        <div class="row row-cols-1 row-cols-md-3 g-3">
-                            <!-- Wrap repeating elements in <template> as required by x-for -->
-                            <template x-for="question in questions">
-                                <div class="col">
-                                    <div class="small-card">
-                                        <div class="card-body" x-on:click="chat = question">
-                                            <!-- Use x-text instead of mustache syntax to display reactive data -->
-                                            <span x-text="question"></span></div>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-
-                        <form class="mt-3" hx-post="/chat-endpoint" hx-target="#chat-response" hx-swap="innerHTML">
-                            <div class="chat-input-wrapper">
-                                <input type="text"
-                                       class="input-base"
-                                       name="user_question"
-                                       placeholder="Frage eingeben"
-                                       x-model="chat"
-                                       x-ref="chatInput">
-
-                                <div class="chat-actions">
-                                    <button type="submit" class="submit-btn" x-bind:disabled="!chat.trim()">
-                                        <i class="bi bi-arrow-up-circle-fill"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-
-                        <div id="chat-response" class="mt-3"></div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Contract Document Analysis -->
-            <div class="row row-cols-1 row-cols-md-2 g-4 mt-4">
+                <!-- Map -->
                 <div class="col">
-                    <div class="contract-card h-100">
-                        <h3>Vertragsdokument</h3>
-                        <div class="card-body position-relative">
-                            {% for file in contract.files.all %}
-                                <div class="mb-3">
-                                    <img src="{% url 'contract_file' contract.id file.id %}"
-                                         alt="Vertragsseite {{ forloop.counter }}" class="img-fluid">
-                                </div>
-                            {% endfor %}
-
-                            <!-- Document Hotspots -->
-                            <div class="position-absolute top-0 start-0">
-                                <div class="document-hotspot position-absolute top-25 start-75"
-                                     data-bs-toggle="tooltip" data-bs-placement="top" title="Kündigungsfrist">1
-                                </div>
-                                <div class="document-hotspot position-absolute top-50 start-75"
-                                     data-bs-toggle="tooltip" data-bs-placement="top" title="Nebenkosten">2
-                                </div>
-                                <div class="document-hotspot position-absolute top-75 start-75"
-                                     data-bs-toggle="tooltip" data-bs-placement="top" title="Kaution">3
-                                </div>
-                            </div>
+                    <div class="contract-card">
+                        <h3>Standort</h3>
+                        <div class="text-muted small mb-3">
+                            {{ contract_details.street }}<br/>{{ contract_details.postal_code|default:'' }} {{ contract_details.city }}
                         </div>
-                    </div>
-                </div>
-
-                <!-- Document Annotations -->
-                <div class="col">
-                    <div class="contract-card h-100">
-                        <h3>Vertragsdetails</h3>
                         <div>
-                            <div class="accordion" id="contractDetailsAccordion">
-                                <div class="accordion-item">
-                                    <div class="accordion-header" id="headingKündigungsfrist">
-                                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                                                data-bs-target="#collapseKündigungsfrist" aria-expanded="true"
-                                                aria-controls="collapseKündigungsfrist">
-                                            Kündigungsfrist
-                                        </button>
-                                    </div>
-                                    <div id="collapseKündigungsfrist" class="accordion-collapse collapse show"
-                                         aria-labelledby="headingKündigungsfrist"
-                                         data-bs-parent="#contractDetailsAccordion">
-                                        <div class="accordion-body">
-                                            {{ contract_details.termination_terms }}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <div class="accordion-header" id="headingNebenkosten">
-                                        <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#collapseNebenkosten"
-                                                aria-expanded="false" aria-controls="collapseNebenkosten">
-                                            Nebenkosten
-                                        </button>
-                                    </div>
-                                    <div id="collapseNebenkosten" class="accordion-collapse collapse"
-                                         aria-labelledby="headingNebenkosten"
-                                         data-bs-parent="#contractDetailsAccordion">
-                                        <div class="accordion-body">
-                                            {{ contract_details.additional_costs }}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <div class="accordion-header" id="headingKaution">
-                                        <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#collapseKaution"
-                                                aria-expanded="false" aria-controls="collapseKaution">
-                                            Kaution
-                                        </button>
-                                    </div>
-                                    <div id="collapseKaution" class="accordion-collapse collapse"
-                                         aria-labelledby="headingKaution" data-bs-parent="#contractDetailsAccordion">
-                                        <div class="accordion-body">
-                                            €{{ contract_details.deposit_amount|floatformat:2 }}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <div class="accordion-header" id="headingZimmeranzahl">
-                                        <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#collapseZimmeranzahl"
-                                                aria-expanded="false" aria-controls="collapseZimmeranzahl">
-                                            Zimmeranzahl
-                                        </button>
-                                    </div>
-                                    <div id="collapseZimmeranzahl" class="accordion-collapse collapse"
-                                         aria-labelledby="headingZimmeranzahl"
-                                         data-bs-parent="#contractDetailsAccordion">
-                                        <div class="accordion-body">
-                                            {{ contract_details.number_of_rooms }}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <div class="accordion-header" id="headingHeizungsart">
-                                        <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#collapseHeizungsart"
-                                                aria-expanded="false" aria-controls="collapseHeizungsart">
-                                            Heizungsart
-                                        </button>
-                                    </div>
-                                    <div id="collapseHeizungsart" class="accordion-collapse collapse"
-                                         aria-labelledby="headingHeizungsart"
-                                         data-bs-parent="#contractDetailsAccordion">
-                                        <div class="accordion-body">
-                                            {{ contract_details.heating_type }}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="accordion-item">
-                                    <div class="accordion-header" id="headingZusätzlicheKlauseln">
-                                        <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#collapseZusätzlicheKlauseln"
-                                                aria-expanded="false" aria-controls="collapseZusätzlicheKlauseln">
-                                            Zusätzliche Klauseln
-                                        </button>
-                                    </div>
-                                    <div id="collapseZusätzlicheKlauseln" class="accordion-collapse collapse"
-                                         aria-labelledby="headingZusätzlicheKlauseln"
-                                         data-bs-parent="#contractDetailsAccordion">
-                                        <div class="accordion-body">
-                                            {{ contract_details.additional_clauses }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <div id="map" class="map-container" style="height: 300px;"></div>
+                            <p class="mt-3 text-muted fst-italic">
+                                "{{ contract_details.neighborhood_description }}"</p>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
+
+        <!-- Chatbot Section -->
+        <section class="mt-4">
+            <div class="contract-card">
+                <h3>Chatbot</h3>
+                <div x-data="{ chat: '', questions: [ 'Wie hoch darf die Miete erhöht werden?', 'Was sind umlagefähige Nebenkosten?', 'Wann sollte ich meinen Mietvertrag kündigen?' ]}">
+                    <div class="row row-cols-1 row-cols-md-3 g-3">
+                        <!-- Wrap repeating elements in <template> as required by x-for -->
+                        <template x-for="question in questions">
+                            <div class="col">
+                                <div class="small-card">
+                                    <div class="card-body" x-on:click="chat = question">
+                                        <!-- Use x-text instead of mustache syntax to display reactive data -->
+                                        <span x-text="question"></span></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <form class="mt-3" hx-post="/chat-endpoint" hx-target="#chat-response" hx-swap="innerHTML">
+                        <div class="chat-input-wrapper">
+                            <input type="text"
+                                   class="input-base"
+                                   name="user_question"
+                                   placeholder="Frage eingeben"
+                                   x-model="chat"
+                                   x-ref="chatInput">
+
+                            <div class="chat-actions">
+                                <button type="submit" class="submit-btn" x-bind:disabled="!chat.trim()">
+                                    <i class="bi bi-arrow-up-circle-fill"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div id="chat-response" class="mt-3"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mt-4">
+            <div class="row g-4">
+                <div class="col-12">
+                    <div class="neo-card contract-card" x-data="{
+      paragraphs: {{ contract_details.simplified_paragraphs }},
+      searchQuery: '',
+      searchResults: 0,
+      currentHighlight: 0,
+
+      highlight() {
+        if (!this.searchQuery.trim()) return this.resetSearch();
+
+        this.resetHighlights();
+        const regex = new RegExp(this.searchQuery, 'gi');
+        let totalMatches = 0;
+
+        this.$refs.contractContent.querySelectorAll('.paragraph-text').forEach(element => {
+          const content = element.innerHTML;
+          const highlightedContent = content.replace(regex, match => {
+            totalMatches++;
+            return `<mark class='search-highlight' data-highlight-id='${totalMatches}'>${match}</mark>`;
+          });
+
+          if (content !== highlightedContent) element.innerHTML = highlightedContent;
+        });
+
+        this.searchResults = totalMatches;
+        if (totalMatches > 0) {
+          this.currentHighlight = 1;
+          this.scrollToHighlight(1);
+        }
+      },
+
+      resetSearch() {
+        this.resetHighlights();
+        this.searchResults = 0;
+        this.currentHighlight = 0;
+      },
+
+      resetHighlights() {
+        this.$refs.contractContent.querySelectorAll('.paragraph-text').forEach(element => {
+          element.querySelectorAll('mark.search-highlight').forEach(mark => {
+            mark.parentNode.replaceChild(document.createTextNode(mark.textContent), mark);
+          });
+        });
+      },
+
+      scrollToHighlight(id) {
+        if (!id) return;
+        const highlight = this.$refs.contractContent.querySelector(`mark[data-highlight-id='${id}']`);
+        if (highlight) {
+          this.$refs.contractContent.querySelectorAll('mark').forEach(m => m.classList.remove('active'));
+          highlight.classList.add('active');
+          highlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      },
+
+      nextHighlight() {
+        if (this.currentHighlight < this.searchResults) {
+          this.currentHighlight++;
+        } else if (this.searchResults > 0) {
+          this.currentHighlight = 1;
+        }
+        this.scrollToHighlight(this.currentHighlight);
+      },
+
+      prevHighlight() {
+        if (this.currentHighlight > 1) {
+          this.currentHighlight--;
+        } else if (this.searchResults > 0) {
+          this.currentHighlight = this.searchResults;
+        }
+        this.scrollToHighlight(this.currentHighlight);
+      }
+    }">
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <h3 class="mb-0">Vertragsdokument</h3>
+                            <div class="badge badge-success">Vereinfachte Ansicht</div>
+                        </div>
+
+                        <!-- Search Box -->
+                        <div class="search-wrapper mb-4" style="max-width: 100%">
+                            <input
+                                    type="text"
+                                    class="input-base"
+                                    placeholder="Vertragstext durchsuchen..."
+                                    x-model="searchQuery"
+                                    @input="highlight()"
+                                    @keydown.enter="nextHighlight()">
+                            <i class="fas fa-search"></i>
+
+                            <!-- Search Controls -->
+                            <div class="search-controls" x-show="searchResults > 0">
+                                <button class="nav-btn" @click="prevHighlight()" title="Vorheriges Ergebnis">
+                                    <i class="bi bi-chevron-up"></i>
+                                </button>
+                                <span class="search-count" x-text="`${currentHighlight} von ${searchResults}`"></span>
+                                <button class="nav-btn" @click="nextHighlight()" title="Nächstes Ergebnis">
+                                    <i class="bi bi-chevron-down"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Contract Content -->
+                        <div class="contract-content" x-ref="contractContent">
+                            <template x-if="paragraphs && paragraphs.length > 0">
+                                <div class="contract-paragraphs">
+                                    <template x-for="(paragraph, index) in paragraphs" :key="index">
+                                        <div class="contract-paragraph mb-4">
+                                            <h4 class="paragraph-header mb-3">
+                                                <span class="paragraph-number"
+                                                      x-text="'§' + (paragraph.number + 1)"></span>
+                                                <span class="paragraph-title"
+                                                      x-text="paragraph.title || 'Abschnitt ' + (paragraph.number + 1)"></span>
+                                            </h4>
+                                            <div class="paragraph-content p-3">
+                                                <p class="paragraph-text mb-0" x-html="paragraph.simplified"></p>
+                                            </div>
+
+                                            <template x-if="paragraph.notes">
+                                                <div class="mt-3">
+                                                    <div class="small-card p-3 bg-light">
+                                                        <div class="d-flex align-items-center mb-2">
+                                                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                                                            <span class="fw-bold">Hinweis</span>
+                                                        </div>
+                                                        <p class="text-secondary mb-0" x-text="paragraph.notes"></p>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+
+                            <template x-if="!paragraphs || paragraphs.length === 0">
+                                <div class="mt-4 text-center p-5">
+                                    <i class="fas fa-file-alt fa-3x mb-3 text-tertiary"></i>
+                                    <p class="text-secondary">Keine Vertragsparagraphen gefunden.</p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="disclaimer">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Bitte beachten Sie, dass diese vereinfachte Darstellung nicht als Rechtsberatung anzusehen ist.
+                    </div>
+                </div>
+            </div>
+        </section>
     {% endif %}
 {% endblock %}
 
@@ -334,4 +353,89 @@
 				{% endif %}
 			});
     </script>
+{% endblock %}
+
+{% block extra_css %}
+    <style>
+        /* Custom styles for search highlighting */
+        .search-wrapper {
+            position: relative;
+            max-width: 100%;
+            margin: 0 0 1.5rem;
+        }
+
+        .contract-content {
+            max-height: 70vh;
+            overflow-y: auto;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+        }
+
+        .paragraph-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .paragraph-number {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-weight: bold;
+        }
+
+        .paragraph-content {
+            background-color: var(--surface-alt);
+            border-radius: var(--radius-md);
+            border-left: 4px solid var(--primary);
+        }
+
+        .search-controls {
+            position: absolute;
+            right: 3rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--primary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 2rem;
+            color: white;
+        }
+
+        .search-count {
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        mark.search-highlight {
+            background-color: rgba(255, 182, 114, 0.4);
+            padding: 2px 0;
+            border-radius: 2px;
+            transition: background-color 0.2s;
+        }
+
+        mark.search-highlight.active {
+            background-color: var(--warning);
+            box-shadow: 0 0 0 2px var(--warning);
+        }
+    </style>
 {% endblock %}

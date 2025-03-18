@@ -86,8 +86,8 @@
                 :disabled="!files.length"
         >
             Hochladen
-            <span class="spinner-border spinner-border-sm" role="status" x-show="uploadStatus === 'uploading'"
-                  aria-hidden="true"></span>
+            <output class="spinner-border spinner-border-sm" role="status" x-show="uploadStatus === 'uploading'"
+                    aria-hidden="true" x-cloak></output>
         </button>
     </form>
 </div>

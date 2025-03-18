@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views.analysis import analyze_contract, analyze_contract_update
+from .views.analysis import ContractAnalysisView, ContractStatusView
 from .views.contract import (
     archive_contract,
     get_contract_file,
@@ -35,12 +35,12 @@ urlpatterns = [
     ),
     path(
         "contracts/<uuid:contract_id>/analyze",
-        analyze_contract,
+        ContractAnalysisView.as_view(),
         name="analyze_contract",
     ),
     path(
         "contracts/<uuid:contract_id>/analyze/update",
-        analyze_contract_update,
+        ContractStatusView.as_view(),
         name="analyze_contract_update",
     ),
     path("price", pricing, name="pricing"),

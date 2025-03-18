@@ -58,13 +58,14 @@
 
         <!-- Stylesheets -->
         <link rel="stylesheet" href="{% static 'bootstrap-5.3.3-dist/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'bootstrap-icons-1.11.3/font/bootstrap-icons.css' %}">
         <link rel="stylesheet" href="{% static 'css/main.css' %}">
 
         {% block link %}
         {% endblock %}
 
         <!-- Scripts -->
-        <script src="{% static 'js/alpine.min.js' %}"></script>
+        <script defer src="{% static 'js/alpine.min.js' %}"></script>
         <script src="{% static 'js/htmx.min.js' %}"></script>
         <script src="{% static 'bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js' %}"></script>
 
@@ -72,7 +73,7 @@
         {% endblock %}
     {% endblock %}
 </head>
-<body>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-boost="true" hx-trigger="load">
 <main>
     {% include 'navbar.html' %}
     {% block content %}

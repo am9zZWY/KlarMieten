@@ -1,163 +1,128 @@
 import logging
 import os
 import tempfile
+from typing import List
 
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views import View
+from django.views.decorators.csrf import csrf_protect
+from asgiref.sync import async_to_sync
 
-from contract_analysis.analysis import (
-    analyze_neighborhood_with_gemini,
-    extract_text_with_gemini,
-    extract_details_with_gemini,
-)
+from contract_analysis.analysis import ContractProcessor
 from contract_analysis.models.contract import Contract, ContractDetails
-from contract_analysis.utils.error import handle_exception, error_response
+from contract_analysis.utils.error import error_response
 
 logger = logging.getLogger(__name__)
 
 
-@login_required
-def analyze_contract(request, contract_id):
-    # Check if the request is a POST request
-    if request.method != "POST":
-        return error_response("Invalid request method", status=405)
+class ContractBaseView(LoginRequiredMixin, View):
+    """Base view for contract operations with common functionality."""
 
-    total_token_count = 0
-    logger.info(f"Analyzing contract {contract_id} for user {request.user}")
+    def get_contract(self, contract_id):
+        """Get contract object with permission check."""
+        return get_object_or_404(Contract, id=contract_id, user=self.request.user)
 
-    try:
-        contract = Contract.objects.get(id=contract_id)
-
-        # Check if the status is already processing
+    def check_processing_status(self, contract):
+        """Check if contract is already being processed."""
         if contract.status == "processing":
-            return error_response("Contract is already being analyzed", status=400)
+            return False
+        return True
 
-        # Update contract status to "processing"
+    def mark_processing(self, contract):
+        """Mark contract as processing."""
         contract.status = "processing"
-        contract.save()
+        contract.save(update_fields=['status'])
 
-        # Extract structured details from the text
-        images = get_contract_images(contract)
-        extracted_details, detail_token_count = extract_details_with_gemini(
-            contract_images=images
-        )
-        total_token_count += detail_token_count
-        logger.info(f"Token count after details extraction: {total_token_count}")
-
-        # Analyze neighborhood based on extracted address
-        logger.info("Analyzing neighborhood")
-        # Create full address string and geocode
-        street = extracted_details["street"] if extracted_details.get("street") else ""
-        postal_code = (
-            extracted_details["postal_code"]
-            if extracted_details.get("postal_code")
-            else ""
-        )
-        city = extracted_details["city"] if extracted_details.get("city") else ""
-        country = (
-            extracted_details["country"] if extracted_details.get("country") else ""
-        )
-        address = f"{street} {postal_code} {city} {country}"
-        neighborhood, analysis_token_count = analyze_neighborhood_with_gemini(address)
-        extracted_details["neighborhood_description"] = neighborhood
-        total_token_count += analysis_token_count
-        logger.info(f"Token count after neighborhood analysis: {total_token_count}")
-
-        # Update contract details with extracted information
-        update_contract_details(contract, extracted_details)
-
-        # Update contract status to "analyzed"
+    def mark_analyzed(self, contract):
+        """Mark contract as analyzed."""
         contract.status = "analyzed"
-        contract.save()
+        contract.save(update_fields=['status'])
 
-        # Return a success response with the extracted details
-        return JsonResponse({"success": True, "details": extracted_details})
+    def mark_error(self, contract):
+        """Mark contract as having an error."""
+        contract.status = "error"
+        contract.save(update_fields=['status'])
 
-    except Exception as e:
-        mark_contract_error(contract)
-        return handle_exception(e)
+    def get_contract_images(self, contract) -> List[str]:
+        """Create temporary image files from contract files."""
+        contract_files = contract.files.all()
+        temp_images = []
+
+        for file in contract_files:
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+                temp_file.write(file.get_file_content())
+                temp_images.append(temp_file.name)
+
+        return temp_images
+
+    def clean_up_temp_files(self, temp_images):
+        """Clean up temporary files."""
+        for temp_path in temp_images:
+            try:
+                os.unlink(temp_path)
+            except Exception as e:
+                logger.error(f"Error removing temp file {temp_path}: {e}")
 
 
-def get_contract_images(contract):
-    # Create temporary image files for analysis
-    contract_files = contract.files.all()
-    temp_images = []
-    for file in contract_files:
-        fd, temp_path = tempfile.mkstemp(suffix=".png")
-        with os.fdopen(fd, "wb") as temp_file:
-            temp_file.write(file.get_file_content())
-        temp_images.append(temp_path)
+@method_decorator(csrf_protect, name='dispatch')
+class ContractAnalysisView(ContractBaseView):
+    """View for analyzing contracts."""
 
-    return temp_images
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.contract_processor = ContractProcessor()
 
+    def post(self, request, contract_id):
+        """Process a POST request to analyze a contract."""
+        logger.info(f"Analyzing contract {contract_id} for user {request.user}")
+        contract = self.get_contract(contract_id)
+        temp_images = []
 
-def clean_up_temp_files(temp_images):
-    for temp_path in temp_images:
         try:
-            os.unlink(temp_path)
+            # Check if already processing
+            if not self.check_processing_status(contract):
+                return error_response("Contract is already being analyzed", status=400)
+
+            with transaction.atomic():
+                # Update contract status to "processing"
+                self.mark_processing(contract)
+
+                # Extract structured details from the text
+                temp_images = self.get_contract_images(contract)
+
+                # Use async_to_sync to call the asynchronous process_contract method
+                contract_details = async_to_sync(self.contract_processor.process_contract)(
+                    contract_images=temp_images
+                )
+
+                ContractDetails.update_contract_details(contract, contract_details)
+
+                # Update contract status to "analyzed"
+                self.mark_analyzed(contract)
+
+                # Return success response
+                return JsonResponse({"success": True})
+
         except Exception as e:
-            logger.error(f"Error removing temp file {temp_path}: {e}")
+            self.mark_error(contract)
+            logger.exception(f"Error analyzing contract {contract_id}: {str(e)}")
+            return error_response(str(e), status=500)
+        finally:
+            self.clean_up_temp_files(temp_images)
 
 
-def process_contract_files(contract) -> tuple[str, int]:
-    """Process contract files and extract text."""
-    temp_images = []
-    try:
-        # Get contract images
-        temp_images = get_contract_images(contract)
+class ContractStatusView(ContractBaseView):
+    """View for checking contract status."""
 
-        # Extract text from images
-        extracted_text, token_count = extract_text_with_gemini(temp_images)
+    def get(self, request):
+        """Process a GET request to check contract status."""
+        contract_id = request.GET.get("id")
+        if not contract_id:
+            return error_response("Contract ID is required", status=400)
 
-        return extracted_text, token_count
-    finally:
-        clean_up_temp_files(temp_images)
-
-
-def mark_contract_error(contract):
-    """Mark contract as having an error."""
-    contract.status = "error"
-    contract.save()
-
-
-def get(details, key, default):
-    """Get a value from the details dictionary."""
-    value = details.get(key, default)
-    if value is None:
-        return default
-    return value
-
-
-def update_contract_details(contract, extracted_details):
-    """Update contract details with extracted information."""
-
-    # Get existing contract details or create new ones
-    created = False
-    details = ContractDetails.objects.filter(contract=contract).first()
-    if not details:
-        details = ContractDetails.objects.create(contract=contract)
-        created = True
-
-    # Update fields with extracted information
-    valid_fields = [f.name for f in ContractDetails._meta.fields]
-
-    for key, value in extracted_details.items():
-        if key in valid_fields:
-            setattr(details, key, value)
-
-    details.save()  # Only one database write
-    logger.info(
-        f"Contract {contract.id} analyzed and details saved (created: {created})"
-    )
-
-
-@login_required
-def analyze_contract_update(request):
-    contract_id = request.GET.get("id")
-    contract = get_object_or_404(
-        Contract, id=contract_id, user=request.user
-    )
-
-    # Return status of the contract
-    return JsonResponse({"status": contract.status})
+        contract = self.get_contract(contract_id)
+        return JsonResponse({"status": contract.status})

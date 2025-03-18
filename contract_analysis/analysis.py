@@ -1,335 +1,486 @@
+import asyncio
+import base64
 import json
 import logging
 import os
-from typing import Any
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+from typing import Dict, List, Optional, Any
 
 from PIL import Image
 from google import genai
-from google.genai import types
+from google.cloud import vision
+from google.genai import types as genai_types
+from mistralai import Mistral
 
 from contract_analysis.models.contract import ContractDetails
 from contract_analysis.utils.json import clean_json, model_to_schema
 from contract_analysis.utils.map import get_neighborhood_map
 
+# Configure logger
 logger = logging.getLogger(__name__)
 
-# Load dotenv file
+# Load environment variables
 from dotenv import load_dotenv
 
 load_dotenv()
 
-text_extraction_prompt = """
-    You are an expert system for extracting raw text from images.
-    Your task is to extract all text present in the image, including any visible characters, numbers, symbols, and punctuation.
-    
-    **Requirements:**
-    
-    1.  Extract ALL alphanumeric characters, symbols, and punctuation marks visible in the image, preserving their original order and spacing as accurately as possible.
-    2.  Do NOT add any text that is not directly visible in the image.
-    3.  Do NOT interpret, summarize, or paraphrase the text.
-    4.  Do NOT provide any legal advice or analysis.
-    5.  Do NOT attempt to understand the meaning of the text.
-    6.  Do NOT translate the text.
-    7.  Do NOT stop generating text unless the image is completely processed.
-    8.  Output the extracted text as a single, continuous string.
-    """
+# API keys and clients
+GEMINI_API_KEY = os.getenv("GENAI_API_KEY")
+MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
+GCP_CREDENTIALS = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+
+# Model constants
+MISTRAL_OCR_MODEL = "mistral-ocr-latest"
+MISTRAL_SMALL_MODEL = "mistral-small"
+GEMINI_FLASH_MODEL = "gemini-2.0-flash"
+GEMINI_FLASH_EXP_MODEL = "gemini-2.0-flash-exp"
+
+# Initialize clients
+MISTRAL_CLIENT = Mistral(api_key=MISTRAL_API_KEY)
+GEMINI_CLIENT = genai.Client(api_key=GEMINI_API_KEY)
+VISION_CLIENT = vision.ImageAnnotatorClient()
+
+# In-memory cache
+OCR_CACHE = {}
+
+# Prompts
+SIMPLIFICATION_PROMPT = """
+Du bist ein/e erfahrene/r Rechtsexperte/in mit tiefem Verständnis juristischer Texte und Vertragsanalysen. Deine Aufgabe besteht darin, Mietverträge – oder generell Vertragstexte – in eine vereinfachte, für Laien verständliche Sprache zu überführen, wobei alle wesentlichen rechtlichen Inhalte präzise erhalten bleiben. Diese vereinfachte Darstellung dient ausschließlich zur Information und ersetzt keine rechtsverbindliche Beratung. Bitte beachte, dass keinerlei persönliche Details einfließen dürfen und der Betreiber der Seite nicht haftbar gemacht werden kann.
+
+Aufgabenstellung:
+1. **Identifikation:** Erkenne alle Paragraphen und Absätze im Vertrag und nummeriere sie fortlaufend.
+2. **Vereinfachung:** Erstelle zu jedem identifizierten Paragraphen/Absatz eine klare und verständliche Erläuterung in einfachem Deutsch.
+3. **Rechtliche Präzision:** Stelle sicher, dass alle juristisch relevanten Inhalte erhalten bleiben, um Missverständnisse zu vermeiden.
+4. **Einfache Sprache:** Vermeide Fachjargon und komplizierte Formulierungen; setze stattdessen auf kurze Sätze und alltägliche Begriffe.
+5. **Keine direkten Zitate:** Füge keine Wort-für-Wort-Zitate aus dem Originaltext ein.
+6. **Haftungsausschluss:** Formuliere die Erläuterungen so, dass sie als reine Information dienen und keine individuelle Rechtsberatung darstellen.
+
+Formatierung:
+Gib deine Antwort als JSON-Array aus, wobei jedes Element folgendermaßen aufgebaut ist:
+
+[
+  {
+    "number": 1,
+    "simplified": "Erläuterung des ersten Paragraphen/Absatzes"
+  },
+  {
+    "number": 2,
+    "simplified": "Erläuterung des zweiten Paragraphen/Absatzes"
+  }
+]
+
+Hinweis:
+- Der Wert von "number" ist eine fortlaufende Nummerierung (als Zahl, nicht als String) der Absätze.
+- Wenn der Vertragstext unvollständig oder unlesbar ist, arbeite bestmöglich mit dem verfügbaren Text.
+"""
+
+NEIGHBORHOOD_ANALYSIS_PROMPT_TEMPLATE = """
+Sie sind ein Immobilienexperte und analysieren die Umgebung einer Immobilie.
+Ihre Aufgabe ist es, eine kurze Analyse der Umgebung basierend auf dem bereitgestellten Kartenbild zu liefern.
+
+Wenn Sie spezifische Merkmale oder Wahrzeichen in der Umgebung sehen, beschreiben Sie diese bitte im Detail.
+Zum Beispiel, wenn es eine große Straße gibt, könnten Sie erwähnen, dass es sich um eine belebte Gegend handeln könnte und daher laut sein könnte.
+Wenn es einen nahegelegenen Park gibt, könnten Sie erwähnen, dass dieser eine grüne Oase für die Bewohner bietet, um sich zu entspannen.
+
+**Anforderungen:**
+
+1. Beschreiben Sie die Umgebung basierend auf dem bereitgestellten Kartenbild.
+2. Erwähnen Sie spezifische Merkmale oder Wahrzeichen, die Sie sehen.
+3. Bieten Sie eine kurze Analyse darüber, wie diese Merkmale die Immobilie oder ihre Bewohner beeinflussen könnten.
+4. Geben Sie keine persönlichen Meinungen oder Vorurteile ab.
+5. Geben Sie keine rechtlichen Ratschläge oder Analysen.
+6. Antworten Sie in vollständigen Sätzen und verwenden Sie korrekte Grammatik und Interpunktion.
+7. Antworten Sie nur auf Deutsch.
+
+**Zusätzliche Informationen:**
+
+- Das Kartenbild zeigt die Umgebung der Immobilie, die sich befindet an: {address}
+- Das Bild ist eine Draufsicht auf das Gebiet und zeigt Straßen, Gebäude, Parks und andere Merkmale.
+"""
+
+DETAIL_EXTRACTION_PROMPT_TEMPLATE = """
+Sie sind ein Vertragsanalyse-Experte. Ihre Aufgabe ist es, den Vertrag zu analysieren und wichtige Informationen zu extrahieren, die in einem JSON-Objekt organisiert werden, das *strikt* dem folgenden Schema entspricht:
+
+{schema}
+
+**Anforderungen:**
+
+1. Geben Sie keine persönlichen Kontaktinformationen (Namen, Telefonnummern, E-Mails, Unterschriften) an. Geben Sie die Adresse der Immobilie (Stadt, Postleitzahl) an.
+2. Extrahieren Sie alle Preisdetails mit Beschreibungen und Beträgen.
+3. Wenn ein Abschnitt nicht vorhanden oder nicht extrahierbar ist, lassen Sie ihn als null oder eine leere Zeichenfolge.
+4. Geben Sie keine rechtlichen Ratschläge oder Interpretationen.
+5. Seien Sie bei der Extraktion so genau wie möglich.
+
+**Zusätzliche Informationen:**
+* Der Vertrag kann Informationen über die Immobilie, Mietbedingungen, Kosten und andere Details enthalten.
+* Der Vertrag kann auf Deutsch sein.
+* Der Vertrag kann Tabellen, Listen oder andere strukturierte Daten enthalten.
+* Der Vertrag kann handschriftliche Anmerkungen oder Text enthalten, die nicht ignoriert werden sollten, da sie Teil des Vertrags sind!
+"""
 
 
-def extract_text_with_gemini(image_paths: list[str]) -> tuple[str, Any]:
-    # Create the model
-    logger.info("Creating Gemini client")
-    logger.info(f"Image paths: {image_paths}")
-    client = genai.Client(api_key=os.getenv("GENAI_API_KEY"))
+class ContractProcessor:
+    def __init__(self):
+        self.vision_client = VISION_CLIENT
+        self.gemini_client = GEMINI_CLIENT
+        self.mistral_client = MISTRAL_CLIENT
+        self.executor = ThreadPoolExecutor(max_workers=5)
 
-    images = [Image.open(image_path) for image_path in image_paths]
-    contents = [text_extraction_prompt]
-    contents.extend(images)
+    def encode_image(self, image_path: str) -> Optional[str]:
+        """Encode an image file to base64 string."""
+        try:
+            with open(image_path, "rb") as image_file:
+                return base64.b64encode(image_file.read()).decode('utf-8')
+        except Exception as e:
+            logger.error(f"Error encoding image {image_path}: {e}")
+            return None
 
-    # Generate content with the model
-    response = client.models.generate_content(
-        model="gemini-2.0-flash-exp",
-        contents=contents,
-        config=types.GenerateContentConfig(
-            temperature=0.9, top_p=0.9, top_k=64, max_output_tokens=8192
-        ),
-    )
+    async def process_contract(self, contract_images: List[str]) -> Dict[str, Any]:
+        """Main entry point for contract processing."""
+        start_time = datetime.now()
+        contract_details = dict()
+        logger.info(f"Starting contract processing for {len(contract_images)} images")
 
-    usage_metadata = response.usage_metadata
-    total_token_count = usage_metadata.total_token_count
-    if total_token_count is None:
-        total_token_count = 0
+        # Step 1: Extract text using Google Cloud Vision (more efficient for OCR)
+        extracted_text = await self.extract_text_with_vision(contract_images)
 
-    response_text = response.text
-    if response_text is None:
-        logger.warning("Failed to extract text with Gemini")
-        logger.warning(f"Gemini response: {response}")
-        return {}, total_token_count
+        if not extracted_text:
+            logger.error("Text extraction failed")
+            return {"error": "Text extraction failed"}
 
-    logger.info("Successfully extracted text with Gemini")
-    return response_text, total_token_count
+        logger.info(f"Text extraction completed in {(datetime.now() - start_time).total_seconds()} seconds")
+        contract_details["full_contract_text"] = extracted_text
+
+        # Step 2: Run parallel tasks for full contract details and simplified paragraphs
+        tasks = [self.extract_full_contract_details(extracted_text, contract_images),
+                 self.simplify_paragraphs(extracted_text)]
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        if len(results) > 0 and isinstance(results[0], dict):
+            contract_details = results[0]
+
+        if len(results) > 1 and isinstance(results[1], list):
+            contract_details["simplified_paragraphs"] = results[1]
+
+        # Step 3: Analyze neighborhood based on address
+        tasks = []
+        address = self.get_address_from_details(contract_details)
+        if address:
+            tasks.append(self.analyze_neighborhood(address))
+
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        if len(results) > 2 and isinstance(results[2], str):
+            contract_details["neighborhood_analysis"] = results[2]
+
+        # Process results
+        result_dict = {
+            "extracted_text": extracted_text,
+            "processing_time": (datetime.now() - start_time).total_seconds()
+        }
+
+        logger.info(f"Contract processing completed in {result_dict['processing_time']} seconds")
+        return contract_details
+
+    def get_address_from_details(self, details: Dict) -> str:
+        """Extract address from contract details."""
+        if not details:
+            return ""
+
+        """Build an address string from details."""
+        components = [
+            details.get("street", ""),
+            details.get("postal_code", ""),
+            details.get("city", ""),
+            details.get("country", "")
+        ]
+        # Filter out empty components and join the rest with a space
+        return ' '.join(filter(None, components))
+
+    async def extract_text_with_vision(self, image_paths: List[str]) -> str:
+        """Extract text from images using Google Cloud Vision API."""
+        logger.info(f"Extracting text from {len(image_paths)} images using Cloud Vision")
+
+        # Check cache first
+        cache_key = ','.join(sorted(image_paths))
+        if cache_key in OCR_CACHE:
+            logger.info("Using cached OCR results")
+            return OCR_CACHE[cache_key]
+
+        all_text = []
+        batch_requests = []
+
+        # Prepare batch request
+        for image_path in image_paths:
+            try:
+                with open(image_path, 'rb') as image_file:
+                    content = image_file.read()
+
+                image = vision.Image(content=content)
+                # Request text detection and document text detection
+                # Document text detection is optimized for dense text
+                batch_requests.append({
+                    'image': image,
+                    'features': [
+                        {'type_': vision.Feature.Type.DOCUMENT_TEXT_DETECTION}
+                    ]
+                })
+
+            except Exception as e:
+                logger.error(f"Error preparing image {image_path}: {e}")
+
+        if not batch_requests:
+            return ""
+
+        try:
+            # Process images in batch
+            response = self.vision_client.batch_annotate_images(requests=batch_requests)
+
+            for annotation in response.responses:
+                if annotation.full_text_annotation:
+                    all_text.append(annotation.full_text_annotation.text)
+                elif annotation.text_annotations:
+                    all_text.append(annotation.text_annotations[0].description)
+
+            result = "\n\n".join(all_text)
+
+            # Cache the result
+            OCR_CACHE[cache_key] = result
+
+            logger.info(f"Successfully extracted {len(result)} characters of text")
+            return result
+
+        except Exception as e:
+            logger.error(f"Error in Cloud Vision text extraction: {e}")
+            return ""
+
+    async def extract_full_contract_details(self, text: str, images: List[str] = None) -> Dict:
+        """Extract full contract details using Gemini."""
+        logger.info("Extracting full contract details")
+
+        try:
+            # Get the full schema for contract details
+            contract_details_schema = model_to_schema(ContractDetails)
+
+            prompt = DETAIL_EXTRACTION_PROMPT_TEMPLATE.format(
+                schema=json.dumps(contract_details_schema, indent=2)
+            )
+
+            contents = [prompt, text]
+
+            # Process in a separate thread to not block
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(
+                self.executor,
+                lambda: self._extract_details_with_gemini(contents, images)
+            )
+
+            return result
+
+        except Exception as e:
+            logger.error(f"Error in extract_full_contract_details: {e}")
+            return {}
+
+    def _extract_details_with_gemini(self, contents, images=None) -> Dict:
+        """Helper method to run in thread pool for Gemini API calls."""
+        try:
+            # Add images if provided
+            if images:
+                for image_path in images:
+                    if os.path.exists(image_path):
+                        img = Image.open(image_path)
+                        contents.append(img)
+
+            # Generate content with the model
+            response = self.gemini_client.models.generate_content(
+                model=GEMINI_FLASH_MODEL,
+                contents=contents,
+                config=genai_types.GenerateContentConfig(
+                    temperature=0.1,
+                    top_p=0.9,
+                    top_k=32,
+                    max_output_tokens=4096
+                ),
+            )
+
+            response_text = response.text
+
+            try:
+                response_json = clean_json(response_text)
+                logger.info("Successfully extracted details with Gemini")
+                return response_json
+            except Exception as e:
+                logger.error(f"Failed to clean Gemini JSON: {e}")
+                return {}
+
+        except Exception as e:
+            logger.error(f"Error in _extract_details_with_gemini: {e}")
+            return {}
+
+    async def simplify_paragraphs(self, text: str) -> List[Dict]:
+        """Simplify contract paragraphs using Mistral."""
+        logger.info("Simplifying contract paragraphs")
+
+        if not text:
+            return []
+
+        try:
+            # Process in a separate thread to not block
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(
+                self.executor,
+                lambda: self._simplify_with_mistral(text)
+            )
+
+            return result
+
+        except Exception as e:
+            logger.error(f"Error in simplify_paragraphs: {e}")
+            return []
+
+    @staticmethod
+    def _merge_paragraphs(all_results: List[Dict]) -> List:
+        """Merge paragraphs into chunks of 4k characters."""
+        merged_results = {}
+        for item in all_results:
+            number = item.get("number")
+            simplified = item.get("simplified")
+
+            if number and simplified:
+                if number not in merged_results:
+                    merged_results[number] = simplified
+                else:
+                    merged_results[number] += " " + simplified
+        return [{"number": number, "simplified": simplified} for number, simplified in merged_results.items()]
+
+    def _simplify_with_mistral(self, text: str) -> List[Dict]:
+        """Helper method to run in thread pool for Mistral API calls."""
+        try:
+            # Split text into manageable chunks if needed (for token limits)
+            chunks = ContractProcessor._chunk_text(text, max_chars=4000)
+            all_results = []
+
+            for chunk in chunks:
+                response = self.mistral_client.chat.complete(
+                    model=MISTRAL_SMALL_MODEL,
+                    messages=[
+                        {"role": "system", "content": SIMPLIFICATION_PROMPT},
+                        {"role": "user", "content": chunk}
+                    ],
+                    max_tokens=4096,
+                    response_format={
+                        "type": "json_object",
+                    }
+                )
+
+                if response and response.choices and response.choices[0].message.content:
+                    try:
+                        result = json.loads(response.choices[0].message.content)
+                        if isinstance(result, list):
+                            all_results.extend(result)
+                    except json.JSONDecodeError:
+                        logger.warning("Failed to decode JSON from Mistral response")
+
+            # Merge paragraphs if needed
+            all_results = ContractProcessor._merge_paragraphs(all_results)
+
+            return all_results
+
+        except Exception as e:
+            logger.error(f"Error in _simplify_with_mistral: {e}")
+            return []
+
+    @staticmethod
+    def _chunk_text(text: str, max_chars: int = 4000) -> List[str]:
+        """Split text into chunks of roughly equal size."""
+        if not text or len(text) <= max_chars:
+            return [text]
+
+        chunks = []
+        current_chunk = ""
+
+        # Split by paragraphs
+        paragraphs = text.split("\n\n")
+
+        for paragraph in paragraphs:
+            if len(current_chunk) + len(paragraph) + 2 <= max_chars:
+                if current_chunk:
+                    current_chunk += "\n\n"
+                current_chunk += paragraph
+            else:
+                if current_chunk:
+                    chunks.append(current_chunk)
+                current_chunk = paragraph
+
+        if current_chunk:
+            chunks.append(current_chunk)
+
+        return chunks
+
+    async def analyze_neighborhood(self, address: str) -> str:
+        """Analyze neighborhood based on address."""
+        logger.info(f"Analyzing neighborhood for address: {address}")
+
+        if not address:
+            return ""
+
+        try:
+            # Get map image in a separate thread
+            loop = asyncio.get_event_loop()
+            map_image = await loop.run_in_executor(
+                self.executor,
+                lambda: get_neighborhood_map(address)
+            )
+
+            if not map_image:
+                logger.error("Failed to get neighborhood map")
+                return ""
+
+            # Analyze in a separate thread
+            result = await loop.run_in_executor(
+                self.executor,
+                lambda: self._analyze_neighborhood_with_gemini(address, map_image)
+            )
+
+            return result
+
+        except Exception as e:
+            logger.error(f"Error in analyze_neighborhood: {e}")
+            return ""
+
+    def _analyze_neighborhood_with_gemini(self, address: str, map_image) -> str:
+        """Helper method to run in thread pool for Gemini API calls."""
+        try:
+            prompt = NEIGHBORHOOD_ANALYSIS_PROMPT_TEMPLATE.format(address=address)
+
+            # Generate content with the model
+            response = self.gemini_client.models.generate_content(
+                model=GEMINI_FLASH_MODEL,
+                contents=[prompt, map_image],
+                config=genai_types.GenerateContentConfig(
+                    temperature=0.3,
+                    top_p=0.9,
+                    top_k=32,
+                    max_output_tokens=2048
+                ),
+            )
+
+            return response.text or ""
+
+        except Exception as e:
+            logger.error(f"Error in _analyze_neighborhood_with_gemini: {e}")
+            return ""
 
 
-contract_details_json_scheme = model_to_schema(ContractDetails)
+# Main execution function
+async def process_contract_async(contract_images: List[str]) -> Dict[str, Any]:
+    """Process a contract with images asynchronously."""
+    processor = ContractProcessor()
+    return await processor.process_contract(contract_images)
 
 
-def extract_details_with_gemini(
-    contract_text: str = None, contract_images: list[str] = None
-) -> tuple[dict, int]:
-    detail_extraction_prompt = (
-        """
-            Sie sind ein Vertragsanalyse-Experte. Ihre Aufgabe ist es, den Vertrag zu analysieren und wichtige Informationen zu extrahieren, die in einem JSON-Objekt organisiert werden, das *strikt* dem folgenden Schema entspricht:
-            """
-        + json.dumps(contract_details_json_scheme, indent=2)
-        + """
-    Das JSON-Objekt sollte die folgenden Schlüssel enthalten:
-
-    **Anforderungen:**
-
-    1. Geben Sie keine persönlichen Kontaktinformationen (Namen, Telefonnummern, E-Mails, Unterschriften) an. Geben Sie die Adresse der Immobilie (Stadt, Postleitzahl) an.
-    2. Extrahieren Sie alle Preisdetails mit Beschreibungen und Beträgen.
-    3. Wenn ein Abschnitt nicht vorhanden oder nicht extrahierbar ist, lassen Sie ihn als null oder eine leere Zeichenfolge.
-    4. Geben Sie keine rechtlichen Ratschläge oder Interpretationen.
-    5. Geben Sie keine Links oder Verweise auf externe Ressourcen an.
-    6. Seien Sie bei der Extraktion so genau wie möglich.
-
-    **Zusätzliche Informationen:**
-    * Der Vertrag kann Informationen über die Immobilie, Mietbedingungen, Kosten und andere Details enthalten.
-    * Der Vertrag kann auf Deutsch sein.
-    * Der Vertrag kann im Format eines gescannten Bildes vorliegen.
-    * Der Vertrag kann Tabellen, Listen oder andere strukturierte Daten enthalten.
-    * Der Vertrag kann mehrere Seiten umfassen.
-    * Der Vertrag kann handschriftliche Anmerkungen oder Text enthalten, die nicht ignoriert werden sollten, da sie Teil des Vertrags sind!
-    * Der Vertrag kann Teile enthalten, die schwer zu lesen oder zu verstehen sind, die Grammatikfehler enthalten oder durcheinander sind. Geben Sie Ihr Bestes, um die Informationen genau zu extrahieren.
-
-    Hier sind einige Beispiele:
-
-    **Vertragsschnipsel für einen Mietvertrag mit verrauschten Daten:**
-
-    "Wohnraummietvertrag Zwischen Sibylle Reisecista, Serbergst. 15, 78074 Tübingen als Verm Vor- und Zuname) Adam Reisecsita Serbergst. 15, 78074 Tabingen(Straße Nr., PLZ, Ort) 07011-00000 adameinecib@gmail com als Vermieter/in
-    und Josef Maier X 28.01.1995
-    (Geburtsdatum)
-    (Straße Nr., PLZ, Ort) Schützenstraße Straße. 31, 39123 Sorgenhausen
-    (Vor- und Zuname) (Geburtsdatum)
-    (Straße Nr., PLZ, Ort)
-    0176 0000000 x max.mustermann@protonmail.com als Mieter/in
-    DE 39 0000 0000 0000 0000 00
-    (Bankverbindung: IBAN)
-    wird folgender Mietvertrag geschlossen:
-    § 1 Mietsache
-    1. Vermietet werden im EG Geschoss links-mitte rechts des Hauses Hotzenplotzige Straße. 538 Whg.Nr.10, rechts, 3. Stock, 78921 Festburg zu Wohnzwecken und alleiniger Nutzung:
-    4 Zimmer 2 Keller/Nr.
-    Sonstiges/Wohnungszubehör (z.B. Einbauküche) 1
-    Küche 1
-    Bad/Dusche 1
-    Abstellraum/Nr.
-    Gartenanteil 1
-    separates WC
-    Balkon/Terrasse 1
-    Stellplatz/Nr. 13
-    Garage/Nr. Es handelt sich um eine Eigentumswohnung
-    2. Beheizung Einzelofen X Etagenheizung Zentralheizung Sonstiges:
-    3. Gemeinschaftlich X Waschküche • Trockenraum < Garten Sonstiges:
-    4. Ausgehändigte Schlüssel Schließanlage 1 Wohnung 1 Haustür Zimmer Briefkasten
-    Keller Garage Handsender Zugangskarte
-    Sonstiges:
-    Das Mietverhältnis beginnt am 01.07.2023 und wird auf unbestimmte Zeit geschlossen.
-    Die Miete beträgt monatlich für
-    a) Wohnung
-    b) Garage/Stellplatz
-    c) Einbauküche/Möblierung
-    dem Eregiewusarge errechner
-    d) Betriebskosten-Vorauszahlung (siehe folg. Ziffer 2), 1400,00 € Betriebskosten werden direkt mit dem Energieversorger abgerechnet.
-    Untervermietung an folgende Personen genehmigt: Jürgen Maier, Petra Schmitt, Max Mustermann
-
-    **JSON Output:**
-
-    ```json
-    {
-        "contract_type": "Unbefristeter Mietvertrag",
-        "start_date": "2023-07-01",
-        "address": "Hotzenplotzige Straße 538",
-        "city": "Festburg",
-        "postal_code": "78921",
-        "property_type": "Wohnung",
-        "number_of_rooms": 4,
-        "kitchen": true,
-        "bathroom": true,
-        "separate_wc": true,
-        "balcony_or_terrace": true,
-        "garden": true,
-        "garage_or_parking": true,
-        "elevator": false,
-        "basic_rent": 1400,
-        "operation_costs": 0,
-        "heating_costs": 0,
-        "garage_costs": 0,
-        "deposit_amount": null,
-        "pets_allowed": false,
-        "subletting_allowed": true
-    }
-    ```
-
-    Ein weiteres Beispiel:
-
-    **Vertragsschnipsel:**
-
-    *Untermietvertrag*
-    *zwischen*
-    *Herrn Max Mustermann*
-    *und*
-    *Frau Maria Musterfrau*
-    Der Untermietvertrag beginnt am 18.04.2024
-    Die Mietdauer bestimmt sich nach der Dauer des Hauptmietvertrages. Endet der Hauptmietvertrag,
-    gleich auch welchen Gründen, endet damit ohne Ausnahme auch der Untermietvertrag.
-    *Addresse: Musterstr. 12, 12345 Musterstadt*
-    Die Wohnung befindet sich in der EG Etage auf der linken Seite rechten Seite. Folgende Räume werden vermietet: .1. Zimmer, 1 Küche/Kochnische,1 Bad/Dusche/WC, 1 Bodenräume / Speicher
-    Nr........., 2 Kellerräume Nr. 1. Garage / Stellplatz,.1. Garten,/ gewerblich genutzte Räume
-    Die Wohnfläche beträgt ..11. qm.
-    Dem Untermieter werden vom Hauptmieter für die Dauer der Untermietzeit folgende Schlüssel ausgehändigt: 1 Haustürschlüssel, 1 Wohnungsschlüssel, 1. Briefkasten -, 1 Kellerabteilt und 1 Dachgeschossschlüssel werden gemeinsam genutzt
-    Die Nettomiete beträgt monatlich EUR. 270..., in Worten . Zweihundertsiebzig
-    Die Vorauszahlung auf die Nebenkosten beträgt monatlich EUR. 95 in Worten Fünfundneunzig.
-    Der Untermieter zahlt an den Hauptmieter eine Kaution gem. § 551 BGB in Höhe von EUR 700 in Worten: Siebenhundert.
-zur Sicherung aller Ansprüche aus dem Untermietverhältnis.
-    § 8 Überlassung der Mietsache an Dritte - Unteruntervermietung
-Eine weitere Untervermietung der Mietsache durch den Untermieter ist nicht gestattet.
-
-    **JSON Output:**
-
-    ```json
-    {{
-        "contract_type": "Untermietvertrag",
-        "start_date": "2024-04-18",
-        "address": "Musterstr. 12",
-        "city": "Musterstadt",
-        "postal_code": "12345",
-        "property_type": "Wohnung",
-        "number_of_rooms": 1,
-        "kitchen": true,
-        "bathroom": true,
-        "separate_wc": true,
-        "balcony_or_terrace": false,
-        "garden": true,
-        "garage_or_parking": true,
-        "elevator": false,
-        "floor": "",
-        "basic_rent": 270,
-        "operation_costs": 95,
-        "heating_costs": 0,
-        "garage_costs": 0,
-        "deposit_amount": 700
-        "pets_allowed": false,
-        "subletting_allowed": false,
-    }}
-    """
-    )
-
-    # Create the model
-    logger.info("Creating Gemini client")
-    client = genai.Client(api_key=os.getenv("GENAI_API_KEY"))
-
-    contents = [detail_extraction_prompt]
-    if contract_images:
-        images = [Image.open(image_path) for image_path in contract_images]
-        contents.extend(images)
-    if contract_text:
-        contents.extend([contract_text])
-
-    # Generate content with the model
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=contents,
-        config=types.GenerateContentConfig(
-            temperature=0.4, top_p=0.9, top_k=64, max_output_tokens=8192
-        ),
-    )
-
-    usage_metadata = response.usage_metadata
-    total_token_count = usage_metadata.total_token_count
-
-    response_text = response.text
-    try:
-        response_json = clean_json(response_text)
-        logger.info(f"Cleaned Gemini JSON: {response_json}")
-    except Exception as e:
-        logger.error(f"Failed to clean Gemini JSON: {e}")
-        response_json = None
-
-    if response_json is None:
-        logger.warning("Failed to extract details with Gemini")
-        logger.warning(f"Gemini response: {response}")
-        return {}, total_token_count
-
-    logger.info("Successfully extracted details with Gemini")
-    return response_json, total_token_count
-
-
-def analyze_neighborhood_with_gemini(address: str) -> tuple[str, int]:
-    """Analyze the neighborhood of a given address"""
-    image = get_neighborhood_map(address)
-
-    if image is None:
-        logger.error("Failed to fetch neighborhood map")
-        return None, 0
-
-    # Create the model
-    logger.info("Creating Gemini client")
-    client = genai.Client(api_key=os.getenv("GENAI_API_KEY"))
-
-    neighborhood_analysis_prompt = (
-        """
-            Sie sind ein Immobilienexperte und analysieren die Umgebung einer Immobilie.
-            Ihre Aufgabe ist es, eine kurze Analyse der Umgebung basierend auf dem bereitgestellten Kartenbild zu liefern.
-        
-            Wenn Sie spezifische Merkmale oder Wahrzeichen in der Umgebung sehen, beschreiben Sie diese bitte im Detail.
-            Zum Beispiel, wenn es eine große Straße gibt, könnten Sie erwähnen, dass es sich um eine belebte Gegend handeln könnte und daher laut sein könnte.
-            Wenn es einen nahegelegenen Park gibt, könnten Sie erwähnen, dass dieser eine grüne Oase für die Bewohner bietet, um sich zu entspannen.
-            Wenn es eine nahegelegene Polizeistation oder ein Krankenhaus gibt, könnten Sie erwähnen, dass dies Sicherheit und Bequemlichkeit für die Bewohner bietet, aber auch zu mehr Lärm durch Sirenen führen könnte.
-        
-            **Anforderungen:**
-        
-            1. Beschreiben Sie die Umgebung basierend auf dem bereitgestellten Kartenbild.
-            2. Erwähnen Sie spezifische Merkmale oder Wahrzeichen, die Sie sehen.
-            3. Bieten Sie eine kurze Analyse darüber, wie diese Merkmale die Immobilie oder ihre Bewohner beeinflussen könnten.
-            4. Geben Sie keine persönlichen Meinungen oder Vorurteile ab.
-            5. Geben Sie keine rechtlichen Ratschläge oder Analysen.
-            6. Geben Sie keine Informationen über die Immobilie selbst, nur über die Umgebung.
-            7. Geben Sie keine Informationen über den Eigentümer der Immobilie oder die Bewohner.
-            8. Antworten Sie in vollständigen Sätzen und verwenden Sie korrekte Grammatik und Interpunktion.
-            9. Antworten Sie nur auf Deutsch.
-        
-            **Zusätzliche Informationen:**
-        
-            - Das Kartenbild zeigt die Umgebung der Immobilie, die sich befindet an:
-            """
-        + address
-        + """
-    - Das Bild ist eine Draufsicht auf das Gebiet und zeigt Straßen, Gebäude, Parks und andere Merkmale.
-
-    **Beispielantwort:**
-    Die Nachbarschaft um Max-Musterstraße 123 ist ruhig und bietet einen Park, eine Bäckerei und einen Supermarkt. Zu beachten ist, dass die Max-Musterstraße eine Durchfahrtsstraße ist, was mit Verkehrslärm verbunden sein kann. Der nahe Bahnhof sichert eine ausgezeichnete Anbindung. Musterstadt begeistert mit der Musterbrücke und dem Mustertheater, die das kulturelle Leben bereichern. Zudem bietet die Stadt zahlreiche Restaurants und Cafés sowie ein vielfältiges Angebot an Bildungseinrichtungen und Grünflächen.
-    """
-    )
-
-    contents = [neighborhood_analysis_prompt, image]
-
-    # Generate content with the model
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=contents,
-        config=types.GenerateContentConfig(
-            temperature=0.5,
-            top_p=0.9,
-            top_k=64,
-            max_output_tokens=8192,
-        ),
-    )
-
-    usage_metadata = response.usage_metadata
-    total_token_count = usage_metadata.total_token_count
-    if total_token_count is None:
-        total_token_count = 0
-
-    response_text = response.text
-
-    logger.info("Successfully analyzed neighborhood with Gemini")
-    return response_text, total_token_count
+# Synchronous wrapper for compatibility
+def process_contract(contract_images: List[str]) -> Dict[str, Any]:
+    """Synchronous wrapper for async contract processing."""
+    return asyncio.run(process_contract_async(contract_images))
