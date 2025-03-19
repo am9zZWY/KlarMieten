@@ -9,7 +9,8 @@
     {% if not user.is_authenticated %}
         {% include 'not_authed.html' %}
     {% else %}
-        <div x-data="drawing" class="quantum-container">
+        <div x-init="initDrawing()" class="quantum-container" x-data="{
+            currentSize: 20 }">
             <!-- Dashboard Header -->
             <section class="section hero-section py-5 mb-4">
                 <div class="container">
@@ -55,10 +56,10 @@
                         <div class="col-md-3">
                             <div class="edit-tools">
                                 <button id="pen-tool" class="btn btn-primary active">
-                                    <i class="fas fa-pen"></i> Stift
+                                    <i class="bi bi-pencil"></i> Zensieren
                                 </button>
                                 <button id="reset-tool" class="btn btn-secondary">
-                                    <i class="fas fa-undo"></i> Zurücksetzen
+                                    <i class="bi bi-arrow-counterclockwise"></i> Zurücksetzen
                                 </button>
                             </div>
                         </div>
@@ -74,13 +75,13 @@
                         <div class="col-md-6 text-md-end">
                             <div class="action-buttons">
                                 <button id="save-current" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Speichern
+                                    <i class="bi bi-save"></i> Speichern
                                 </button>
                                 <button id="save-all" class="btn btn-primary">
-                                    <i class="fas fa-check-circle"></i> Speichern und fortfahren
+                                    <i class="bi bi-save"></i> Speichern und fortfahren
                                 </button>
                                 <button id="archive" class="btn btn-secondary">
-                                    <i class="fas fa-archive"></i> Archivieren
+                                    <i class="bi bi-archive"></i> Archivieren
                                 </button>
                             </div>
                         </div>
@@ -99,10 +100,7 @@
 
 {% block extra_js %}
     <script>
-			document.addEventListener('alpine:init', () => {
-				Alpine.data('drawing', () => ({
-					currentSize: 20
-				}))
+			function initDrawing() {
 				// Elements
 				const canvas = document.getElementById('drawing-canvas')
 				const ctx = canvas.getContext('2d')
@@ -402,6 +400,6 @@
 							})
 					}
 				})
-			})
+			}
     </script>
 {% endblock %}

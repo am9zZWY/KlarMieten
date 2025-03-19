@@ -5,15 +5,16 @@ import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional
 
 from PIL import Image
+from asgiref.sync import sync_to_async
 from google import genai
 from google.cloud import vision
 from google.genai import types as genai_types
 from mistralai import Mistral
 
-from contract_analysis.models.contract import ContractDetails
+from contract_analysis.models.contract import ContractDetails, Contract
 from contract_analysis.utils.json import clean_json, model_to_schema
 from contract_analysis.utils.map import get_neighborhood_map
 
@@ -46,33 +47,28 @@ OCR_CACHE = {}
 
 # Prompts
 SIMPLIFICATION_PROMPT = """
-Du bist ein/e erfahrene/r Rechtsexperte/in mit tiefem Verständnis juristischer Texte und Vertragsanalysen. Deine Aufgabe besteht darin, Mietverträge – oder generell Vertragstexte – in eine vereinfachte, für Laien verständliche Sprache zu überführen, wobei alle wesentlichen rechtlichen Inhalte präzise erhalten bleiben. Diese vereinfachte Darstellung dient ausschließlich zur Information und ersetzt keine rechtsverbindliche Beratung. Bitte beachte, dass keinerlei persönliche Details einfließen dürfen und der Betreiber der Seite nicht haftbar gemacht werden kann.
+Es liegt ein Mietvertrag vor. Dieser enthält Paragraphen, die mit § oder einer entsprechenden Überschrift gekennzeichnet sind. Nur diese Paragraphen sollen vereinfacht werden. Teile des Textes ohne Paragraphen-Bezug werden ignoriert. 
 
-Aufgabenstellung:
-1. **Identifikation:** Erkenne alle Paragraphen und Absätze im Vertrag und nummeriere sie fortlaufend.
-2. **Vereinfachung:** Erstelle zu jedem identifizierten Paragraphen/Absatz eine klare und verständliche Erläuterung in einfachem Deutsch.
-3. **Rechtliche Präzision:** Stelle sicher, dass alle juristisch relevanten Inhalte erhalten bleiben, um Missverständnisse zu vermeiden.
-4. **Einfache Sprache:** Vermeide Fachjargon und komplizierte Formulierungen; setze stattdessen auf kurze Sätze und alltägliche Begriffe.
-5. **Keine direkten Zitate:** Füge keine Wort-für-Wort-Zitate aus dem Originaltext ein.
-6. **Haftungsausschluss:** Formuliere die Erläuterungen so, dass sie als reine Information dienen und keine individuelle Rechtsberatung darstellen.
+Sämtliche persönlichen Daten wie Namen, Adressen, IBAN, Telefonnummern oder E-Mail-Adressen sind zu entfernen. 
 
-Formatierung:
-Gib deine Antwort als JSON-Array aus, wobei jedes Element folgendermaßen aufgebaut ist:
+Die Zusammenfassung erfolgt ausschließlich in deutscher Sprache. Rechtsbegriffe sollen in kurzen Sätzen und ohne komplizierten Fachjargon erklärt werden. Dabei bleiben die rechtlich relevanten Informationen erhalten. 
 
+Es finden keine wörtlichen Zitate aus dem Originalvertrag statt. Diese Zusammenfassung ist nur eine verständliche Darstellung und keine Rechtsberatung. 
+
+Die Ausgabe erfolgt als JSON-Array. Jeder Eintrag enthält:
 [
   {
-    "number": 1,
-    "simplified": "Erläuterung des ersten Paragraphen/Absatzes"
+    "title": "Kurze Überschrift zu §1 oder ähnlichem",
+    "simplified": "Kurze Erläuterung zum Inhalt dieses Paragraphen"
   },
   {
-    "number": 2,
-    "simplified": "Erläuterung des zweiten Paragraphen/Absatzes"
+    "title": "Kurze Überschrift zu §2 oder ähnlichem",
+    "simplified": "Kurze Erläuterung zum Inhalt dieses Paragraphen"
   }
 ]
 
-Hinweis:
-- Der Wert von "number" ist eine fortlaufende Nummerierung (als Zahl, nicht als String) der Absätze.
-- Wenn der Vertragstext unvollständig oder unlesbar ist, arbeite bestmöglich mit dem verfügbaren Text.
+"title" ist eine Ein- oder Zwei-Wort-Beschreibung des Absatzes oder Paragraphen. 
+"simplified" ist die vereinfachte Fassung des jeweiligen Paragraphen-Textes. 
 """
 
 NEIGHBORHOOD_ANALYSIS_PROMPT_TEMPLATE = """
@@ -136,52 +132,69 @@ class ContractProcessor:
             logger.error(f"Error encoding image {image_path}: {e}")
             return None
 
-    async def process_contract(self, contract_images: List[str]) -> Dict[str, Any]:
+    async def process_contract(self, contract: Contract):
         """Main entry point for contract processing."""
         start_time = datetime.now()
-        contract_details = dict()
-        logger.info(f"Starting contract processing for {len(contract_images)} images")
+        logger.info("Starting contract processing")
+
+        updated_contract_details = dict()
+        contract_images = await sync_to_async(contract.get_images)()
+        contract_details = await sync_to_async(contract.get_details)()
 
         # Step 1: Extract text using Google Cloud Vision (more efficient for OCR)
-        extracted_text = await self.extract_text_with_vision(contract_images)
+        if not contract_images:
+            logger.error("No contract images found")
+            return {"error": "No contract images found"}
 
-        if not extracted_text:
+        if not contract_details.full_contract_text:
+            full_contract_text = await self.extract_text_with_vision(contract_images)
+        else:
+            logger.info("Using existing full contract text")
+            full_contract_text = contract_details.full_contract_text
+
+        if not full_contract_text:
             logger.error("Text extraction failed")
             return {"error": "Text extraction failed"}
 
         logger.info(f"Text extraction completed in {(datetime.now() - start_time).total_seconds()} seconds")
-        contract_details["full_contract_text"] = extracted_text
+        updated_contract_details["full_contract_text"] = full_contract_text
 
         # Step 2: Run parallel tasks for full contract details and simplified paragraphs
-        tasks = [self.extract_full_contract_details(extracted_text, contract_images),
-                 self.simplify_paragraphs(extracted_text)]
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        step2_tasks = [
+            self.extract_full_contract_details(full_contract_text, contract_images),
+            self.simplify_paragraphs(full_contract_text)
+        ]
+        step2_results = await asyncio.gather(*step2_tasks, return_exceptions=True)
 
-        if len(results) > 0 and isinstance(results[0], dict):
-            contract_details = results[0]
+        # Handle step 2 results
+        if len(step2_results) > 0 and isinstance(step2_results[0], dict):
+            updated_contract_details.update(step2_results[0])  # Use update to merge dictionaries
 
-        if len(results) > 1 and isinstance(results[1], list):
-            contract_details["simplified_paragraphs"] = results[1]
+        if len(step2_results) > 1 and isinstance(step2_results[1], list):
+            updated_contract_details["simplified_paragraphs"] = step2_results[1]
 
         # Step 3: Analyze neighborhood based on address
-        tasks = []
-        address = self.get_address_from_details(contract_details)
+        address = self.get_address_from_details(updated_contract_details)
         if address:
-            tasks.append(self.analyze_neighborhood(address))
-
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-
-        if len(results) > 2 and isinstance(results[2], str):
-            contract_details["neighborhood_analysis"] = results[2]
+            try:
+                neighborhood_analysis = await self.analyze_neighborhood(address)
+                if isinstance(neighborhood_analysis, str):
+                    updated_contract_details["neighborhood_analysis"] = neighborhood_analysis
+            except Exception as e:
+                logger.error(f"Error analyzing neighborhood: {str(e)}")
 
         # Process results
         result_dict = {
-            "extracted_text": extracted_text,
+            "full_contract_text": full_contract_text,
             "processing_time": (datetime.now() - start_time).total_seconds()
         }
 
         logger.info(f"Contract processing completed in {result_dict['processing_time']} seconds")
-        return contract_details
+
+        # Update contract details - make sure this is properly awaited if it's an async operation
+        await sync_to_async(contract_details.update)(updated_contract_details)
+
+        return result_dict
 
     def get_address_from_details(self, details: Dict) -> str:
         """Extract address from contract details."""
@@ -344,15 +357,15 @@ class ContractProcessor:
         """Merge paragraphs into chunks of 4k characters."""
         merged_results = {}
         for item in all_results:
-            number = item.get("number")
+            title = item.get("title")
             simplified = item.get("simplified")
 
-            if number and simplified:
-                if number not in merged_results:
-                    merged_results[number] = simplified
+            if title and simplified:
+                if title not in merged_results:
+                    merged_results[title] = simplified
                 else:
-                    merged_results[number] += " " + simplified
-        return [{"number": number, "simplified": simplified} for number, simplified in merged_results.items()]
+                    merged_results[title] += " " + simplified
+        return [{"title": title, "simplified": simplified} for title, simplified in merged_results.items()]
 
     def _simplify_with_mistral(self, text: str) -> List[Dict]:
         """Helper method to run in thread pool for Mistral API calls."""
@@ -471,16 +484,3 @@ class ContractProcessor:
         except Exception as e:
             logger.error(f"Error in _analyze_neighborhood_with_gemini: {e}")
             return ""
-
-
-# Main execution function
-async def process_contract_async(contract_images: List[str]) -> Dict[str, Any]:
-    """Process a contract with images asynchronously."""
-    processor = ContractProcessor()
-    return await processor.process_contract(contract_images)
-
-
-# Synchronous wrapper for compatibility
-def process_contract(contract_images: List[str]) -> Dict[str, Any]:
-    """Synchronous wrapper for async contract processing."""
-    return asyncio.run(process_contract_async(contract_images))

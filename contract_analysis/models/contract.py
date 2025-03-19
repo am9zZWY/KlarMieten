@@ -1,6 +1,8 @@
 # models.py
 import logging
+import tempfile
 import uuid
+from typing import List
 
 from django.db import models
 
@@ -52,6 +54,27 @@ class Contract(models.Model):
 
     def __str__(self):
         return f"Contract {self.id} for {self.user.username}"
+
+    def get_details(self):
+        """Get contract details object for contract."""
+        # Check if details already exist
+        contract_details = ContractDetails.objects.filter(contract=self).first()
+        if not contract_details:
+            contract_details = ContractDetails.objects.create(contract=self)
+
+        return contract_details
+
+    def get_images(self) -> List[str]:
+        """Create temporary image files from contract files."""
+        contract_files = self.files.all()
+        temp_images = []
+
+        for file in contract_files:
+            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
+                temp_file.write(file.get_file_content())
+                temp_images.append(temp_file.name)
+
+        return temp_images
 
 
 class ContractFile(models.Model):
@@ -229,7 +252,7 @@ class ContractDetails(models.Model):
     has_indexed_rent = models.BooleanField(default=False, null=True, blank=True)
 
     # AI Extracted Data
-    neighborhood_description = models.TextField(null=True, blank=True)
+    neighborhood_analysis = models.TextField(null=True, blank=True)
     full_contract_text = models.TextField(null=True, blank=True)
     simplified_paragraphs = models.TextField(null=True, blank=True)
 
@@ -238,7 +261,8 @@ class ContractDetails(models.Model):
         verbose_name_plural = "Rental Contracts"
 
     def __str__(self):
-        return f"Rental contract for {self.street}, {self.city}"
+        items = self.__dict__.items()
+        return f"{self.contract} - {', '.join([f'{k}: {v}' for k, v in items])}"
 
     @property
     def total_rent(self):
@@ -272,17 +296,11 @@ class ContractDetails(models.Model):
                 and self.renovation_interval_years >= 5
         )
 
-    @staticmethod
-    def update_contract_details(contract, updated_contract_details):
-        # Check if details already exist
-        contract_details = ContractDetails.objects.filter(contract=contract).first()
-        if not contract_details:
-            contract_details = ContractDetails.objects.create(contract=contract)
-
+    def update(self, updated_contract_details: dict):
         # Update fields with extracted information
-        valid_fields = [f.name for f in ContractDetails._meta.fields]
+        valid_fields = [f.name for f in self._meta.fields]
         for key, value in updated_contract_details.items():
             if key in valid_fields:
-                setattr(contract_details, key, value)
+                setattr(self, key, value)
 
-        contract_details.save()
+        self.save()

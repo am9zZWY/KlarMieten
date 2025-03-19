@@ -5,9 +5,9 @@ from .views import SignUpView
 
 urlpatterns = [
     path(
-        "accounts/login",
+        "login",
         LoginView.as_view(template_name="registration/login.html"),
         name="login",
     ),
-    path("accounts/signup", SignUpView.as_view(), name="signup"),
+    path("signup", SignUpView.as_view(), name="signup"),
 ]

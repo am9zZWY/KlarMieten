@@ -28,8 +28,8 @@
                             </div>
 
                             <div class="hero-actions">
-                                <a href="#contracts" class="btn btn-primary">Meine Mietverträge</a>
-                                <a href="#benefits" class="btn btn-secondary">Zum Konto</a>
+                                <a href="#contracts" class="btn btn-primary">Meine Mietverträge <i class="bi bi-arrow-down"></i></a>
+                                <a href="#benefits" class="btn btn-secondary">Zum Konto <i class="bi bi-arrow-down"></i></a>
                             </div>
                         </div>
 
@@ -115,10 +115,10 @@
                                                 hx-indicator="#spinner-{{ contract.id }}"
                                                 hx-swap="none"
                                                 @htmx:before-request="$event.detail.target.disabled = true"
-                                                class="btn btn-primary analyze-btn {% if contract.status == 'analyzed' %}analyze-complete{% endif %}"
+                                                class="btn btn-primary analyze-btn {% if contract.status == 'analyzed' %}hide{% endif %}"
                                                 {% if contract.status == 'processing' %}disabled{% endif %}
                                                 id="analyze-button-{{ contract.id }}">
-                                            <i class="bi bi-lightning-charge"></i>Analyse starten
+                                            <i class="bi bi-stars"></i>Analyse starten
                                             <span id="spinner-{{ contract.id }}"
                                                   class="htmx-indicator spinner-icon"
                                                   style="display:none"></span>
@@ -192,50 +192,7 @@
 					if (analyzeButton) {
 						analyzeButton.disabled = true;
 					}
-
-					// Start polling for status changes
-					pollContractStatus(contractId);
 				}
 			});
-
-			function pollContractStatus(contractId) {
-				// Poll the server every 3 seconds to check analysis status
-				const interval = setInterval(() => {
-					fetch(`/contracts/${contractId}/analyze/status`)
-						.then(response => response.json())
-						.then(data => {
-							if (data.status !== 'processing') {
-								clearInterval(interval);
-								updateContractUI(contractId, data.status);
-							}
-						});
-				}, 3000);
-			}
-
-			function updateContractUI(contractId, status) {
-				const statusBadge = document.getElementById(`status-badge-${contractId}`);
-				const analyzeButton = document.getElementById(`analyze-button-${contractId}`);
-				const viewButton = document.getElementById(`view-button-${contractId}`);
-
-				if (statusBadge) {
-					statusBadge.textContent = status;
-					statusBadge.className = `badge ${
-						status === 'analyzed' ? 'badge-success' :
-							status === 'pending' ? 'badge-warning' :
-								'badge-default'
-					}`;
-				}
-
-				if (analyzeButton) {
-					analyzeButton.disabled = false;
-					if (status === 'analyzed') {
-						analyzeButton.classList.add('analyze-complete');
-					}
-				}
-
-				if (viewButton) {
-					viewButton.classList.toggle('hide', status !== 'analyzed');
-				}
-			}
     </script>
 {% endblock %}

@@ -79,8 +79,8 @@ def get_contract(request, contract_id):
     cache_key = f"contract_{contract_id}_{request.user.id}"
     cached_data = cache.get(cache_key)
 
-    if cached_data:
-        return render(request, "contract/contract.html", cached_data)
+    #if cached_data:
+    #    return render(request, "contract/contract.html", cached_data)
 
     # Get from the database
     contract = get_object_or_404(

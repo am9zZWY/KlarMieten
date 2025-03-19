@@ -3,6 +3,7 @@ import os
 import tempfile
 from typing import List
 
+from asgiref.sync import async_to_sync
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.http import JsonResponse
@@ -10,7 +11,6 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_protect
-from asgiref.sync import async_to_sync
 
 from contract_analysis.analysis import ContractProcessor
 from contract_analysis.models.contract import Contract, ContractDetails
@@ -47,18 +47,6 @@ class ContractBaseView(LoginRequiredMixin, View):
         contract.status = "error"
         contract.save(update_fields=['status'])
 
-    def get_contract_images(self, contract) -> List[str]:
-        """Create temporary image files from contract files."""
-        contract_files = contract.files.all()
-        temp_images = []
-
-        for file in contract_files:
-            with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as temp_file:
-                temp_file.write(file.get_file_content())
-                temp_images.append(temp_file.name)
-
-        return temp_images
-
     def clean_up_temp_files(self, temp_images):
         """Clean up temporary files."""
         for temp_path in temp_images:
@@ -91,15 +79,9 @@ class ContractAnalysisView(ContractBaseView):
                 # Update contract status to "processing"
                 self.mark_processing(contract)
 
-                # Extract structured details from the text
-                temp_images = self.get_contract_images(contract)
-
-                # Use async_to_sync to call the asynchronous process_contract method
-                contract_details = async_to_sync(self.contract_processor.process_contract)(
-                    contract_images=temp_images
+                async_to_sync(self.contract_processor.process_contract)(
+                    contract=contract
                 )
-
-                ContractDetails.update_contract_details(contract, contract_details)
 
                 # Update contract status to "analyzed"
                 self.mark_analyzed(contract)

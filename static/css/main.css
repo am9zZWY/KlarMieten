@@ -89,7 +89,7 @@ button {
 }
 
 button.hide {
-    display: none;
+    display: none !important;
 }
 
 img {
@@ -107,6 +107,13 @@ img {
     color: var(--text-secondary);
     text-align: center;
     margin-top: 1rem;
+}
+
+.text {
+    background-color: var(--surface-alt);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
 }
 
 /* Container */
@@ -430,6 +437,8 @@ button, .btn {
     }
 }
 
+
+
 /* ===== Card Components ===== */
 /* Base card style */
 .neo-card {
@@ -438,12 +447,12 @@ button, .btn {
     padding: 2.5rem;
     box-shadow: var(--shadow-small);
     transition: var(--transition-normal);
+    height: 100%;
     position: relative;
     overflow: hidden;
 }
 
 .neo-card:hover {
-    transform: translateY(-6px);
     box-shadow: var(--shadow-medium);
 }
 
@@ -454,7 +463,7 @@ button, .btn {
 /* Small card */
 .small-card {
     border-radius: var(--radius-md);
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     transition: var(--transition-normal);
     cursor: pointer;
     background-color: var(--surface);
@@ -619,11 +628,6 @@ button, .btn {
 }
 
 /* ===== Testimonials Section ===== */
-.testimonials-section {
-    padding: 6rem 0;
-    position: relative;
-}
-
 .testimonials-container {
     display: flex;
     gap: 2rem;
@@ -660,10 +664,6 @@ button, .btn {
 }
 
 /* ===== Benefits Section ===== */
-.benefits-section {
-    padding: 6rem 0;
-}
-
 .benefits-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -755,7 +755,6 @@ button, .btn {
 
 /* ===== FAQ Section ===== */
 .faq-section {
-    padding: 6rem 0;
     background-color: var(--surface);
     border-radius: var(--radius-xl);
     margin: 5rem 0;
@@ -836,7 +835,6 @@ button, .btn {
 
 /* ===== How It Works Section ===== */
 .how-it-works {
-    padding: 6rem 0;
     background-color: var(--surface);
     border-radius: var(--radius-xl);
     margin: 5rem 0;
@@ -1208,6 +1206,18 @@ canvas {
 .badge-default {
     background-color: var(--text-tertiary);
     color: white;
+}
+
+.top-badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 0 var(--radius-lg) 0 var(--radius-lg);
 }
 
 /* Contract Files */
