@@ -23,6 +23,5 @@
       "src": "/(.*)",
       "dest": "darf_vermieter_das/wsgi.py"
     }
-  ],
-  "buildCommand": "chmod +x build.sh && ./build.sh"
+  ]
 }
