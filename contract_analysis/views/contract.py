@@ -9,28 +9,13 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
-from contract_analysis.faq import FAQ_landing, FAQ_pricing
+from darf_vermieter_das.faq import FAQ_pricing
 from contract_analysis.models.contract import Contract, ContractDetails, ContractFile
 from contract_analysis.utils.error import handle_exception, error_response
 from contract_analysis.utils.map import geocode_address
 
 logger = logging.getLogger(__name__)
 
-
-def landing(request):
-    """
-    Landing page view for non-authenticated users.
-
-    Args:
-        request: HttpRequest object
-
-    Returns:
-        Rendered landing page with FAQ content
-    """
-    context = {
-        "faq": FAQ_landing
-    }
-    return render(request, "landing.html", context)
 
 def pricing(request):
     """

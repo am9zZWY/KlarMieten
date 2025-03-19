@@ -5,7 +5,6 @@ from .views.contract import (
     archive_contract,
     get_contract_file,
     home,
-    landing,
     save_edited_contract,
     get_contract,
     edit_contract, pricing,
@@ -13,7 +12,6 @@ from .views.contract import (
 from .views.upload import upload_contract
 
 urlpatterns = [
-    path("", landing, name="landing"),
     path("home", home, name="home"),
     path("contracts/upload", upload_contract, name="upload_contract"),
     path("contracts/<uuid:contract_id>/", get_contract, name="contract"),

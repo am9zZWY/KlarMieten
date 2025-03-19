@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     # Local apps
     "accounts",
     "contract_analysis",
+    "darf_vermieter_das",
 
     # Django default apps
     "django.contrib.admin",
