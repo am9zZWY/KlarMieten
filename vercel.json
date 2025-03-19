@@ -5,14 +5,16 @@
       "src": "darf_vermieter_das/wsgi.py",
       "use": "@vercel/python",
       "config": {
-        "command": "chmod +x build.sh && ./build.sh",
         "maxLambdaSize": "50mb",
         "runtime": "Python3.12"
       }
     },
     {
-      "src": "staticfiles/**",
-      "use": "@vercel/static"
+      "src": "build_files.sh",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "staticfiles"
+      }
     }
   ],
   "routes": [
