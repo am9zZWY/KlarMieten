@@ -4,7 +4,10 @@
     {
       "src": "darf_vermieter_das/wsgi.py",
       "use": "@vercel/python",
-      "config": { "maxLambdaSize": "50mb", "runtime": "Python3.12" }
+      "config": {
+        "maxLambdaSize": "50mb",
+        "runtime": "Python3.12"
+      }
     },
     {
       "src": "staticfiles/**",
@@ -20,5 +23,6 @@
       "src": "/(.*)",
       "dest": "darf_vermieter_das/wsgi.py"
     }
-  ]
+  ],
+  "buildCommand": "chmod +x build.sh && ./build.sh"
 }
