@@ -1,7 +1,5 @@
 import logging
 import os
-import tempfile
-from typing import List
 
 from asgiref.sync import async_to_sync
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -13,7 +11,7 @@ from django.views import View
 from django.views.decorators.csrf import csrf_protect
 
 from contract_analysis.analysis import ContractProcessor
-from contract_analysis.models.contract import Contract, ContractDetails
+from contract_analysis.models.contract import Contract
 from contract_analysis.utils.error import error_response
 
 logger = logging.getLogger(__name__)
@@ -26,28 +24,33 @@ class ContractBaseView(LoginRequiredMixin, View):
         """Get contract object with permission check."""
         return get_object_or_404(Contract, id=contract_id, user=self.request.user)
 
-    def check_processing_status(self, contract):
+    @staticmethod
+    def check_processing_status(contract):
         """Check if contract is already being processed."""
         if contract.status == "processing":
             return False
         return True
 
-    def mark_processing(self, contract):
+    @staticmethod
+    def mark_processing(contract):
         """Mark contract as processing."""
         contract.status = "processing"
         contract.save(update_fields=['status'])
 
-    def mark_analyzed(self, contract):
+    @staticmethod
+    def mark_analyzed(contract):
         """Mark contract as analyzed."""
         contract.status = "analyzed"
         contract.save(update_fields=['status'])
 
-    def mark_error(self, contract):
+    @staticmethod
+    def mark_error(contract):
         """Mark contract as having an error."""
         contract.status = "error"
         contract.save(update_fields=['status'])
 
-    def clean_up_temp_files(self, temp_images):
+    @staticmethod
+    def clean_up_temp_files(temp_images):
         """Clean up temporary files."""
         for temp_path in temp_images:
             try:

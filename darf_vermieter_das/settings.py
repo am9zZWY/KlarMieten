@@ -2,9 +2,9 @@
 Django settings for darf_vermieter_das project
 """
 
+import functools
 import os
 from pathlib import Path
-import functools
 
 # Base directory of the project
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -18,6 +18,7 @@ DEBUG = os.getenv("DEBUG", "False") == "True" and not IS_PROD
 # ------------------------------------------------------------------------------
 SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-default-key")
 
+
 # Lazy load environment variables only when needed
 @functools.lru_cache(maxsize=None)
 def get_file_encryption_key():
@@ -25,13 +26,13 @@ def get_file_encryption_key():
     if "FILE_ENCRYPTION_KEY" in os.environ:
         print("Using encryption key from environment variable")
         return bytes.fromhex(os.environ["FILE_ENCRYPTION_KEY"])
-    
+
     key_path = BASE_DIR / ".encryption_key"
     if key_path.exists():
         with open(key_path, "rb") as f:
             print("Using encryption key from file")
             return f.read()
-    
+
     # Only import secrets if actually needed
     import secrets
     key = secrets.token_bytes(32)
@@ -41,11 +42,13 @@ def get_file_encryption_key():
     print("Generated new encryption key")
     return key
 
+
 # Define a property that loads the encryption key only when accessed
 class LazySettings:
     @property
     def FILE_ENCRYPTION_KEY(self):
         return get_file_encryption_key()
+
 
 lazy_settings = LazySettings()
 FILE_ENCRYPTION_KEY = lazy_settings.FILE_ENCRYPTION_KEY
@@ -111,8 +114,12 @@ WSGI_APPLICATION = "darf_vermieter_das.wsgi.application"
 if IS_VERCEL:
     DATABASES = {
         "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": "/tmp/db.sqlite3",
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("POSTGRES_DB"),
+            "USER": os.getenv("POSTGRES_USER"),
+            "PASSWORD": os.getenv("POSTGRES_PASSWORD"),
+            "HOST": os.getenv("POSTGRES_HOST"),
+            "PORT": os.getenv("POSTGRES_PORT", "5432"),
         }
     }
 else:

@@ -1,18 +1,13 @@
 import asyncio
-import base64
 import json
 import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from PIL import Image
 from asgiref.sync import sync_to_async
-from google import genai
-from google.cloud import vision
-from google.genai import types as genai_types
-from mistralai import Mistral
 
 from contract_analysis.models.contract import ContractDetails, Contract
 from contract_analysis.utils.json import clean_json, model_to_schema
@@ -36,11 +31,6 @@ MISTRAL_OCR_MODEL = "mistral-ocr-latest"
 MISTRAL_SMALL_MODEL = "mistral-small"
 GEMINI_FLASH_MODEL = "gemini-2.0-flash"
 GEMINI_FLASH_EXP_MODEL = "gemini-2.0-flash-exp"
-
-# Initialize clients
-MISTRAL_CLIENT = Mistral(api_key=MISTRAL_API_KEY)
-GEMINI_CLIENT = genai.Client(api_key=GEMINI_API_KEY)
-VISION_CLIENT = vision.ImageAnnotatorClient()
 
 # In-memory cache
 OCR_CACHE = {}
@@ -118,19 +108,15 @@ Sie sind ein Vertragsanalyse-Experte. Ihre Aufgabe ist es, den Vertrag zu analys
 
 class ContractProcessor:
     def __init__(self):
-        self.vision_client = VISION_CLIENT
-        self.gemini_client = GEMINI_CLIENT
-        self.mistral_client = MISTRAL_CLIENT
-        self.executor = ThreadPoolExecutor(max_workers=5)
+        from google import genai
+        from google.cloud import vision
+        from mistralai import Mistral
 
-    def encode_image(self, image_path: str) -> Optional[str]:
-        """Encode an image file to base64 string."""
-        try:
-            with open(image_path, "rb") as image_file:
-                return base64.b64encode(image_file.read()).decode('utf-8')
-        except Exception as e:
-            logger.error(f"Error encoding image {image_path}: {e}")
-            return None
+        #        Initialize clients
+        self.vision_client = vision.ImageAnnotatorClient()
+        self.gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+        self.mistral_client = Mistral(api_key=MISTRAL_API_KEY)
+        self.executor = ThreadPoolExecutor(max_workers=5)
 
     async def process_contract(self, contract: Contract):
         """Main entry point for contract processing."""
@@ -196,7 +182,8 @@ class ContractProcessor:
 
         return result_dict
 
-    def get_address_from_details(self, details: Dict) -> str:
+    @staticmethod
+    def get_address_from_details(details: Dict) -> str:
         """Extract address from contract details."""
         if not details:
             return ""
@@ -230,6 +217,7 @@ class ContractProcessor:
                 with open(image_path, 'rb') as image_file:
                     content = image_file.read()
 
+                from google.cloud import vision
                 image = vision.Image(content=content)
                 # Request text detection and document text detection
                 # Document text detection is optimized for dense text
@@ -297,6 +285,8 @@ class ContractProcessor:
 
     def _extract_details_with_gemini(self, contents, images=None) -> Dict:
         """Helper method to run in thread pool for Gemini API calls."""
+
+        from google.genai import types as genai_types
         try:
             # Add images if provided
             if images:
@@ -464,6 +454,8 @@ class ContractProcessor:
 
     def _analyze_neighborhood_with_gemini(self, address: str, map_image) -> str:
         """Helper method to run in thread pool for Gemini API calls."""
+        from google.genai import types as genai_types
+
         try:
             prompt = NEIGHBORHOOD_ANALYSIS_PROMPT_TEMPLATE.format(address=address)
 

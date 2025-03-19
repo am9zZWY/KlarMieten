@@ -4,7 +4,7 @@
     {
       "src": "darf_vermieter_das/wsgi.py",
       "use": "@vercel/python",
-      "config": { "maxLambdaSize": "15mb", "runtime": "Python3.12" }
+      "config": { "maxLambdaSize": "50mb", "runtime": "Python3.12" }
     },
     {
       "src": "staticfiles/**",
