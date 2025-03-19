@@ -13,6 +13,7 @@ dependencies = [
     "mistralai>=1.5.1",
     "pdf2image>=1.17.0",
     "pillow>=11.1.0",
+    "psycopg>=3.2.6",
     "pyjwt>=2.10.1",
     "pyotp>=2.9.0",
     "python-dotenv>=1.0.1",
