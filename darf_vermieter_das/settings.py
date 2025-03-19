@@ -23,11 +23,13 @@ SECRET_KEY = os.getenv("SECRET_KEY", "unsafe-default-key")
 def get_file_encryption_key():
     """Lazy loading of encryption key to avoid file I/O during startup"""
     if "FILE_ENCRYPTION_KEY" in os.environ:
+        print("Using encryption key from environment variable")
         return bytes.fromhex(os.environ["FILE_ENCRYPTION_KEY"])
     
     key_path = BASE_DIR / ".encryption_key"
     if key_path.exists():
         with open(key_path, "rb") as f:
+            print("Using encryption key from file")
             return f.read()
     
     # Only import secrets if actually needed
@@ -36,6 +38,7 @@ def get_file_encryption_key():
     if not IS_VERCEL:
         with open(key_path, "wb") as f:
             f.write(key)
+    print("Generated new encryption key")
     return key
 
 # Define a property that loads the encryption key only when accessed
@@ -51,6 +54,9 @@ FILE_ENCRYPTION_KEY = lazy_settings.FILE_ENCRYPTION_KEY
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
 if IS_VERCEL:
     ALLOWED_HOSTS.extend(['.vercel.app', '.now.sh'])
+
+print(f"Running in {'production' if IS_PROD else 'development'} mode")
+print(f"Allowed hosts: {ALLOWED_HOSTS}")
 
 # APPLICATION SETTINGS
 # ------------------------------------------------------------------------------
@@ -207,3 +213,5 @@ LOGGING = {
 # DEFAULT PRIMARY KEY FIELD TYPE
 # ------------------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+print("Settings loaded successfully")
