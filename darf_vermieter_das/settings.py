@@ -168,6 +168,7 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # WhiteNoise optimized configuration
 WHITENOISE_COMPRESS = True
+WHITENOISE_KEEP_ONLY_HASHED_FILES = True
 if IS_VERCEL:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 else:
