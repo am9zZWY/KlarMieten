@@ -3,72 +3,56 @@
 {% load static %}
 <head>
     {% block head %}
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>
             {% block title %}
                 Darf Vermieter das? | KI-gestützte Mietvertragsanalyse
             {% endblock %}
         </title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+        <!-- Resource hints for faster loading -->
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+        <link rel="preconnect" href="https://unpkg.com" crossorigin>
+        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+        <link rel="dns-prefetch" href="https://unpkg.com">
+        
+        <!-- Favicon -->
+         <!-- TODO: Add favicon -->
+        
         {% block meta %}
-            <!-- Meta Description -->
-            <meta name="description"
-                  content="Prüfen Sie Mietverträge schnell und sicher mit KI. Ideal für Studierende, Vermieter und Mieter. Erkennen Sie unzulässige Klauseln, versteckte Kosten und mehr – schnell und transparent.">
-
-            <!-- Keywords -->
-            <meta name="keywords"
-                  content="Mietvertrag prüfen, Mietrecht, KI Mietvertragsanalyse, Studierende, unzulässige Mietkosten, Renovierungsklauseln, Kündigungsfristen, Haftungsklauseln, faire Preise, Nebenkosten prüfen">
-
-            <!-- Author -->
+            <!-- Meta tags consolidated and minified -->
+            <meta name="description" content="Prüfen Sie Mietverträge schnell und sicher mit KI. Ideal für Studierende, Vermieter und Mieter. Erkennen Sie unzulässige Klauseln, versteckte Kosten und mehr – schnell und transparent.">
+            <meta name="keywords" content="Mietvertrag prüfen, Mietrecht, KI Mietvertragsanalyse, Studierende, unzulässige Mietkosten, Renovierungsklauseln, Kündigungsfristen, Haftungsklauseln, faire Preise, Nebenkosten prüfen">
             <meta name="author" content="Darf Vermieter Das?">
-
-            <!-- Open Graph / Facebook -->
             <meta property="og:title" content="Darf Vermieter Das? | Mietverträge prüfen mit KI für Studierende">
-            <meta property="og:description"
-                  content="Mit unserer KI prüfen Sie Mietverträge schnell, sicher und einfach. Perfekt für Studierende und alle, die unzulässige Klauseln erkennen wollen.">
+            <meta property="og:description" content="Mit unserer KI prüfen Sie Mietverträge schnell, sicher und einfach. Perfekt für Studierende und alle, die unzulässige Klauseln erkennen wollen.">
             <meta property="og:image" content="{% static 'img/og-image.png' %}">
             <meta property="og:url" content="https://darf-vermieter-das.de">
             <meta property="og:type" content="website">
-
-            <!-- Twitter -->
             <meta name="twitter:card" content="summary_large_image">
             <meta name="twitter:title" content="Darf Vermieter Das? | Mietverträge prüfen mit KI">
-            <meta name="twitter:description"
-                  content="Erfahren Sie in Sekunden, was Ihr Vermieter darf und was nicht – dank unserer KI-gestützten Mietvertragsanalyse.">
+            <meta name="twitter:description" content="Erfahren Sie in Sekunden, was Ihr Vermieter darf und was nicht – dank unserer KI-gestützten Mietvertragsanalyse.">
             <meta name="twitter:image" content="{% static 'img/og-image.png' %}">
-
-            <!-- Robots -->
             <meta name="robots" content="index, follow">
-
-            <!-- Canonical URL -->
             <link rel="canonical" href="https://darf-vermieter-das.de">
         {% endblock %}
-        <!-- TODO: favicon -->
-        <link rel="icon" href="favicon.png"/>
-        <!-- Preconnect to external resources -->
-        <link rel="preconnect" href="https://fonts.bunny.net" crossorigin="anonymous">
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin="anonymous">
-
-        <!-- Preload fonts for faster rendering -->
-        <link rel="preload" href="https://fonts.bunny.net/css?family=abhaya-libre:400|courier-prime:400" as="style"
-              onload="this.onload=null;this.rel='stylesheet'">
+        
+        <!-- Non-critical CSS deferred -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous" media="print" onload="this.media='all'">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" media="print" onload="this.media='all'">
+        <link rel="stylesheet" href="{% static 'css/main.css' %}" media="print" onload="this.media='all'">
         <noscript>
-            <link href="https://fonts.bunny.net/css?family=abhaya-libre:400|courier-prime:400" rel="stylesheet">
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+            <link rel="stylesheet" href="{% static 'css/main.css' %}">
         </noscript>
-
-        <!-- Stylesheets -->
-        <link rel="stylesheet" href="{% static 'bootstrap-5.3.3-dist/css/bootstrap.min.css' %}">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-        <link rel="stylesheet" href="{% static 'css/main.css' %}">
 
         {% block link %}
         {% endblock %}
 
-        <!-- Scripts -->
-        <script defer src="{% static 'js/alpine.min.js' %}"></script>
-        <script defer src="{% static 'js/htmx.min.js' %}"></script>
-        <script src="{% static 'bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js' %}"></script>
+        <!-- Preload important JS -->
+        <link rel="preload" href="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js" as="script" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous">
 
         {% block script %}
         {% endblock %}
@@ -82,27 +66,29 @@
     {% include 'footer.html' %}
 </main>
 
+<!-- Theme preference script for non-blocking page rendering -->
+<script>
+// Immediately apply the theme to prevent flashing
+(function() {
+    const savedTheme = localStorage.getItem('theme-preference');
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const theme = savedTheme || systemTheme;
+    document.documentElement.classList.add(theme);
+    document.documentElement.setAttribute('data-bs-theme', theme);
+})();
+</script>
+
+<!-- JavaScript at the end for faster page loading -->
+<script src="https://unpkg.com/alpinejs@3.13.2/dist/cdn.min.js" defer></script>
+<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+
 <script>
 	function setTheme(theme) {
-		// Remove both theme classes from the html element
 		document.documentElement.classList.remove('light', 'dark')
 		document.documentElement.classList.add(theme)
-
-		// Set Bootstrap's data-bs-theme attribute
 		document.documentElement.setAttribute('data-bs-theme', theme)
-
-		// Store the user's preference in localStorage (optional)
 		localStorage.setItem('theme-preference', theme)
-	}
-
-	// Check for saved preference first
-	const savedTheme = localStorage.getItem('theme-preference')
-
-	if (savedTheme) {
-		setTheme(savedTheme)
-	} else {
-		const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-		setTheme(systemTheme)
 	}
 
 	// Listen for system preference changes
@@ -111,9 +97,10 @@
 		setTheme(newTheme)
 	})
 </script>
-</body>
+
 {% block extra_js %}
 {% endblock %}
 {% block extra_css %}
 {% endblock %}
+</body>
 </html>
