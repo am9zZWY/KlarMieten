@@ -140,6 +140,11 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 WHITENOISE_KEEP_ONLY_HASHED_FILES = True
+WHITENOISE_COMPRESS = True
+WHITENOISE_MIMETYPES = {
+    'text/css': 'text/css',
+    'application/javascript': 'application/javascript',
+}
 
 STORAGES = {
     # Static files storage (using WhiteNoise for production)
