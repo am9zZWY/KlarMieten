@@ -1,0 +1,21 @@
+services:
+ db:
+   image: postgres:17
+   ports:
+     - "5432:5432"
+   volumes:
+     - postgres_data:/var/lib/postgresql/data
+   env_file:
+     - .env
+ 
+ darf_vermieter_das:
+   build: .
+   container_name: darf_vermieter_das
+   ports:
+     - "8000:8000"
+   depends_on:
+     - db
+   env_file:
+     - .env
+volumes:
+   postgres_data:

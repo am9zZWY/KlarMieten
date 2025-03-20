@@ -5,11 +5,13 @@ description = "Darf Vermieter Das?"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "asgiref>=3.8.1",
     "black>=25.1.0",
     "cryptography>=44.0.1",
     "django>=5.1.6",
     "google-cloud-vision>=3.10.1",
     "google-genai>=1.2.0",
+    "gunicorn>=23.0.0",
     "mistralai>=1.5.1",
     "pdf2image>=1.17.0",
     "pillow>=11.1.0",
