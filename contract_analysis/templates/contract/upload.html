@@ -1,6 +1,6 @@
 {% load static %}
 
-<style>
+<style xmlns="http://www.w3.org/1999/html">
     .dragging {
         border: 2px dashed var(--primary);
     }
@@ -82,8 +82,9 @@
                 :disabled="!files.length || uploadStatus === 'uploading'"
         >
             <span x-show="uploadStatus !== 'uploading'">Hochladen</span>
-            <output x-show="uploadStatus === 'uploading'" x-cloak class="spinner-border spinner-border-sm me-2"
-                    aria-hidden="true">Wird hochgeladen...
+            <output x-show="uploadStatus === 'uploading'" x-cloak>
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                Wird hochgeladen...
             </output>
         </button>
     </form>
