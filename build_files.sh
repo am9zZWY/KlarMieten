@@ -6,6 +6,7 @@ echo "### Installing dependencies"
 pip3 install -r requirements.txt
 
 echo "### Migrating and initializing database"
+python3 manage.py makemigrations
 python3 manage.py migrate --noinput
 python3 manage.py initialize_plans
 
