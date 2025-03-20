@@ -262,7 +262,8 @@ class ContractProcessor:
 
         try:
             # Get the full schema for contract details
-            contract_details_schema = model_to_schema(ContractDetails)
+            contract_details_schema = model_to_schema(ContractDetails, exclude=["id", "contract", "full_contract_text",
+                                                                                "neighborhood_analysis"])
 
             prompt = DETAIL_EXTRACTION_PROMPT_TEMPLATE.format(
                 schema=json.dumps(contract_details_schema, indent=2)

@@ -7,7 +7,7 @@ from django.db import models
 logger = logging.getLogger(__name__)
 
 
-def model_to_schema(model_class):
+def model_to_schema(model_class, exclude=None):
     fields = model_class._meta.get_fields()
     schema = {}
 
@@ -18,6 +18,10 @@ def model_to_schema(model_class):
 
         field_type = field.get_internal_type()
         field_name = field.name
+
+        # Skip excluded fields
+        if exclude and field_name in exclude:
+            continue
 
         # Type mapping with null support
         if field_type in ['CharField', 'TextField', 'EmailField', 'URLField']:
@@ -172,4 +176,5 @@ def clean_json(json_string: str) -> Any | None:
             return data
         except json.JSONDecodeError as e2:
             logger.error(f"Failed to clean JSON: {e2}")
+            logger.error(f"Original JSON: {json_string}")
             return None

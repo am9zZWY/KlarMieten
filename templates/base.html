@@ -16,35 +16,45 @@
         <link rel="preconnect" href="https://unpkg.com" crossorigin>
         <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
         <link rel="dns-prefetch" href="https://unpkg.com">
-        
+
         <!-- Favicon -->
-         <!-- TODO: Add favicon -->
-        
+        <!-- TODO: Add favicon -->
+
         {% block meta %}
             <!-- Meta tags consolidated and minified -->
-            <meta name="description" content="Prüfen Sie Mietverträge schnell und sicher mit KI. Ideal für Studierende, Vermieter und Mieter. Erkennen Sie unzulässige Klauseln, versteckte Kosten und mehr – schnell und transparent.">
-            <meta name="keywords" content="Mietvertrag prüfen, Mietrecht, KI Mietvertragsanalyse, Studierende, unzulässige Mietkosten, Renovierungsklauseln, Kündigungsfristen, Haftungsklauseln, faire Preise, Nebenkosten prüfen">
+            <meta name="description"
+                  content="Prüfen Sie Mietverträge schnell und sicher mit KI. Ideal für Studierende, Vermieter und Mieter. Erkennen Sie unzulässige Klauseln, versteckte Kosten und mehr – schnell und transparent.">
+            <meta name="keywords"
+                  content="Mietvertrag prüfen, Mietrecht, KI Mietvertragsanalyse, Studierende, unzulässige Mietkosten, Renovierungsklauseln, Kündigungsfristen, Haftungsklauseln, faire Preise, Nebenkosten prüfen">
             <meta name="author" content="Darf Vermieter Das?">
             <meta property="og:title" content="Darf Vermieter Das? | Mietverträge prüfen mit KI für Studierende">
-            <meta property="og:description" content="Mit unserer KI prüfen Sie Mietverträge schnell, sicher und einfach. Perfekt für Studierende und alle, die unzulässige Klauseln erkennen wollen.">
+            <meta property="og:description"
+                  content="Mit unserer KI prüfen Sie Mietverträge schnell, sicher und einfach. Perfekt für Studierende und alle, die unzulässige Klauseln erkennen wollen.">
             <meta property="og:image" content="{% static 'img/og-image.png' %}">
             <meta property="og:url" content="https://darf-vermieter-das.de">
             <meta property="og:type" content="website">
             <meta name="twitter:card" content="summary_large_image">
             <meta name="twitter:title" content="Darf Vermieter Das? | Mietverträge prüfen mit KI">
-            <meta name="twitter:description" content="Erfahren Sie in Sekunden, was Ihr Vermieter darf und was nicht – dank unserer KI-gestützten Mietvertragsanalyse.">
+            <meta name="twitter:description"
+                  content="Erfahren Sie in Sekunden, was Ihr Vermieter darf und was nicht – dank unserer KI-gestützten Mietvertragsanalyse.">
             <meta name="twitter:image" content="{% static 'img/og-image.png' %}">
             <meta name="robots" content="index, follow">
             <link rel="canonical" href="https://darf-vermieter-das.de">
         {% endblock %}
-        
+
         <!-- Non-critical CSS deferred -->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous" media="print" onload="this.media='all'">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" media="print" onload="this.media='all'">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+              integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
+              crossorigin="anonymous" media="print" onload="this.media='all'">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+              media="print" onload="this.media='all'">
         <link rel="stylesheet" href="{% static 'css/main.css' %}" media="print" onload="this.media='all'">
         <noscript>
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+                  integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65"
+                  crossorigin="anonymous">
+            <link rel="stylesheet"
+                  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
             <link rel="stylesheet" href="{% static 'css/main.css' %}">
         </noscript>
 
@@ -52,10 +62,22 @@
         {% endblock %}
 
         <!-- Preload important JS -->
-        <link rel="preload" href="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js" as="script" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous">
+        <link rel="preload" href="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js" as="script"
+              integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+              crossorigin="anonymous">
 
         {% block script %}
         {% endblock %}
+
+        <!-- JavaScript at the end for faster page loading -->
+        <script src="https://unpkg.com/alpinejs@3.13.2/dist/cdn.min.js" defer></script>
+        <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js"
+                integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+                crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+                integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4"
+                crossorigin="anonymous"></script>
+
     {% endblock %}
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-boost="true" hx-trigger="load">
@@ -68,20 +90,15 @@
 
 <!-- Theme preference script for non-blocking page rendering -->
 <script>
-// Immediately apply the theme to prevent flashing
-(function() {
-    const savedTheme = localStorage.getItem('theme-preference');
-    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    const theme = savedTheme || systemTheme;
-    document.documentElement.classList.add(theme);
-    document.documentElement.setAttribute('data-bs-theme', theme);
-})();
+	// Immediately apply the theme to prevent flashing
+	(function () {
+		const savedTheme = localStorage.getItem('theme-preference');
+		const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+		const theme = savedTheme || systemTheme;
+		document.documentElement.classList.add(theme);
+		document.documentElement.setAttribute('data-bs-theme', theme);
+	})();
 </script>
-
-<!-- JavaScript at the end for faster page loading -->
-<script src="https://unpkg.com/alpinejs@3.13.2/dist/cdn.min.js" defer></script>
-<script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.min.js" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 
 <script>
 	function setTheme(theme) {

@@ -9,10 +9,10 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
-from darf_vermieter_das.faq import FAQ_pricing
 from contract_analysis.models.contract import Contract, ContractDetails, ContractFile
 from contract_analysis.utils.error import handle_exception, error_response
 from contract_analysis.utils.map import geocode_address
+from darf_vermieter_das.faq import FAQ_pricing
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +32,9 @@ def pricing(request):
     }
     return render(request, "pricing.html", context)
 
+
 @login_required
-def home(request):
+def home_view(request):
     """
     Home page view displaying active contracts for the authenticated user.
 
@@ -48,7 +49,22 @@ def home(request):
 
 
 @login_required
-def get_contract(request, contract_id):
+def get_contracts(request):
+    """
+    AJAX endpoint to get all contracts for the authenticated user.
+
+    Args:
+        request: HttpRequest object
+
+    Returns:
+        JsonResponse with list of contracts
+    """
+    contracts = Contract.objects.filter(user=request.user, archived=False)
+    return JsonResponse({"contracts": contracts})
+
+
+@login_required
+def contract_view(request, contract_id):
     """
     View for displaying contract details with location information.
     Uses caching to improve performance for frequently accessed contracts.

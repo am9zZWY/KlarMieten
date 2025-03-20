@@ -16,7 +16,7 @@ class OwnershipRequiredMixin:
         if hasattr(obj, "user") and obj.user != self.request.user:
             raise Http404("Not found")
 
-        if hasattr(obj, "contract") and obj.get_contract.user != self.request.user:
+        if hasattr(obj, "contract") and obj.contract_view.user != self.request.user:
             raise Http404("Not found")
 
         logger.info(f"User {self.request.user} accessed object: {obj}")

@@ -1,34 +1,31 @@
 {% load static %}
 
 <style>
-    [x-data] {
-        .dragging {
-            border: 2px dashed var(--primary);
-        }
+    .dragging {
+        border: 2px dashed var(--primary);
+    }
 
-        .has-error {
-            border: 2px solid var(--error) !important;
-            transition: all 0.3s;
-            animation: error-blink 1s ease-in-out;
-        }
+    .has-error {
+        border: 2px dashed var(--error) !important;
+        transition: all 0.3s;
+    }
 
-        @keyframes error-blink {
-            0% {
-                border-color: red;
-            }
-            50% {
-                border-color: transparent;
-            }
-            100% {
-                border-color: red;
-            }
-        }
+    .file-preview img {
+        max-width: 150px;
+        height: auto;
+        cursor: zoom-in;
+    }
 
-        .file-preview img {
-            max-width: 150px;
-            height: auto;
-            cursor: zoom-in;
-        }
+    /* Toast notification styling */
+    .toast-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1050;
+    }
+
+    .toast {
+        min-width: 250px;
     }
 </style>
 
@@ -65,7 +62,6 @@
             <p class="mb-2 text-secondary small">Unterstützte Dateiformate (max. 10MB):</p>
             <div class="d-flex justify-content-center gap-3">
                 <span class="badge bg-light text-secondary"><i class="bi bi-filetype-pdf me-1"></i>PDF</span>
-                <!-- <span class="badge bg-light text-secondary"><i class="bi bi-filetype-doc me-1"></i>DOC</span> -->
                 <span class="badge bg-light text-secondary"><i class="bi bi-filetype-jpg me-1"></i>JPG</span>
                 <span class="badge bg-light text-secondary"><i class="bi bi-filetype-png me-1"></i>PNG</span>
             </div>
@@ -83,13 +79,17 @@
                 class="btn btn-primary btn-lg"
                 x-show="files.length > 0"
                 x-cloak
-                :disabled="!files.length"
+                :disabled="!files.length || uploadStatus === 'uploading'"
         >
-            Hochladen
-            <output class="spinner-border spinner-border-sm" role="status" x-show="uploadStatus === 'uploading'"
-                    aria-hidden="true" x-cloak></output>
+            <span x-show="uploadStatus !== 'uploading'">Hochladen</span>
+            <output x-show="uploadStatus === 'uploading'" x-cloak class="spinner-border spinner-border-sm me-2"
+                    aria-hidden="true">Wird hochgeladen...
+            </output>
         </button>
     </form>
+
+    <!-- Toast notification container -->
+    <div id="toastContainer" class="toast-container"></div>
 </div>
 
 <script>
@@ -124,6 +124,7 @@
 
 			handleFileInput(event) {
 				this.handleFiles(event.target.files);
+				event.target.value = '';
 			},
 
 			validateFile(file) {
@@ -163,12 +164,41 @@
 			showError(msg) {
 				this.errorMessage = msg;
 				this.hasError = true;
-				setTimeout(() => this.resetError(), 5000);
 			},
 
 			resetError() {
 				this.errorMessage = '';
 				this.hasError = false;
+			},
+
+			showSuccessToast(message) {
+				const toastContainer = document.getElementById('toastContainer');
+				const toastId = 'successToast' + Date.now();
+
+				const toastHTML = `
+                    <div id="${toastId}" class="toast align-items-center text-white bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">
+                                <i class="bi bi-check-circle me-2"></i> ${message}
+                            </div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>
+                `;
+
+				toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+				const toastElement = document.getElementById(toastId);
+				const toast = new bootstrap.Toast(toastElement, {autohide: true, delay: 5000});
+				toast.show();
+
+				toastElement.addEventListener('hidden.bs.toast', () => {
+					toastElement.remove();
+				});
+
+				this.resetError();
+
+				// Reload the page
+				setTimeout(() => window.location.reload(), 5000);
 			},
 
 			createPreview(file) {
@@ -210,7 +240,6 @@
 			updateUI() {
 				this.$refs.preview.innerHTML = !this.files.length ? '' : this.$refs.preview.innerHTML;
 				this.uploadStatus = this.files.length ? 'ready' : 'idle';
-				this.showError = !this.files.length ? false : false;
 			},
 
 			async handleSubmit() {
@@ -223,8 +252,8 @@
 					this.uploadStatus = 'uploading';
 
 					const formData = new FormData();
-					this.files.forEach(file => formData.append('files', file))
-					formData.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+					this.files.forEach(file => formData.append('files', file));
+					formData.append('csrfmiddlewaretoken', this.csrfToken);
 
 					const response = await fetch("{% url 'upload_contract' %}", {
 						method: 'POST',
@@ -232,12 +261,12 @@
 					});
 
 					if (response.ok) {
-						alert('Upload erfolgreich!');
+						this.showSuccessToast('Upload erfolgreich!');
 						this.resetForm();
 					} else {
-						// Check status code and show error message
 						if (response.status === 401) {
 							window.location.href = "{% url 'login' %}";
+							return;
 						}
 						const error = await response.text();
 						this.showError(`Fehler: ${error}`);

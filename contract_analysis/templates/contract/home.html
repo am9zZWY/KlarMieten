@@ -28,7 +28,8 @@
                             </div>
 
                             <div class="hero-actions">
-                                <a href="#contracts" class="btn btn-primary">Meine Mietverträge <i class="bi bi-arrow-down"></i></a>
+                                <a href="#contracts" class="btn btn-primary">Meine Mietverträge <i
+                                        class="bi bi-arrow-down"></i></a>
                                 <a href="#benefits" class="btn btn-secondary">Zum Konto <i class="bi bi-arrow-down"></i></a>
                             </div>
                         </div>
@@ -109,13 +110,13 @@
                                             <i class="bi bi-pencil"></i>Bearbeiten
                                         </a>
                                         <button
-                                                hx-post="/contracts/{{ contract.id }}/analyze"
+                                                hx-post="{% url 'analyze_contract' contract.id %}"
                                                 hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
                                                 hx-trigger="click"
                                                 hx-indicator="#spinner-{{ contract.id }}"
                                                 hx-swap="none"
                                                 @htmx:before-request="$event.detail.target.disabled = true"
-                                                class="btn btn-primary analyze-btn {% if contract.status == 'analyzed' %}hide{% endif %}"
+                                                class="btn btn-primary analyze-btn {% if contract.status == 'analyzed' %}{% endif %}"
                                                 {% if contract.status == 'processing' %}disabled{% endif %}
                                                 id="analyze-button-{{ contract.id }}">
                                             <i class="bi bi-stars"></i>Analyse starten

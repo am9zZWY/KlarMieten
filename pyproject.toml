@@ -19,5 +19,6 @@ dependencies = [
     "pyotp>=2.9.0",
     "python-dotenv>=1.0.1",
     "python-magic>=0.4.27",
+    "stripe>=11.6.0",
     "whitenoise>=6.9.0",
 ]

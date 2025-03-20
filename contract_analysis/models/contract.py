@@ -6,7 +6,7 @@ from typing import List
 
 from django.db import models
 
-from accounts.models import User
+from accounts.models import User, Entitlement
 from contract_analysis.utils.encryption import encrypt_file, decrypt_file
 
 logger = logging.getLogger(__name__)
@@ -304,3 +304,19 @@ class ContractDetails(models.Model):
                 setattr(self, key, value)
 
         self.save()
+
+
+class Analysis(models.Model):
+    """Record of analyses performed by users"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='analyses')
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_extended = models.BooleanField(default=False)
+
+    # Source entitlement that was used for this analysis
+    source_entitlement = models.ForeignKey(Entitlement, on_delete=models.SET_NULL,
+                                           null=True, related_name='analyses')
+
+    def __str__(self):
+        return f"{self.user.username} - {'Extended' if self.is_extended else 'Basic'} - {self.created_at}"
