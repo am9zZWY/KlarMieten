@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from typing import Any
 
 from django.db import models
@@ -135,46 +136,33 @@ def field_to_schema(field):
 
     return schema
 
-
 def clean_json(json_string: str) -> Any | None:
     """
     Cleans a JSON string received, ensuring it's valid JSON,
-    and returns it as a Python dictionary.  Handles common issues like
-    trailing commas, unescaped characters, and incorrect data types.
-
-    Args:
-        json_string: The JSON string to clean.
-
-    Returns:
-        A Python dictionary representing the cleaned JSON, or None if cleaning failed.
+    and returns it as a Python dictionary.
     """
     if not json_string:
         return None
 
+    # Remove markdown code block markers first
+    if "" in json_string:
+        pattern = r"(?:json)?(.*?)```"
+        matches = re.findall(pattern, json_string, re.DOTALL)
+        if matches:
+            json_string = matches[0].strip()
+
     try:
-        # Attempt to load the JSON string directly
-        data = json.loads(json_string)
-        return data  # If it loads without error, it's already valid.
-
+        # Use json.loads directly
+        return json.loads(json_string)
     except json.JSONDecodeError as e:
-        logger.error(f"Failed to load JSON. Trying to clean: {e}")
+        logger.error(f"Failed to parse JSON: {e}")
 
-        # Attempt cleaning strategies:
-        cleaned_string = json_string
-        cleaned_string = cleaned_string.replace(",\n}", "\n}")
-        cleaned_string = cleaned_string.replace(",\n]", "\n]")
-        cleaned_string = cleaned_string.replace("'", '"')
-        cleaned_string = cleaned_string.replace("```json", "")
-        cleaned_string = cleaned_string.replace("```", "")
-        cleaned_string = cleaned_string.replace("True", "true")
-        cleaned_string = cleaned_string.replace("False", "false")
-        cleaned_string = cleaned_string.replace("Null", "null")
-
-        # 4. Try loading the cleaned string again
+        # Try with a more lenient parser for recovery
         try:
-            data = json.loads(cleaned_string)
-            return data
-        except json.JSONDecodeError as e2:
-            logger.error(f"Failed to clean JSON: {e2}")
-            logger.error(f"Original JSON: {json_string}")
+            return json.loads(json_string.replace("'", '"')
+                              .replace("True", "true")
+                              .replace("False", "false")
+                              .replace("None", "null"))
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to clean JSON after attempts")
             return None
