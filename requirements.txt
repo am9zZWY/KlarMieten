@@ -11,7 +11,9 @@ cryptography==44.0.1
 django==5.1.6
 eval-type-backport==0.2.2
 google-api-core==2.24.2
+google-api-python-client==2.165.0
 google-auth==2.38.0
+google-auth-httplib2==0.2.0
 google-cloud-vision==3.10.1
 google-genai==1.2.0
 googleapis-common-protos==1.69.2
@@ -20,6 +22,7 @@ grpcio-status==1.71.0
 gunicorn==23.0.0
 h11==0.14.0
 httpcore==1.0.7
+httplib2==0.22.0
 httpx==0.28.1
 idna==3.10
 jsonpath-python==1.0.6
@@ -41,6 +44,7 @@ pydantic==2.10.6
 pydantic-core==2.27.2
 pyjwt==2.10.1
 pyotp==2.9.0
+pyparsing==3.2.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-magic==0.4.27
@@ -52,7 +56,8 @@ sqlparse==0.5.3
 stripe==11.6.0
 typing-extensions==4.12.2
 typing-inspect==0.9.0
+uritemplate==4.1.1
 urllib3==2.3.0
 websockets==14.2
 whitenoise==6.9.0
-zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability
+zipp==3.21.0

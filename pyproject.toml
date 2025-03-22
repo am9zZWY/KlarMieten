@@ -24,4 +24,5 @@ dependencies = [
     "python-magic>=0.4.27",
     "stripe>=11.6.0",
     "whitenoise>=6.9.0",
+    "zipp>=3.19.1",
 ]
