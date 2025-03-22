@@ -76,6 +76,18 @@ class Contract(models.Model):
 
         return temp_images
 
+    def add_file(self, filename, content, content_type):
+        """Helper function to create and save a contract file with encrypted content."""
+        contract_file = ContractFile.objects.create(
+            contract=self,
+            file_name=filename,
+            file_type=content_type,
+        )
+        contract_file.set_file_content(content)
+        contract_file.save()
+        logger.info(f"File {filename} saved for contract {self.id}")
+        return contract_file
+
 
 class ContractFile(models.Model):
     contract = models.ForeignKey(

@@ -2,6 +2,28 @@ import base64
 from io import BytesIO
 
 from PIL import Image
+from pdf2image import convert_from_bytes
+
+
+def convert_pdf_to_images(file, contract):
+    """Convert PDF to images and save them as contract files."""
+    try:
+        images = convert_from_bytes(file.read(), dpi=200, thread_count=4, fmt="png")
+        base_name = file.name.split(".")[0]
+
+        for i, img in enumerate(images):
+            # Reduce image size and save to buffer
+            resized_img = reduce_image_size(img, percent=35)
+            buffer = io.BytesIO()
+            resized_img.save(buffer, format="PNG")
+            buffer.seek(0)
+
+            page_filename = f"{base_name}_page_{i + 1}.png"
+            save_contract_file(contract, page_filename, "image/png", buffer.getvalue())
+
+    except Exception as e:
+        logger.error(f"PDF conversion error: {e}")
+        raise ValidationError("Fehler bei der PDF-Konvertierung")
 
 
 def image_to_base64(image: Image.Image) -> str:
@@ -12,6 +34,7 @@ def image_to_base64(image: Image.Image) -> str:
     image.save(buffered, format="JPEG")  # Or PNG, depending on your needs
     img_str = base64.b64encode(buffered.getvalue()).decode("utf-8")
     return img_str
+
 
 def reduce_image_size(image: Image.Image, percent: int = 50) -> Image.Image:
     """

@@ -9,6 +9,7 @@ dependencies = [
     "black>=25.1.0",
     "cryptography>=44.0.1",
     "django>=5.1.6",
+    "google-api-python-client>=2.165.0",
     "google-cloud-vision>=3.10.1",
     "google-genai>=1.2.0",
     "gunicorn>=23.0.0",

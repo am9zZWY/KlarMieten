@@ -25,7 +25,7 @@ from darf_vermieter_das.views import main
 urlpatterns = [
                   path("admin/", admin.site.urls, name="admin"),
                   path("", main, name="landing"),
-                  path("analysis/", include("contract_analysis.urls"), name="analysis"),
+                  path("contract/", include("contract_analysis.urls"), name="contract"),
                   path("accounts/", include("accounts.urls")),
                   path("accounts/", include("django.contrib.auth.urls"))
               ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
