@@ -64,6 +64,9 @@ print(f"Allowed hosts: {ALLOWED_HOSTS}")
 # APPLICATION SETTINGS
 # ------------------------------------------------------------------------------
 INSTALLED_APPS = [
+    # Third party apps
+    'widget_tweaks',
+
     # Local apps
     "accounts",
     "contract_analysis",

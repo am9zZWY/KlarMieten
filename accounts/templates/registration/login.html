@@ -1,35 +1,107 @@
-<!-- login.html -->
 {% extends "base.html" %}
 
 {% block content %}
     <div class="container mt-5">
         <div class="row justify-content-center">
-            <div class="col-md-6">
-                <h2 class="text-center mb-4">Anmelden</h2>
-
-                {% if form.errors %}
-                    <div class="alert alert-danger">
-                        Ungültige Anmeldeinformationen. Bitte versuchen Sie es erneut.
+            <div class="col-lg-5 col-md-7">
+                <div class="neo-card">
+                    <div class="text-center mb-4">
+                        <h2 class="mb-1">Willkommen zurück</h2>
+                        <p class="text-muted">Melden Sie sich an, um fortzufahren</p>
                     </div>
-                {% endif %}
 
-                <form method="post" class="needs-validation" novalidate>
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label">Benutzername</label>
-                        <input type="text" name="username" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Passwort</label>
-                        <input type="password" name="password" class="form-control" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Anmelden</button>
-                </form>
+                    {% if form.errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            Ungültige Anmeldeinformationen. Bitte versuchen Sie es erneut.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
 
-                <p class="mt-3 text-center">
-                    Noch kein Konto bei uns? <a href="{% url 'signup' %}">Registrieren</a>
-                </p>
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-4">
+                            <label class="form-label">Benutzername</label>
+                            <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-person"></i>
+                            </span>
+                                <input type="text" name="username" class="form-control border-start-0 ps-0"
+                                       placeholder="Benutzername eingeben" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <label class="form-label">Passwort</label>
+                                <a href="#" class="text-decoration-none small">Passwort vergessen?</a>
+                            </div>
+                            <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                                <input type="password" name="password" class="form-control border-start-0 ps-0"
+                                       id="password" placeholder="Passwort eingeben" required>
+                                <button class="btn btn-outline-secondary border-start-0" type="button"
+                                        id="togglePassword">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" value="" id="remember-me">
+                            <label class="form-check-label" for="remember-me">
+                                Angemeldet bleiben
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Anmelden
+                        </button>
+
+                        <div class="text-center">
+                            <p class="mb-0">Noch kein Konto bei uns?</p>
+                            <a href="{% url 'signup' %}" class="btn btn-light w-100 mt-2">
+                                <i class="bi bi-person-plus me-2"></i>Registrieren
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
+
+    <script>
+			// Toggle password visibility
+			document.getElementById('togglePassword').addEventListener('click', function () {
+				const password = document.getElementById('password');
+				const icon = this.querySelector('i');
+
+				if (password.type === 'password') {
+					password.type = 'text';
+					icon.classList.remove('bi-eye');
+					icon.classList.add('bi-eye-slash');
+				} else {
+					password.type = 'password';
+					icon.classList.remove('bi-eye-slash');
+					icon.classList.add('bi-eye');
+				}
+			});
+
+			// Form validation
+			(function () {
+				'use strict'
+				const forms = document.querySelectorAll('.needs-validation');
+				Array.prototype.slice.call(forms)
+					.forEach(function (form) {
+						form.addEventListener('submit', function (event) {
+							if (!form.checkValidity()) {
+								event.preventDefault()
+								event.stopPropagation()
+							}
+							form.classList.add('was-validated')
+						}, false)
+					})
+			})()
+    </script>
 {% endblock %}
