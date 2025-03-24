@@ -1,37 +1,37 @@
-from accounts.models import Plan, PlanCapability, Capability, Product
+from customers.models import Plan, PlanCapability, Capability, Product
 
 
 def initialize_system():
-    """Set up products, capabilities and plans"""
+    """Produkte, Fähigkeiten und Pläne einrichten"""
 
-    # Create products
+    # Produkte erstellen
     analysis_product = Product.objects.get_or_create(
         code='contract_analysis',
         defaults={
-            'name': 'Contract Analysis',
+            'name': 'Vertragsanalyse',
             'type': 'ANALYSIS',
-            'description': 'Analysis of rental contracts'
+            'description': 'Analyse von Mietverträgen'
         }
     )[0]
 
     chat_product = Product.objects.get_or_create(
         code='legal_chat',
         defaults={
-            'name': 'Legal Chat',
+            'name': 'Rechtschat',
             'type': 'CHAT',
-            'description': 'AI-powered legal chat assistant'
+            'description': 'KI-gestützter rechtlicher Chat-Assistent'
         }
     )[0]
 
-    # Create capabilities
+    # Fähigkeiten erstellen
     capabilities = {}
 
-    # Integer-valued capabilities
+    # Ganzzahlige Fähigkeiten
     for code, name in [
-        ('analyses', 'Number of Analyses'),
-        ('storage_days', 'Storage Duration (Days)'),
-        ('upload_size', 'Max Upload Size (MB)'),
-        ('uploads', 'Number of Uploads'),
+        ('analyses', 'Anzahl der Analysen'),
+        ('storage_days', 'Speicherdauer (Tage)'),
+        ('upload_size', 'Max. Upload-Größe (MB)'),
+        ('uploads', 'Anzahl der Uploads'),
     ]:
         capabilities[code] = Capability.objects.get_or_create(
             code=code,
@@ -41,14 +41,14 @@ def initialize_system():
             }
         )[0]
 
-    # Boolean-valued capabilities
+    # Boolesche Fähigkeiten
     for code, name in [
-        ('pdf_export', 'PDF Export'),
-        ('docx_import', 'DOCX Import'),
-        ('extended_analysis', 'Extended Analysis'),
-        ('unlimited_chat', 'Unlimited Chat Requests'),
-        ('legal_advice_ai', 'Legal Advice via AI'),
-        ('monthly_cancel', 'Monthly Cancelable')
+        ('pdf_export', 'PDF-Export'),
+        ('docx_import', 'DOCX-Import'),
+        ('extended_analysis', 'Erweiterte Analyse'),
+        ('unlimited_chat', 'Unbegrenzte Chat-Anfragen'),
+        ('legal_advice_ai', 'Rechtsberatung via KI'),
+        ('monthly_cancel', 'Monatlich kündbar')
     ]:
         capabilities[code] = Capability.objects.get_or_create(
             code=code,
@@ -58,13 +58,13 @@ def initialize_system():
             }
         )[0]
 
-    # Create plans
+    # Pläne erstellen
 
-    # Student Plan (One-time)
+    # Studierenden-Plan (Einmalig)
     student_plan = Plan.objects.get_or_create(
         code='student',
         defaults={
-            'name': 'Student',
+            'name': 'Studierende',
             'product': analysis_product,
             'description': 'Für Studierende mit begrenztem Budget',
             'price': 4.00,
@@ -73,7 +73,7 @@ def initialize_system():
         }
     )[0]
 
-    # Set student plan capabilities
+    # Studierenden-Plan Fähigkeiten festlegen
     PlanCapability.objects.get_or_create(
         plan=student_plan, capability=capabilities['analyses'],
         defaults={'value_int': 1}
@@ -95,7 +95,7 @@ def initialize_system():
         defaults={'value_bool': False}
     )
 
-    # Basic Plan (One-time)
+    # Basis-Plan (Einmalig)
     basic_plan = Plan.objects.get_or_create(
         code='basic',
         defaults={
@@ -107,7 +107,7 @@ def initialize_system():
         }
     )[0]
 
-    # Set basic plan capabilities
+    # Basis-Plan Fähigkeiten festlegen
     PlanCapability.objects.get_or_create(
         plan=basic_plan, capability=capabilities['analyses'],
         defaults={'value_int': 1}
@@ -129,7 +129,7 @@ def initialize_system():
         defaults={'value_bool': False}
     )
 
-    # Pro Plan (Subscription)
+    # Pro-Plan (Abonnement)
     pro_plan = Plan.objects.get_or_create(
         code='pro',
         defaults={
@@ -142,7 +142,7 @@ def initialize_system():
         }
     )[0]
 
-    # Set pro plan capabilities
+    # Pro-Plan Fähigkeiten festlegen
     PlanCapability.objects.get_or_create(
         plan=pro_plan, capability=capabilities['analyses'],
         defaults={'value_int': 5}
@@ -168,7 +168,7 @@ def initialize_system():
         defaults={'value_bool': True}
     )
 
-    # Chat+ Plan (Subscription)
+    # Chat+ Plan (Abonnement)
     chat_plus_plan = Plan.objects.get_or_create(
         code='chat_plus',
         defaults={
@@ -182,7 +182,7 @@ def initialize_system():
         }
     )[0]
 
-    # Set chat+ plan capabilities
+    # Chat+ Plan Fähigkeiten festlegen
     PlanCapability.objects.get_or_create(
         plan=chat_plus_plan, capability=capabilities['unlimited_chat'],
         defaults={'value_bool': True}

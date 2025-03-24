@@ -1,7 +1,8 @@
+import uuid
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
-import uuid
 
 
 class User(AbstractUser):
@@ -13,31 +14,6 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
-
-    def has_active_capability(self, capability_code):
-        """Check if user has an active entitlement for the given capability"""
-        now = timezone.now()
-        return Entitlement.objects.filter(
-            models.Q(purchase__user=self) | models.Q(subscription__user=self),
-            capability__code=capability_code,
-            start_date__lte=now,
-            end_date__gt=now
-        ).exists()
-
-
-    def get_entitlement_value(self, capability_code):
-        """Get the value of an entitlement for a specific capability"""
-        now = timezone.now()
-        entitlement = Entitlement.objects.filter(
-            models.Q(purchase__user=self) | models.Q(subscription__user=self),
-            capability__code=capability_code,
-            start_date__lte=now,
-            end_date__gt=now
-        ).order_by('-value_int', '-end_date').first()
-
-        if entitlement:
-            return entitlement.value
-        return None
 
     def activate_student_status(self):
         """Activate student status for the user"""
@@ -82,11 +58,6 @@ class Plan(models.Model):
     student_discount_percentage = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
 
-    def __str__(self):
-        if self.billing_type == 'SUBSCRIPTION':
-            return f"{self.name} ({self.price} {self.currency}/{self.billing_interval})"
-        return f"{self.name} ({self.price} {self.currency})"
-
 
 class Capability(models.Model):
     """System capabilities that can be granted to users"""
@@ -98,7 +69,7 @@ class Capability(models.Model):
     VALUE_TYPES = [
         ('BOOLEAN', 'Boolean Value'),  # Access to feature (yes/no)
         ('INTEGER', 'Integer Value'),  # Quantifiable (analyses count, storage days)
-        ('STRING', 'String Value'),    # Text value if needed
+        ('STRING', 'String Value'),  # Text value if needed
     ]
     value_type = models.CharField(max_length=10, choices=VALUE_TYPES)
 
@@ -268,7 +239,7 @@ class Entitlement(models.Model):
     def is_valid(self):
         """Check if this entitlement is currently valid"""
         now = timezone.now()
-        return self.start_date <= now and self.end_date > now
+        return self.start_date <= now < self.end_date
 
     def use(self, count=1):
         """Use this entitlement (for consumable capabilities)"""
@@ -277,3 +248,30 @@ class Entitlement(models.Model):
             self.save()
             return self.value >= 0
         return True
+
+    @staticmethod
+    def has(user, capability_code):
+        """Check if user has an active entitlement for the given capability"""
+        now = timezone.now()
+        entitlement = Entitlement.objects.filter(
+            models.Q(purchase__user=user) | models.Q(subscription__user=user),
+            capability__code=capability_code,
+            start_date__lte=now,
+            end_date__gt=now
+        ).exists()
+        return entitlement.is_valid
+
+    @staticmethod
+    def get(user, capability_code):
+        """Get the value of an entitlement for a specific capability"""
+        now = timezone.now()
+        entitlement = Entitlement.objects.filter(
+            models.Q(purchase__user=user) | models.Q(subscription__user=user),
+            capability__code=capability_code,
+            start_date__lte=now,
+            end_date__gt=now
+        ).order_by('-value_int', '-end_date').first()
+
+        if entitlement and entitlement.is_valid:
+            return entitlement.value
+        return None

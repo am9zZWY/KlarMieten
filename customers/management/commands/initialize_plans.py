@@ -1,4 +1,4 @@
-# accounts/management/commands/initialize_plans.py
+# customers/management/commands/initialize_plans.py
 
 from django.core.management.base import BaseCommand
 
@@ -17,9 +17,9 @@ class Command(BaseCommand):
             conn.cursor()
 
             # Check if we need to initialize
-            from accounts.models import Plan
+            from customers.models import Plan
             if Plan.objects.count() == 0:
-                from accounts.utils import initialize_system
+                from customers.utils import initialize_system
                 initialize_system()
 
         except OperationalError:

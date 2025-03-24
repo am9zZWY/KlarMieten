@@ -1,0 +1,132 @@
+<!-- payments/templates/payments/checkout.html -->
+{% extends 'base.html' %}
+
+{% block title %}Checkout - {{ plan.name }}{% endblock %}
+
+{% block content %}
+    <section class="checkout-section">
+        <div class="quantum-container">
+            <div class="section-header">
+                <h2>Checkout</h2>
+                <p>Complete your purchase for {{ plan.name }} - {{ plan.product.name }}</p>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="checkout-card">
+                        <div class="checkout-details">
+                            <h3>Order Summary</h3>
+
+                            <div class="order-item">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <span class="item-name">{{ plan.name }} - {{ plan.product.name }}</span>
+                                    <span class="item-price">€{{ plan.price }}</span>
+                                </div>
+                                <p class="item-description">{{ plan.description }}</p>
+
+                                <!-- Show plan capabilities -->
+                                <div class="plan-capabilities mt-3">
+                                    <h4 class="mb-2">Included Features:</h4>
+                                    <ul class="list-unstyled">
+                                        {% for pc in plan.capabilities.all %}
+                                            <li class="d-flex align-items-center">
+                                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                {{ pc.capability.name }}
+                                                {% if pc.capability.value_type == 'INTEGER' and pc.value_int %}
+                                                    - {{ pc.value_int }}
+                                                {% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="order-summary mt-4">
+                                <div class="d-flex justify-content-between">
+                                    <span class="summary-label">Total:</span>
+                                    <span class="summary-value">€{{ plan.price }}</span>
+                                </div>
+
+                                {% if student_discount > 0 %}
+                                    <div class="student-discount mt-2">
+                                        <div class="d-flex justify-content-between text-success">
+                                            <span class="discount-label">Student Discount ({{ plan.student_discount_percentage }}%):</span>
+                                            <span class="discount-value">-€{{ student_discount|floatformat:2 }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mt-2 fw-bold">
+                                            <span class="final-label">Final Price:</span>
+                                            <span class="final-value">€{{ final_price|floatformat:2 }}</span>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="checkout-payment mt-4">
+                            <h3>Payment Information</h3>
+                            <p class="mb-4">You'll be redirected to Stripe to complete your payment securely.</p>
+
+                            <button id="checkout-button" class="btn btn-primary btn-large w-100">
+                                {% if plan.billing_type == 'ONE_TIME' %}
+                                    Proceed to Payment
+                                {% else %}
+                                    Start Subscription
+                                {% endif %}
+                            </button>
+
+                            <div class="payment-security mt-3">
+                                <p class="text-center">
+                                    <i class="bi bi-shield-lock"></i>
+                                    Secure payment processed by Stripe
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+			document.addEventListener('DOMContentLoaded', function () {
+				var stripe = Stripe('{{ STRIPE_PUBLIC_KEY }}');
+				var checkoutButton = document.getElementById('checkout-button');
+
+				checkoutButton.addEventListener('click', function () {
+					// Disable button to prevent multiple clicks
+					checkoutButton.disabled = true;
+					checkoutButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+
+					// Create checkout session
+					fetch('{% url "create_checkout_session" plan.id %}', {
+						method: 'POST',
+						headers: {
+							'X-CSRFToken': '{{ csrf_token }}'
+						}
+					})
+						.then(function (response) {
+							return response.json();
+						})
+						.then(function (session) {
+							return stripe.redirectToCheckout({sessionId: session.id});
+						})
+						.then(function (result) {
+							if (result.error) {
+								alert(result.error.message);
+								checkoutButton.disabled = false;
+								checkoutButton.textContent = 'Proceed to Payment';
+							}
+						})
+						.catch(function (error) {
+							console.error('Error:', error);
+							alert('An error occurred. Please try again.');
+							checkoutButton.disabled = false;
+							checkoutButton.textContent = 'Proceed to Payment';
+						});
+				});
+			});
+    </script>
+{% endblock %}

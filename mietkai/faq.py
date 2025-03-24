@@ -45,13 +45,13 @@ FAQ = [
         "for": ["landing", "faq"]
     },
     {
-        "question": "Sind wirklich keine Abos im Basic- oder Studenten-Paket enthalten?",
-        "answer": "Absolut! Unsere Basic-, Student-Pakete sind reine Einmalzahlungen ohne versteckte Kosten oder automatische Verlängerungen. Nur die Pro- und Chat+ Pakete sind als Abos verfügbar.",
+        "question": "Sind wirklich keine Abos im Basic- oder Studierenden-Paket enthalten?",
+        "answer": "Absolut! Unsere Basic- und Studierenden-Pakete sind reine Einmalzahlungen ohne versteckte Kosten oder automatische Verlängerungen. Nur die Pro- und Chat+ Pakete sind als Abos verfügbar.",
         "for": ["pricing"]
     },
     {
-        "question": "Wie funktioniert der Studentenrabatt?",
-        "answer": "Studierende können bei der Registrierung einen gültigen Studentenausweis oder eine Immatrikulationsbescheinigung hochladen. Nach Überprüfung werden alle Studentenrabatte automatisch freigeschaltet.",
+        "question": "Wie funktioniert der Studierendenrabatt?",
+        "answer": "Studierende können bei der Registrierung einen gültigen Studierendenausweis oder eine Immatrikulationsbescheinigung hochladen. Nach Überprüfung werden alle Studierendenrabatte automatisch freigeschaltet.",
         "for": ["pricing"]
     },
     {

@@ -1,0 +1,28 @@
+<!-- payments/templates/payments/cancel.html -->
+{% extends 'base.html' %}
+
+{% block title %}Payment Cancelled{% endblock %}
+
+{% block content %}
+    <section class="cancel-section">
+        <div class="quantum-container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="cancel-card">
+                        <div class="cancel-icon">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+
+                        <h3>Payment Cancelled</h3>
+                        <p class="cancel-message">Your payment was cancelled. No charges have been made.</p>
+
+                        <div class="cancel-actions mt-4">
+                            <a href="{% url 'pricing' %}" class="btn btn-primary">Return to Pricing</a>
+                            <a href="{% url 'home' %}" class="btn btn-secondary">Go Home</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

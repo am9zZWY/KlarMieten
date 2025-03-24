@@ -70,6 +70,11 @@ h1, h2, h3, h4, h5, h6 {
     line-height: 1.3;
 }
 
+/* https://stackoverflow.com/a/69670444/6604114 */
+.unset {
+    all: unset !important;
+}
+
 a {
     text-decoration: none;
     color: var(--primary);
@@ -1067,6 +1072,97 @@ canvas {
 .submit-btn:disabled {
     color: #ccc;
     cursor: default;
+}
+
+/* ===== Payments Page Styles ===== */
+/* Checkout Page Styles */
+.checkout-section {
+    padding: 4rem 0;
+}
+
+.checkout-card {
+    background-color: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    box-shadow: var(--shadow-small);
+    transition: var(--transition-normal);
+}
+
+.checkout-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.order-item {
+    padding: 1.5rem;
+    background-color: var(--surface-alt);
+    border-radius: var(--radius-md);
+}
+
+.item-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.item-price {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--primary);
+}
+
+.order-summary {
+    padding: 1.5rem;
+    background-color: var(--surface-alt);
+    border-radius: var(--radius-md);
+}
+
+.payment-security {
+    color: var(--text-tertiary);
+    font-size: 0.9rem;
+    margin-top: 1rem;
+}
+
+.payment-security i {
+    color: var(--success);
+    margin-right: 0.5rem;
+}
+
+/* Success and Cancel Pages */
+.success-card, .cancel-card {
+    background-color: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 3rem 2rem;
+    box-shadow: var(--shadow-small);
+    text-align: center;
+}
+
+.success-icon, .cancel-icon {
+    font-size: 5rem;
+    margin-bottom: 2rem;
+}
+
+.success-icon i {
+    color: var(--success);
+}
+
+.cancel-icon i {
+    color: var(--warning);
+}
+
+.order-details {
+    text-align: left;
+    padding: 1.5rem;
+    background-color: var(--surface-alt);
+    border-radius: var(--radius-md);
+    margin: 2rem 0;
+}
+
+.success-actions, .cancel-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
 }
 
 /* ===== Contract Details Page Styles ===== */

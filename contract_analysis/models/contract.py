@@ -6,8 +6,8 @@ from typing import List
 
 from django.db import models
 
-from accounts.models import User, Entitlement
 from contract_analysis.utils.encryption import encrypt_file, decrypt_file
+from customers.models import Entitlement, User
 
 logger = logging.getLogger(__name__)
 

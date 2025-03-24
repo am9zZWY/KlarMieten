@@ -1,7 +1,7 @@
 from django.contrib.auth.views import LoginView
 from django.urls import path
 
-from .views import SignUpView
+from .views import SignUpView, pricing
 
 urlpatterns = [
     path(
@@ -10,4 +10,5 @@ urlpatterns = [
         name="login",
     ),
     path("signup", SignUpView.as_view(), name="signup"),
+    path("pricing", pricing, name="pricing"),
 ]

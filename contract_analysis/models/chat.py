@@ -1,6 +1,6 @@
 from django.db import models
 
-from accounts.models import User
+from customers.models import User
 
 
 class ChatMessage(models.Model):

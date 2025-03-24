@@ -10,6 +10,7 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_protect
 
+from customers.models import Entitlement
 from contract_analysis.analysis import ContractProcessor
 from contract_analysis.models.contract import Contract
 from contract_analysis.utils.error import error_response
@@ -78,7 +79,7 @@ class ContractAnalysisView(ContractBaseView):
         logger.info(f"Analyzing contract {contract_id} for user {request.user}")
 
         # Check if user has permission to analyze contracts
-        entitlement = user.get_entitlement_value('analyses')
+        entitlement = Entitlement.get(user, 'analyses')
         if not entitlement or entitlement and entitlement.value <= 0:
             return error_response("User does not have permission to analyze contracts. Please upgrade your plan.",
                                   status=403)

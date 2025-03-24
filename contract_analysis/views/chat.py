@@ -17,7 +17,7 @@ def chat(request):
             return JsonResponse({"error": "User is not authenticated."}, status=403)
 
         # Check if user is authenticated and has permission to chat
-        has_chat_permission = user.has_active_capability('unlimited_chat')
+        has_chat_permission = user.has('unlimited_chat')
         if not has_chat_permission:
             return JsonResponse({"error": "User does not have permission to chat. Please upgrade your plan."}, status=403)
 

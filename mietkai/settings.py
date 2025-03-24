@@ -68,7 +68,8 @@ INSTALLED_APPS = [
     'widget_tweaks',
 
     # Local apps
-    "accounts",
+    "customers",
+    "payments",
     "contract_analysis",
     "mietkai",
 
@@ -155,7 +156,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-AUTH_USER_MODEL = "accounts.User"
+AUTH_USER_MODEL = "customers.User"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 
@@ -222,6 +223,12 @@ LOGGING = {
         "level": "WARNING" if IS_PROD else "INFO",
     },
 }
+
+# STRIPE SETTINGS
+# ------------------------------------------------------------------------------
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
+DOMAIN = os.environ.get('DOMAIN')
 
 # DEFAULT PRIMARY KEY FIELD TYPE
 # ------------------------------------------------------------------------------

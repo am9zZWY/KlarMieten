@@ -9,6 +9,7 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
+from customers.models import Entitlement
 from contract_analysis.models.contract import Contract, ContractDetails, ContractFile
 from contract_analysis.utils.error import handle_exception, error_response
 from contract_analysis.utils.map import geocode_address
@@ -34,7 +35,7 @@ def home_view(request):
         return error_response("Unauthorized", 401)
 
     # Check if user has permission to analyze contracts
-    entitlement = user.get_entitlement_value('analyses')
+    entitlement = Entitlement.get(user, 'analyses')
     can_analyze = entitlement is not None and entitlement.value > 0
 
     contracts = Contract.objects.filter(user=user, archived=False)

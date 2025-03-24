@@ -1,0 +1,44 @@
+<!-- payments/templates/payments/success.html -->
+{% extends 'base.html' %}
+
+{% block title %}Payment Successful{% endblock %}
+
+{% block content %}
+    <section class="success-section">
+        <div class="quantum-container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6">
+                    <div class="success-card">
+                        <div class="success-icon">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+
+                        <h3>Payment Successful!</h3>
+                        <p class="success-message">{{ message }}</p>
+
+                        <div class="order-details mt-4">
+                            <h4>Order Details</h4>
+                            <ul class="list-unstyled">
+                                <li><strong>Plan:</strong> {{ plan.name }}</li>
+                                <li><strong>Product:</strong> {{ plan.product.name }}</li>
+                                <li><strong>Amount:</strong> €{{ plan.price }}</li>
+                                <li><strong>Type:</strong>
+                                    {% if plan.billing_type == 'ONE_TIME' %}
+                                        One-time payment
+                                    {% else %}
+                                        Subscription ({{ plan.billing_interval }})
+                                    {% endif %}
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="success-actions mt-4">
+                            <a href="{% url 'dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
+                            <a href="{% url 'home' %}" class="btn btn-secondary">Return Home</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

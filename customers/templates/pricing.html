@@ -13,90 +13,56 @@
                     Abofallen</p>
             </div>
 
-            <div class="row g-4">
+            <div class="row justify-content-center gap-4">
                 <!-- Student Plan -->
-                <div class="col-lg-3 col-md-6">
-                    <div class="pricing-card student-plan">
-                        <div class="top-badge">Studenten</div>
-                        <h3>Student</h3>
-                        <div class="pricing-price">
-                            <span class="price-currency">€</span>
-                            <span class="price-amount">4</span>
-                            <span class="price-period">einmalig</span>
-                        </div>
-                        <p class="pricing-description">Für Studierende mit begrenztem Budget</p>
-                        <ul class="list-unstyled pricing-features">
-                            <li><i class="bi bi-check-circle-fill text-success"></i> 1 Analyse</li>
-                            <li><i class="bi bi-check-circle-fill text-success"></i> Speicherung für 14 Tage</li>
-                            <li><i class="bi bi-check-circle-fill text-success"></i> PDF Export</li>
-                            <li><i class="bi bi-x-circle-fill text-danger"></i> Keine erweiterte Analyse</li>
-                        </ul>
-                        <a href="#" class="btn btn-primary w-100">Student wählen</a>
-                        <div class="pricing-note">*Nachweis erforderlich</div>
-                    </div>
-                </div>
+                {% for plan in plans %}
+                    <form action="{% url 'create-checkout-session' %}" method="post" class="col-lg-3 col-md-6">
+                        {% csrf_token %}
+                        <input type="hidden" name="plan_id" value="{{ plan.id }}">
+                        <div class="pricing-card {% if plan.name == 'Student' %}student-plan{% endif %}">
+                            {% if plan.name == 'Student' %}
+                                <div class="top-badge">Empfohlen</div>
+                            {% endif %}
+                            <h3>{{ plan.name }}</h3>
+                            <div class="pricing-price">
+                                <span class="price-currency">€</span>
+                                <span class="price-amount">{{ plan.price|floatformat:0 }}</span>
+                                {% if plan.billing_type == 'ONE_TIME' %}
+                                    <span class="price-period">einmalig</span>
+                                {% else %}
+                                    <span class="price-period">/monat</span>
+                                {% endif %}
+                            </div>
+                            <p class="pricing-description">{{ plan.description }}</p>
+                            <ul class="list-unstyled pricing-features">
+                                {% for capability in plan.capabilities %}
+                                    {% if capability.has_capability %}
+                                        <li class="d-flex align-items-center">
+                                            <i class="bi bi-check-circle-fill text-success"></i>
+                                            {{ capability.name }}
 
-                <!-- Basic Plan -->
-                <div class="col-lg-3 col-md-6">
-                    <div class="pricing-card">
-                        <h3>Basic</h3>
-                        <div class="pricing-price">
-                            <span class="price-currency">€</span>
-                            <span class="price-amount">7</span>
-                            <span class="price-period">einmalig</span>
+                                            {% if capability.display_value %}
+                                                {{ capability.display_value }}
+                                            {% endif %}
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                            <!-- Replace existing button with this -->
+                            <button type="submit" class="btn btn-primary w-100">
+                                {% if plan.billing_type == 'ONE_TIME' %}
+                                    Buy Now
+                                {% else %}
+                                    Subscribe Now
+                                {% endif %}
+                            </button>
+                            {% if plan.name == 'Student' %}
+                                <div class="pricing-note">*Nachweis erforderlich</div>
+                            {% endif %}
                         </div>
-                        <p class="pricing-description">Für die einmalige Nutzung</p>
-                        <ul class="list-unstyled pricing-features">
-                            <li><i class="bi bi-check-circle-fill text-success"></i> 1 Analyse</li>
-                            <li><i class="bi bi-check-circle-fill text-success"></i> Speicherung für 7 Tage</li>
-                            <li><i class="bi bi-check-circle-fill text-success"></i> PDF Export</li>
-                            <li><i class="bi bi-x-circle-fill text-danger"></i> Keine erweiterte Analyse</li>
-                        </ul>
-                        <a href="#" class="btn btn-secondary w-100">Basic wählen</a>
-                    </div>
-                </div>
+                    </form>
+                {% endfor %}
 
-                <!-- Pro Plan -->
-                <div class="col-lg-3 col-md-6">
-                    <div class="pricing-card">
-                        <h3>Pro</h3>
-                        <div class="pricing-price">
-                            <span class="price-currency">€</span>
-                            <span class="price-amount">10</span>
-                            <span class="price-period">/monat</span>
-                        </div>
-                        <p class="pricing-description">Für mehrere Mietverträge</p>
-                        <ul class="list-unstyled pricing-features">
-                            <li><i class="bi bi-check-circle-fill text-success"></i> 5 Analysen</li>
-                            <li><i class="bi bi-check-circle-fill text-success"></i> Speicherung für 30 Tage</li>
-                            <li><i class="bi bi-check-circle-fill text-success"></i> PDF & DOCX Export</li>
-                            <li><i class="bi bi-check-circle-fill text-success"></i> Erweiterte Analyse</li>
-                        </ul>
-                        <a href="#" class="btn btn-secondary w-100">Pro wählen</a>
-                    </div>
-                </div>
-
-                <!-- Chat Support Option -->
-                <div class="col-lg-3 col-md-6">
-                    <div class="pricing-card chat-plan">
-                        <div class="top-badge">Neu</div>
-                        <h3>Chat+</h3>
-                        <div class="pricing-price">
-                            <span class="price-currency">€</span>
-                            <span class="price-amount">2</span>
-                            <span class="price-period">/monat</span>
-                        </div>
-                        <p class="pricing-description">Persönlicher Rechtsassistent</p>
-                        <ul class="list-unstyled pricing-features">
-                            <li><i class="bi bi-check-circle-fill text-success"></i> Unbegrenzte Chat-Anfragen</li>
-                            <li><i class="bi bi-check-circle-fill text-success"></i> Rechtliche Beratung via KI</li>
-                            <li><i class="bi bi-check-circle-fill text-success"></i> Monatlich kündbar</li>
-                            <li><i class="bi bi-check-circle-fill text-success"></i> 50% Rabatt für Studierende</li>
-                        </ul>
-                        <a href="#" class="btn btn-secondary w-100">Chat+ hinzufügen</a>
-                        <div class="pricing-note">*Kombinierbar mit allen Paketen</div>
-                    </div>
-                </div>
             </div>
 
             <div class="pricing-faq mt-5">

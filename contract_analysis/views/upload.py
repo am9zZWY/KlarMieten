@@ -1,31 +1,29 @@
 import logging
 
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 
 from contract_analysis.models.contract import Contract
 from contract_analysis.utils.error import handle_exception, error_response
 from contract_analysis.utils.image import convert_pdf_to_images
 from contract_analysis.utils.utils import validate_type, validate_file_size
+from customers.models import Entitlement
 
 logger = logging.getLogger(__name__)
 
 allowed_types = ["application/pdf", "image/jpeg", "image/png"]
 
 
+@login_required
+@require_http_methods(["POST"])
 def upload_contract(request):
-    if request.method != "POST":
-        return error_response("Invalid request method", 405)
-
     user = request.user
 
-    # Check if user is authenticated
-    if not user.is_authenticated:
-        return error_response("Unauthorized", 401)
-
     # Check if user has permission to upload contracts
-    uploads_available = user.get_entitlement_value('uploads')
+    uploads_available = Entitlement.get(user, 'uploads')
     logger.info(f"User {user} has {uploads_available} uploads available")
     if uploads_available is None or uploads_available <= 0:
         return error_response("No uploads available", 403)
