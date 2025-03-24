@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "darf_vermieter_das/wsgi.py",
+      "src": "mietkai/wsgi.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "50mb",
@@ -24,7 +24,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "darf_vermieter_das/wsgi.py"
+      "dest": "mietkai/wsgi.py"
     }
   ]
 }

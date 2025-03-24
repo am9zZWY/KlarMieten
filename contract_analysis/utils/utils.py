@@ -4,7 +4,7 @@ from datetime import datetime
 import magic
 from django.core.exceptions import ValidationError
 
-from darf_vermieter_das.settings import FILE_UPLOAD_MAX_MEMORY_SIZE
+from mietkai.settings import FILE_UPLOAD_MAX_MEMORY_SIZE
 
 logger = logging.getLogger(__name__)
 

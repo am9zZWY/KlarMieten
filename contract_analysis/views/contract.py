@@ -12,7 +12,7 @@ from django.views.decorators.http import require_http_methods
 from contract_analysis.models.contract import Contract, ContractDetails, ContractFile
 from contract_analysis.utils.error import handle_exception, error_response
 from contract_analysis.utils.map import geocode_address
-from darf_vermieter_das.faq import FAQ_pricing
+from mietkai.faq import FAQ_pricing
 
 logger = logging.getLogger(__name__)
 

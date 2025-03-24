@@ -1,5 +1,5 @@
 """
-Django settings for darf_vermieter_das project
+Django settings for mietkai project
 """
 
 import functools
@@ -70,7 +70,7 @@ INSTALLED_APPS = [
     # Local apps
     "accounts",
     "contract_analysis",
-    "darf_vermieter_das",
+    "mietkai",
 
     # Django default apps
     "django.contrib.admin",
@@ -92,7 +92,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "darf_vermieter_das.urls"
+ROOT_URLCONF = "mietkai.urls"
 
 TEMPLATES = [
     {
@@ -110,7 +110,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "darf_vermieter_das.wsgi.application"
+WSGI_APPLICATION = "mietkai.wsgi.application"
 
 # DATABASE SETTINGS
 # ------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 [project]
-name = "backend"
+name = "mietkai"
 version = "0.1.0"
-description = "Darf Vermieter Das?"
+description = "Mietkai"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

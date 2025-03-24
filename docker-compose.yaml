@@ -8,9 +8,9 @@ services:
    env_file:
      - .env
  
- darf_vermieter_das:
+ mietkai:
    build: .
-   container_name: darf_vermieter_das
+   container_name: mietkai
    ports:
      - "8000:8000"
    depends_on:
