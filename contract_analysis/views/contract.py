@@ -12,25 +12,8 @@ from django.views.decorators.http import require_http_methods
 from contract_analysis.models.contract import Contract, ContractDetails, ContractFile
 from contract_analysis.utils.error import handle_exception, error_response
 from contract_analysis.utils.map import geocode_address
-from mietkai.faq import FAQ_pricing
 
 logger = logging.getLogger(__name__)
-
-
-def pricing(request):
-    """
-    Pricing page view for non-authenticated users.
-
-    Args:
-        request: HttpRequest object
-
-    Returns:
-        Rendered pricing page
-    """
-    context = {
-        "faq": FAQ_pricing
-    }
-    return render(request, "pricing.html", context)
 
 
 @login_required
@@ -44,8 +27,18 @@ def home_view(request):
     Returns:
         Rendered home page with user's active contracts
     """
-    contracts = Contract.objects.filter(user=request.user, archived=False)
-    return render(request, "contract/home.html", {"contracts": contracts})
+
+    user = request.user
+
+    if not user.is_authenticated:
+        return error_response("Unauthorized", 401)
+
+    # Check if user has permission to analyze contracts
+    entitlement = user.get_entitlement_value('analyses')
+    can_analyze = entitlement is not None and entitlement.value > 0
+
+    contracts = Contract.objects.filter(user=user, archived=False)
+    return render(request, "contract/home.html", {"contracts": contracts, "can_analyze": can_analyze})
 
 
 @login_required

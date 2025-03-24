@@ -1,6 +1,7 @@
 import logging
 
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.http import JsonResponse
 
 from contract_analysis.models.contract import Contract
@@ -24,7 +25,10 @@ def upload_contract(request):
         return error_response("Unauthorized", 401)
 
     # Check if user has permission to upload contracts
-    # TODO: has_upload_permission = user.has_active_capability('contract_upload')
+    uploads_available = user.get_entitlement_value('uploads')
+    logger.info(f"User {user} has {uploads_available} uploads available")
+    if uploads_available is None or uploads_available <= 0:
+        return error_response("No uploads available", 403)
 
     logger.info(f"Uploading files for user {user}")
     try:
@@ -32,19 +36,20 @@ def upload_contract(request):
         if not files:
             return error_response("Keine Dateien hochgeladen", 400)
 
-        # Create a new contract
-        uploaded_contract = Contract.objects.create(user=user)
-        logger.info(f"Created new contract {uploaded_contract.id}")
+        with transaction.atomic():
+            # Create a new contract
+            uploaded_contract = Contract.objects.create(user=user)
+            logger.info(f"Created new contract {uploaded_contract.id}")
 
-        for file in files:
-            validate_file_size(file)
-            validate_type(file)
+            for file in files:
+                validate_file_size(file)
+                validate_type(file)
 
-            if file.content_type == "application/pdf":
-                convert_pdf_to_images(file, uploaded_contract)
-            else:
-                # Process image files
-                uploaded_contract.add_file(file.name, file.content_type, file.read())
+                if file.content_type == "application/pdf":
+                    convert_pdf_to_images(file, uploaded_contract)
+                else:
+                    # Process image files
+                    uploaded_contract.add_file(file.name, file.content_type, file.read())
 
         return JsonResponse({"success": True, "contract_id": str(uploaded_contract.id)})
 

@@ -3,16 +3,13 @@ import os
 
 from asgiref.sync import async_to_sync
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import models
 from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_protect
 
-from accounts.models import Capability, Entitlement
 from contract_analysis.analysis import ContractProcessor
 from contract_analysis.models.contract import Contract
 from contract_analysis.utils.error import error_response
@@ -81,15 +78,7 @@ class ContractAnalysisView(ContractBaseView):
         logger.info(f"Analyzing contract {contract_id} for user {request.user}")
 
         # Check if user has permission to analyze contracts
-        analysis_capability = Capability.objects.get(code='analyses')
-        now = timezone.now()
-        entitlement = Entitlement.objects.filter(
-            models.Q(purchase__user=user) | models.Q(subscription__user=user),
-            capability=analysis_capability,
-            start_date__lte=now,
-            end_date__gt=now,
-        ).order_by('-end_date').first()
-
+        entitlement = user.get_entitlement_value('analyses')
         if not entitlement or entitlement and entitlement.value <= 0:
             return error_response("User does not have permission to analyze contracts. Please upgrade your plan.",
                                   status=403)

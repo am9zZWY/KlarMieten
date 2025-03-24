@@ -24,6 +24,7 @@ class User(AbstractUser):
             end_date__gt=now
         ).exists()
 
+
     def get_entitlement_value(self, capability_code):
         """Get the value of an entitlement for a specific capability"""
         now = timezone.now()

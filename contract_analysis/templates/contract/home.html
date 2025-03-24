@@ -12,6 +12,8 @@
         <div x-data="{
             searchText: ''
         }" class="quantum-container">
+            {% include 'hero_disclaimer.html' %}
+
             <!-- Dashboard Header -->
             <section class="hero-section py-4">
                 <div class="hero-wrapper container">
@@ -109,21 +111,29 @@
                                            {% if contract.status == 'processing' %}disabled{% endif %}>
                                             <i class="bi bi-pencil"></i>Bearbeiten
                                         </a>
-                                        <button
-                                                hx-post="{% url 'analyze_contract' contract.id %}"
-                                                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
-                                                hx-trigger="click"
-                                                hx-indicator="#spinner-{{ contract.id }}"
-                                                hx-swap="none"
-                                                @htmx:before-request="$event.detail.target.disabled = true"
-                                                class="btn btn-primary analyze-btn {% if contract.status == 'analyzed' %}{% endif %}"
-                                                {% if contract.status == 'processing' %}disabled{% endif %}
-                                                id="analyze-button-{{ contract.id }}">
-                                            <i class="bi bi-stars"></i>Analyse starten
-                                            <span id="spinner-{{ contract.id }}"
-                                                  class="htmx-indicator spinner-icon"
-                                                  style="display:none"></span>
-                                        </button>
+                                        {% if can_analyze %}
+                                            <button
+                                                    hx-post="{% url 'analyze_contract' contract.id %}"
+                                                    hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                                                    hx-trigger="click"
+                                                    hx-indicator="#spinner-{{ contract.id }}"
+                                                    hx-swap="none"
+                                                    @htmx:before-request="$event.detail.target.disabled = true"
+                                                    class="btn btn-primary analyze-btn
+                                                        {% if contract.status == 'analyzed' %}{% endif %}"
+                                                    {% if contract.status == 'processing' %}disabled{% endif %}
+                                                    id="analyze-button-{{ contract.id }}">
+                                                <i class="bi bi-stars"></i>Analyse starten
+                                                <span id="spinner-{{ contract.id }}"
+                                                      class="htmx-indicator spinner-icon"
+                                                      style="display:none"></span>
+                                            </button>
+                                        {% else %}
+                                            <button class="btn btn-primary">
+                                                <i class="bi bi-bag"></i>
+                                                Analyse kaufen
+                                            </button>
+                                        {% endif %}
                                     </div>
                                 </div>
                             {% endfor %}

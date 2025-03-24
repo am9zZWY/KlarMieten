@@ -18,6 +18,7 @@ def main(request):
     }
     return render(request, "main.html", context)
 
+
 def pricing(request):
     """
     Pricing page view for non-authenticated users.

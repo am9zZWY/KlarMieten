@@ -29,7 +29,9 @@ def initialize_system():
     # Integer-valued capabilities
     for code, name in [
         ('analyses', 'Number of Analyses'),
-        ('storage_days', 'Storage Duration (Days)')
+        ('storage_days', 'Storage Duration (Days)'),
+        ('upload_size', 'Max Upload Size (MB)'),
+        ('uploads', 'Number of Uploads'),
     ]:
         capabilities[code] = Capability.objects.get_or_create(
             code=code,
@@ -42,7 +44,7 @@ def initialize_system():
     # Boolean-valued capabilities
     for code, name in [
         ('pdf_export', 'PDF Export'),
-        ('docx_export', 'DOCX Export'),
+        ('docx_import', 'DOCX Import'),
         ('extended_analysis', 'Extended Analysis'),
         ('unlimited_chat', 'Unlimited Chat Requests'),
         ('legal_advice_ai', 'Legal Advice via AI'),
@@ -77,12 +79,20 @@ def initialize_system():
         defaults={'value_int': 1}
     )
     PlanCapability.objects.get_or_create(
+        plan=student_plan, capability=capabilities['uploads'],
+        defaults={'value_int': 1}
+    )
+    PlanCapability.objects.get_or_create(
         plan=student_plan, capability=capabilities['storage_days'],
         defaults={'value_int': 14}
     )
     PlanCapability.objects.get_or_create(
         plan=student_plan, capability=capabilities['pdf_export'],
         defaults={'value_bool': True}
+    )
+    PlanCapability.objects.get_or_create(
+        plan=student_plan, capability=capabilities['docx_import'],
+        defaults={'value_bool': False}
     )
 
     # Basic Plan (One-time)
@@ -103,12 +113,20 @@ def initialize_system():
         defaults={'value_int': 1}
     )
     PlanCapability.objects.get_or_create(
+        plan=student_plan, capability=capabilities['uploads'],
+        defaults={'value_int': 1}
+    )
+    PlanCapability.objects.get_or_create(
         plan=basic_plan, capability=capabilities['storage_days'],
         defaults={'value_int': 7}
     )
     PlanCapability.objects.get_or_create(
         plan=basic_plan, capability=capabilities['pdf_export'],
         defaults={'value_bool': True}
+    )
+    PlanCapability.objects.get_or_create(
+        plan=basic_plan, capability=capabilities['docx_import'],
+        defaults={'value_bool': False}
     )
 
     # Pro Plan (Subscription)
@@ -130,6 +148,10 @@ def initialize_system():
         defaults={'value_int': 5}
     )
     PlanCapability.objects.get_or_create(
+        plan=student_plan, capability=capabilities['uploads'],
+        defaults={'value_int': 5}
+    )
+    PlanCapability.objects.get_or_create(
         plan=pro_plan, capability=capabilities['storage_days'],
         defaults={'value_int': 30}
     )
@@ -138,7 +160,7 @@ def initialize_system():
         defaults={'value_bool': True}
     )
     PlanCapability.objects.get_or_create(
-        plan=pro_plan, capability=capabilities['docx_export'],
+        plan=pro_plan, capability=capabilities['docx_import'],
         defaults={'value_bool': True}
     )
     PlanCapability.objects.get_or_create(

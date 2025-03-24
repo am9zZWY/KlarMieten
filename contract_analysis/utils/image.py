@@ -1,8 +1,13 @@
 import base64
+import io
+import logging
 from io import BytesIO
 
 from PIL import Image
+from django.core.exceptions import ValidationError
 from pdf2image import convert_from_bytes
+
+logger = logging.getLogger(__name__)
 
 
 def convert_pdf_to_images(file, contract):
@@ -19,7 +24,7 @@ def convert_pdf_to_images(file, contract):
             buffer.seek(0)
 
             page_filename = f"{base_name}_page_{i + 1}.png"
-            save_contract_file(contract, page_filename, "image/png", buffer.getvalue())
+            contract.add_file(page_filename, buffer.getvalue(), "image/png")
 
     except Exception as e:
         logger.error(f"PDF conversion error: {e}")

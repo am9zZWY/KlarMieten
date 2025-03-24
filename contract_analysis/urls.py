@@ -8,7 +8,7 @@ from .views.contract import (
     home_view,
     save_edited_contract,
     contract_view,
-    edit_contract, pricing,
+    edit_contract
 )
 from .views.upload import upload_contract
 
@@ -46,6 +46,5 @@ urlpatterns = [
         "chat",
         chat,
         name="chat",
-    ),
-    path("price", pricing, name="pricing"),
+    )
 ]
