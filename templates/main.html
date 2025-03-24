@@ -1,10 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Mietkai | KI-gestützte Mietvertragsanalyse{% endblock %}
+{% block title %}MietKai | KI-gestützte Mietvertragsanalyse{% endblock %}
 
 {% block content %}
     <div class="quantum-container">
+        <!-- Legal Disclaimer Banner -->
+        {% include 'hero_disclaimer.html' %}
+
         <!-- Hero Section -->
         <section class="hero-section position-relative overflow-hidden">
             <div class="container">
@@ -12,30 +15,33 @@
                     <!-- Left Side - Content -->
                     <div class="col-lg-6 hero-content-wrapper">
                         <div class="hero-content">
-                            <h1 class="hero-title display-4 fw-bold mb-4">Mietverträge prüfen mit <span
+                            <h1 class="hero-title display-4 fw-bold mb-4">Mietverträge verstehen mit <span
                                     class="hero-highlight position-relative">KI</span></h1>
-                            <p class="hero-subtitle lead mb-4">Erhalten Sie in Sekunden einen Überblick über Ihre
-                                Mietrechte – dank unserer KI-Analyse<a href="#disclaimer">*</a></p>
+                            <p class="hero-subtitle lead mb-4">Erhalten Sie in Sekunden einen ersten Überblick über
+                                Ihren
+                                Mietvertrag – mit unserer KI-gestützten Informationsanalyse<a
+                                        href="#disclaimer">*</a>
+                            </p>
 
                             <div class="hero-stats d-flex flex-wrap gap-4 mb-5">
                                 <div class="stat-item pe-4 border-end border-2">
                                     <span class="stat-number d-block">ab 0€</span>
-                                    <span class="stat-text">Kostenlose Basisanalyse</span>
+                                    <span class="stat-text">Kostenlose Basisinformation</span>
                                 </div>
                                 <div class="stat-item pe-4 border-end border-2">
                                     <span class="stat-number d-block"><15s</span>
-                                    <span class="stat-text">Analysezeit</span>
+                                    <span class="stat-text">Verarbeitungszeit</span>
                                 </div>
                                 <div class="stat-item">
                                     <span class="stat-number d-block">3 Klicks</span>
-                                    <span class="stat-text">zur Analyse</span>
+                                    <span class="stat-text">zur Information</span>
                                 </div>
                             </div>
 
                             <div class="d-flex flex-wrap gap-3 mb-4">
                                 <button class="btn btn-primary btn-lg pulse-animation" x-data
                                         x-on:click="scrollAndHighlightUploadForm()">
-                                    <i class="bi bi-file-earmark-text me-2"></i>Jetzt Mietvertrag prüfen
+                                    <i class="bi bi-file-earmark-text me-2"></i>Jetzt Mietvertrag hochladen
                                 </button>
                                 <a href="#how-it-works" class="btn btn-outline-secondary btn-lg">
                                     Mehr erfahren <i class="bi bi-arrow-right ms-1"></i>
@@ -63,7 +69,7 @@
                     <div class="col-lg-6 mt-5 mt-lg-0">
                         <section class="upload-form-wrapper bg-white p-3 p-lg-4 rounded-4 shadow"
                                  id="upload-form-section">
-                            <h3 class="mb-4 text-center">Hochladen & Analysieren</h3>
+                            <h3 class="mb-4 text-center">Hochladen & Informieren</h3>
                             <div class="upload-form">
                                 {% include 'contract/upload.html' %}
                             </div>
@@ -80,8 +86,9 @@
         <!-- Features Section -->
         <section class="section" id="functions">
             <div class="section-header">
-                <h2>Was unsere KI erkennt</h2>
-                <p>Wir bringen Mietverträge auf den Punkt – schnell und übersichtlich</p>
+                <h2>Welche Informationen unsere Plattform liefert</h2>
+                <p>Wir helfen relevante Vertragsinhalte zu identifizieren und stellen allgemeine Informationen dazu
+                    bereit</p>
             </div>
 
             <div class="features-grid">
@@ -160,7 +167,8 @@
                     <div class="step-number">02</div>
                     <div class="step-content">
                         <h3>Analyse starten</h3>
-                        <p>Unsere Technologie prüft den Vertrag auf wichtige Punkte und mögliche kritische Klauseln.</p>
+                        <p>Unsere Technologie prüft den Vertrag auf wichtige Punkte und mögliche kritische
+                            Klauseln.</p>
                     </div>
                     <div class="step-icon">
                         <i class="bi bi-cpu"></i>
@@ -198,8 +206,9 @@
                         <i class="bi bi-star-fill"></i>
                         <i class="bi bi-star-fill"></i>
                     </div>
-                    <p class="testimonial-text">"Die KI hat in meinem Vertrag drei ungültige Klauseln gefunden. Dank der
-                        Handlungsempfehlungen konnte ich 240€ pro Jahr sparen!"</p>
+                    <p class="testimonial-text">"Der Vertrags-Scanner hat mir die Augen geöffnet! Die markierten
+                        Stellen
+                        habe ich mit einem Fachanwalt besprochen und dadurch 240€ jährlich gespart."</p>
                     <div class="testimonial-author">
                         <img src="" alt="Marie S.">
                         <div>
@@ -217,8 +226,9 @@
                         <i class="bi bi-star-fill"></i>
                         <i class="bi bi-star-fill"></i>
                     </div>
-                    <p class="testimonial-text">"Schnell, präzise und verständlich erklärt. Die Renovierungsklausel in
-                        meinem Vertrag war unwirksam. Das hat mir viel Geld und Ärger erspart."</p>
+                    <p class="testimonial-text">"Endlich keine Übersetzung aus dem Juristendeutsch mehr nötig! Die
+                        thematische Übersicht hat mir geholfen, die richtigen Fragen für mein Anwaltsgespräch
+                        vorzubereiten."</p>
                     <div class="testimonial-author">
                         <img src="" alt="Thomas K.">
                         <div>
@@ -236,8 +246,10 @@
                         <i class="bi bi-star-fill"></i>
                         <i class="bi bi-star"></i>
                     </div>
-                    <p class="testimonial-text">"Als Jurastudentin bin ich beeindruckt von der Genauigkeit. Die KI hat
-                        sogar Details gefunden, die mir nicht aufgefallen wären."</p>
+                    <p class="testimonial-text">"Dank des Mietspiegelchecks habe ich erst herausgefunden, dass meine
+                        Miete unüblich hoch ist. Danach habe ich den Mieterbund aufgesucht und mit meiner Anwältin
+                        eine
+                        Mietminderung durchgesetzt. Ohne die Analyse wäre ich nicht auf diese Lösung gekommen."</p>
                     <div class="testimonial-author">
                         <img src="" alt="Laura M.">
                         <div>
@@ -344,6 +356,34 @@
 
 {% block extra_css %}
     <style>
+        .legal-disclaimer-banner {
+            background: linear-gradient(90deg, rgba(67, 97, 238, 0.03), rgba(0, 216, 187, 0.03));
+            padding: 0.75rem 0;
+            width: 100%;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .legal-disclaimer-banner i {
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .legal-disclaimer-banner p {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            .legal-disclaimer-banner {
+                font-size: 0.8rem;
+                padding: 0.5rem 0;
+            }
+        }
+
         .bg-blob-1 {
             width: 600px;
             height: 600px;

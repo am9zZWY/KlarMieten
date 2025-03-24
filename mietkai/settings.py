@@ -227,4 +227,8 @@ LOGGING = {
 # ------------------------------------------------------------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# NAME OF THE APPLICATION
+# ------------------------------------------------------------------------------
+APP_NAME = "MietKai"
+
 print("Settings loaded successfully")

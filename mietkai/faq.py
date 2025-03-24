@@ -1,6 +1,6 @@
 FAQ = [
     {
-        "question": "Was bietet \"Mietkai\"?",
+        "question": "Was bietet MietKai?",
         "answer": "Unser Service zeigt Ihnen einen ersten Überblick über die häufigsten Regelungen im Mietrecht. Die Informationen helfen Ihnen, Ihren Mietvertrag besser zu verstehen – aber sie ersetzen keine rechtliche Beratung. Bei konkreten Fragen sollten Sie immer eine Fachanwaltin oder eine Fachanwalt hinzuziehen.",
         "for": ["landing", "faq"]
     },

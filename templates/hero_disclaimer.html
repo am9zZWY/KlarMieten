@@ -1,0 +1,31 @@
+<div class="legal-disclaimer border-bottom" x-data="{ show: true }" x-show="show">
+    <div class="container py-2 d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-exclamation-triangle-fill me-3" style="color:var(--warning)"></i>
+            <p class="mb-0 small">Diese Plattform bietet <strong>keine Rechtsberatung</strong> im Sinne des RDG. Die KI
+                erkennt nur Textmuster und liefert allgemeine Informationen.<br>Für rechtliche Beurteilungen kontaktieren
+                Sie bitte einen Rechtsanwalt.</p>
+        </div>
+        <button class="btn-close" @click="show = false" aria-label="Schließen"></button>
+    </div>
+</div>
+
+<style>
+    .legal-disclaimer {
+        background-color: var(--surface-alt);
+        box-shadow: var(--shadow-small);
+        z-index: var(--z-tooltip);
+        color: var(--text-secondary);
+    }
+
+    .legal-disclaimer .btn-close {
+        opacity: 0.7;
+        transition: var(--transition-fast);
+        margin-left: 1rem;
+    }
+
+    .legal-disclaimer .btn-close:hover {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+</style>
