@@ -18,7 +18,7 @@
                 {% for plan in plans %}
                     <form action="{% url 'create-checkout-session' %}" method="post" class="col-lg-3 col-md-6">
                         {% csrf_token %}
-                        <input type="hidden" name="plan_id" value="{{ plan.id }}">
+                        <input type="hidden" name="priceId" value="price_1R6HOlFzWR12IWqpJ2GqlkyL">
                         <div class="pricing-card {% if plan.name == 'Student' %}student-plan{% endif %}">
                             {% if plan.name == 'Student' %}
                                 <div class="top-badge">Empfohlen</div>
@@ -51,9 +51,9 @@
                             <!-- Replace existing button with this -->
                             <button type="submit" class="btn btn-primary w-100">
                                 {% if plan.billing_type == 'ONE_TIME' %}
-                                    Buy Now
+                                    Jetzt holen
                                 {% else %}
-                                    Subscribe Now
+                                    Jetzt abonnieren
                                 {% endif %}
                             </button>
                             {% if plan.name == 'Student' %}

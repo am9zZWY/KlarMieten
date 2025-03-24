@@ -6,6 +6,11 @@ import functools
 import os
 from pathlib import Path
 
+# Load environment variables from .env file
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Base directory of the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -226,9 +231,9 @@ LOGGING = {
 
 # STRIPE SETTINGS
 # ------------------------------------------------------------------------------
-STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
-STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
-DOMAIN = os.environ.get('DOMAIN')
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
+DOMAIN = os.getenv('DOMAIN', 'http://localhost:3000')
 
 # DEFAULT PRIMARY KEY FIELD TYPE
 # ------------------------------------------------------------------------------

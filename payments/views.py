@@ -1,11 +1,15 @@
 import json
+import logging
 
 import stripe
-from django.conf import settings
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import redirect
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
+
+from mietkai import settings
+
+logger = logging.getLogger(__name__)
 
 # Initialize Stripe API
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -38,13 +42,16 @@ def create_checkout_session(request):
             cancel_url=domain_url + '/canceled/',
             mode='subscription',
             # automatic_tax={'enabled': True},
-            line_items=[{
-                'price': price,
-                'quantity': 1
-            }],
+            line_items=[
+                {
+                    'price': price,
+                    'quantity': 1,
+                },
+            ]
         )
         return redirect(checkout_session.url, code=303)
     except Exception as e:
+        logger.error(e)
         return JsonResponse({'error': {'message': str(e)}}, status=400)
 
 
