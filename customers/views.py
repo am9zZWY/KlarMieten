@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
 
-from mietkai.faq import FAQ_pricing
+from klarmieten.faq import FAQ_pricing
 from .forms import LoginForm, RegisterForm
 from .models import Plan, Capability
 

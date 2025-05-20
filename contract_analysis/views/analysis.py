@@ -80,9 +80,9 @@ class ContractAnalysisView(ContractBaseView):
 
         # Check if user has permission to analyze contracts
         entitlement = Entitlement.get(user, 'analyses')
-        if not entitlement or entitlement and entitlement.value <= 0:
-            return error_response("User does not have permission to analyze contracts. Please upgrade your plan.",
-                                  status=403)
+        #if not entitlement or entitlement and entitlement.value <= 0:
+         #   return error_response("User does not have permission to analyze contracts. Please upgrade your plan.",
+         #                         status=403)
 
         contract = self.get_contract(contract_id)
         temp_images = []

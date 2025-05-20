@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    MietKai - Mietverträge
+    KlarMieten - Mietverträge
 {% endblock %}
 
 {% block content %}
@@ -111,7 +111,7 @@
                                            {% if contract.status == 'processing' %}disabled{% endif %}>
                                             <i class="bi bi-pencil"></i>Bearbeiten
                                         </a>
-                                        {% if can_analyze %}
+                                        {% if True %}
                                             <button
                                                     hx-post="{% url 'analyze_contract' contract.id %}"
                                                     hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'

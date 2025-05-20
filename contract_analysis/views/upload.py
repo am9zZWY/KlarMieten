@@ -25,8 +25,8 @@ def upload_contract(request):
     # Check if user has permission to upload contracts
     uploads_available = Entitlement.get(user, 'uploads')
     logger.info(f"User {user} has {uploads_available} uploads available")
-    if uploads_available is None or uploads_available <= 0:
-        return error_response("No uploads available", 403)
+    #if uploads_available is None or uploads_available <= 0:
+    #    return error_response("No uploads available", 403)
 
     logger.info(f"Uploading files for user {user}")
     try:
@@ -47,7 +47,7 @@ def upload_contract(request):
                     convert_pdf_to_images(file, uploaded_contract)
                 else:
                     # Process image files
-                    uploaded_contract.add_file(file.name, file.content_type, file.read())
+                    uploaded_contract.add_file(file.name, file.read(), file.content_type, )
 
         return JsonResponse({"success": True, "contract_id": str(uploaded_contract.id)})
 

@@ -1,7 +1,7 @@
 [project]
-name = "mietkai"
+name = "klarmieten"
 version = "0.1.0"
-description = "MietKai"
+description = "KlarMieten"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

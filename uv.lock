@@ -459,7 +459,7 @@ wheels = [
 ]
 
 [[package]]
-name = "mietkai"
+name = "klarmieten"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

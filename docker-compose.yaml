@@ -8,9 +8,9 @@ services:
    env_file:
      - .env
  
- mietkai:
+ klarmieten:
    build: .
-   container_name: mietkai
+   container_name: klarmieten
    ports:
      - "8000:8000"
    depends_on:

@@ -104,6 +104,6 @@ driven by the increasing need for automation in legal applications, including co
 6. **Language Simplification**: Offer a feature that simplifies complex legal language into more understandable terms
    for non-legal professionals.
 
-By implementing these features and services while carefully navigating the legal landscape, 'MietKai' can
+By implementing these features and services while carefully navigating the legal landscape, 'KlarMieten' can
 provide valuable assistance to German renters, particularly students, in understanding and managing their rental
 contracts effectively.

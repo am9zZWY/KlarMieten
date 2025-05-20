@@ -1,5 +1,5 @@
 """
-Django settings for mietkai project
+Django settings for klarmieten project
 """
 
 import functools
@@ -76,7 +76,7 @@ INSTALLED_APPS = [
     "customers",
     "payments",
     "contract_analysis",
-    "mietkai",
+    "klarmieten",
 
     # Django default apps
     "django.contrib.admin",
@@ -98,7 +98,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "mietkai.urls"
+ROOT_URLCONF = "klarmieten.urls"
 
 TEMPLATES = [
     {
@@ -116,7 +116,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "mietkai.wsgi.application"
+WSGI_APPLICATION = "klarmieten.wsgi.application"
 
 # DATABASE SETTINGS
 # ------------------------------------------------------------------------------
@@ -241,6 +241,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # NAME OF THE APPLICATION
 # ------------------------------------------------------------------------------
-APP_NAME = "MietKai"
+APP_NAME = "KlarMieten"
 
 print("Settings loaded successfully")

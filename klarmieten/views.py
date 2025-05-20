@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from mietkai.faq import FAQ_landing, FAQ_pricing
+from klarmieten.faq import FAQ_landing, FAQ_pricing
 
 
 def main(request):

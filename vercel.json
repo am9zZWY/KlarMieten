@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "mietkai/wsgi.py",
+      "src": "klarmieten/wsgi.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "50mb",
@@ -24,7 +24,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "mietkai/wsgi.py"
+      "dest": "klarmieten/wsgi.py"
     }
   ]
 }

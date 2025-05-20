@@ -1,8 +1,8 @@
-# MietKai: Comprehensive Business Model Outline
+# KlarMieten: Comprehensive Business Model Outline
 
 #### Core Value Proposition
 
-MietKai is a technology-focused contract analysis service that uses AI to extract, organize, and contextualize
+KlarMieten is a technology-focused contract analysis service that uses AI to extract, organize, and contextualize
 information from rental agreements. The core value proposition is **saving time and providing clarity** for renters by
 automating the process of understanding complex rental documents
 
@@ -109,5 +109,5 @@ automating the process of understanding complex rental documents
 - Staff training on the boundaries of the service
 - Robust feedback mechanisms to catch and address edge cases business model provides a framework that balances
   delivering valuable service to users while maintaining strict boundaries against providing legal advice. By focusing
-  on information extraction, organization, and factual comparisons, MietKai can position itself as a technical tool that
+  on information extraction, organization, and factual comparisons, KlarMieten can position itself as a technical tool that
   empowers users while respecting legal service regulations.
